@@ -4,6 +4,8 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>GA Hotline Portal — General Affairs MRT</title>
+<link rel="icon" type="image/png" href="logo.png" />
+<link rel="apple-touch-icon" href="logo.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -191,7 +193,10 @@ button{font-family:inherit;cursor:pointer}
   display:flex;align-items:center;justify-content:center;color:#fff;
   font-weight:800;letter-spacing:.5px;font-size:14px;
   box-shadow:0 6px 14px rgba(0,61,126,.25);
+  overflow:hidden;flex-shrink:0;
 }
+.brand-mark img{width:100%;height:100%;object-fit:contain;display:block}
+.brand-mark.has-img{background:transparent;box-shadow:none}
 .brand-name{display:flex;flex-direction:column;line-height:1.15}
 .brand-name strong{font-size:16px}
 .brand-name span{font-size:11px;color:var(--text-mut);font-weight:500;letter-spacing:.3px}
@@ -200,6 +205,20 @@ button{font-family:inherit;cursor:pointer}
   padding:8px 14px;border-radius:8px;color:var(--text-2);font-weight:600;font-size:13.5px;
 }
 .nav-links a:hover{background:var(--mrt-blue-soft);color:var(--mrt-blue);text-decoration:none}
+/* Admin login button override — green default, white on hover */
+.nav-links a.btn-nav-admin{
+  background:var(--mrt-green);
+  color:#fff;
+  border:2px solid var(--mrt-green);
+  padding:6px 14px;
+  transition:background .2s,color .2s,box-shadow .2s;
+}
+.nav-links a.btn-nav-admin:hover{
+  background:#fff;
+  color:var(--mrt-green);
+  text-decoration:none;
+  box-shadow:0 4px 12px rgba(0,168,89,.25);
+}
 
 .hero{
   position:relative;overflow:hidden;
@@ -626,7 +645,7 @@ table.t{
   <nav class="public-nav">
     <div class="public-nav-inner">
       <div class="brand">
-        <div class="brand-mark">GA</div>
+        <div class="brand-mark"><img src="logo.png" alt="GA" onload="this.parentElement.classList.add('has-img')" onerror="this.parentElement.classList.remove('has-img');this.outerHTML='GA'" /></div>
         <div class="brand-name"><strong>GA Hotline Portal</strong><span>General Affairs · MRT Jakarta</span></div>
       </div>
       <div class="nav-links">
@@ -635,7 +654,7 @@ table.t{
         <a href="#howto">Cara Pakai</a>
         <a href="#form">Buat Permintaan</a>
         <a href="#/version" class="btn btn-ghost btn-sm" style="margin-left:6px"><span class="material-symbols-rounded" style="font-size:18px">history</span>Riwayat</a>
-        <a href="#/login" class="btn btn-primary btn-sm"><span class="material-symbols-rounded" style="font-size:18px">login</span>Admin</a>
+        <a href="#/login" class="btn btn-nav-admin btn-sm"><span class="material-symbols-rounded" style="font-size:18px">login</span>Admin</a>
       </div>
     </div>
   </nav>
@@ -690,44 +709,20 @@ table.t{
     </div>
   </section>
 
-  <section class="section" id="howto" style="background:#fff;border-top:1px solid var(--border-2);border-bottom:1px solid var(--border-2)">
-    <div class="section-inner">
-      <div class="section-head center">
-        <div class="kicker">Mudah & Cepat</div>
-        <h2>Cara Pakai Portal</h2>
-        <p style="margin:6px auto 0">Empat langkah sederhana untuk mengajukan dan memantau permintaan Anda.</p>
-      </div>
-      <div class="steps">
-        <div class="step"><div class="step-num">1</div>
-          <span class="material-symbols-rounded">edit_note</span>
-          <h4>Isi Formulir</h4><p>Buka bagian "Buat Permintaan", pilih kategori, dan lengkapi detail kebutuhan Anda.</p></div>
-        <div class="step"><div class="step-num">2</div>
-          <span class="material-symbols-rounded">qr_code_2</span>
-          <h4>Simpan Kode</h4><p>Salin kode permintaan yang otomatis dibuat. Anda butuh kode ini untuk tracking.</p></div>
-        <div class="step"><div class="step-num">3</div>
-          <span class="material-symbols-rounded">monitoring</span>
-          <h4>Pantau Status</h4><p>Cek perkembangan permintaan kapan saja melalui kolom "Cek Status".</p></div>
-        <div class="step"><div class="step-num">4</div>
-          <span class="material-symbols-rounded">star_rate</span>
-          <h4>Beri Penilaian</h4><p>Setelah selesai, isi penilaian kepuasan dari tautan yang dikirim tim GA.</p></div>
-      </div>
-    </div>
-  </section>
-
   <section class="section" id="form">
     <div class="section-inner">
       <div class="section-head">
         <div class="kicker">Formulir</div>
         <h2>Buat Permintaan Baru</h2>
-        <p>Klik kartu di bawah untuk membuka formulir. Pastikan data terisi lengkap agar proses lebih cepat.</p>
+        <p>Lengkapi formulir berikut. Klik judul kartu untuk minimize/expand bila perlu.</p>
       </div>
 
       <div class="collapse-card">
-        <div class="collapse-head" id="form-toggle">
+        <div class="collapse-head open" id="form-toggle" role="button" tabindex="0" aria-expanded="true">
           <h3><span class="material-symbols-rounded">assignment_add</span>Formulir Input Permintaan</h3>
           <span class="material-symbols-rounded chev">expand_more</span>
         </div>
-        <div class="collapse-body" id="form-body">
+        <div class="collapse-body open" id="form-body">
           <form id="request-form" novalidate>
             <div class="form-grid">
               <div class="field field-required">
@@ -818,6 +813,30 @@ table.t{
     </div>
   </section>
 
+  <section class="section" id="howto" style="background:#fff;border-top:1px solid var(--border-2);border-bottom:1px solid var(--border-2)">
+    <div class="section-inner">
+      <div class="section-head center">
+        <div class="kicker">Mudah & Cepat</div>
+        <h2>Cara Pakai Portal</h2>
+        <p style="margin:6px auto 0">Empat langkah sederhana untuk mengajukan dan memantau permintaan Anda.</p>
+      </div>
+      <div class="steps">
+        <div class="step"><div class="step-num">1</div>
+          <span class="material-symbols-rounded">edit_note</span>
+          <h4>Isi Formulir</h4><p>Buka bagian "Buat Permintaan", pilih kategori, dan lengkapi detail kebutuhan Anda.</p></div>
+        <div class="step"><div class="step-num">2</div>
+          <span class="material-symbols-rounded">qr_code_2</span>
+          <h4>Simpan Kode</h4><p>Salin kode permintaan yang otomatis dibuat. Anda butuh kode ini untuk tracking.</p></div>
+        <div class="step"><div class="step-num">3</div>
+          <span class="material-symbols-rounded">monitoring</span>
+          <h4>Pantau Status</h4><p>Cek perkembangan permintaan kapan saja melalui kolom "Cek Status".</p></div>
+        <div class="step"><div class="step-num">4</div>
+          <span class="material-symbols-rounded">star_rate</span>
+          <h4>Beri Penilaian</h4><p>Setelah selesai, isi penilaian kepuasan dari tautan yang dikirim tim GA.</p></div>
+      </div>
+    </div>
+  </section>
+
   <footer class="public-footer">
     <div class="public-footer-inner">
       <div>© 2026 General Affairs · PT MRT Jakarta. All rights reserved.</div>
@@ -832,7 +851,7 @@ table.t{
     <div class="login-left">
       <div class="login-left-top">
         <div class="brand" style="color:#fff;margin-bottom:32px">
-          <div class="brand-mark">GA</div>
+          <div class="brand-mark"><img src="logo.png" alt="GA" onload="this.parentElement.classList.add('has-img')" onerror="this.parentElement.classList.remove('has-img');this.outerHTML='GA'" /></div>
           <div class="brand-name"><strong style="color:#fff">GA Hotline Portal</strong><span style="color:#CFDCEE">Admin Dashboard</span></div>
         </div>
         <h2>Selamat datang kembali.<br>Kelola permintaan dengan tenang.</h2>
@@ -865,7 +884,7 @@ table.t{
     <div class="mobile-backdrop" id="mobile-backdrop"></div>
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-top">
-        <div class="brand-mark">GA</div>
+        <div class="brand-mark"><img src="logo.png" alt="GA" onload="this.parentElement.classList.add('has-img')" onerror="this.parentElement.classList.remove('has-img');this.outerHTML='GA'" /></div>
         <div class="brand-name"><strong>GA Hotline</strong><span style="font-size:11px;color:var(--text-mut)">Admin Panel</span></div>
       </div>
       <nav class="sidebar-nav" id="admin-nav">
@@ -907,7 +926,7 @@ table.t{
   <div class="rating-page">
     <div class="rating-card">
       <div class="flex items-center gap-3 mb-4">
-        <div class="brand-mark">GA</div>
+        <div class="brand-mark"><img src="logo.png" alt="GA" onload="this.parentElement.classList.add('has-img')" onerror="this.parentElement.classList.remove('has-img');this.outerHTML='GA'" /></div>
         <div class="brand-name"><strong>Penilaian Pelayanan</strong><span style="font-size:11.5px;color:var(--text-mut)">GA Hotline Portal</span></div>
       </div>
       <div id="rating-body">
@@ -922,7 +941,7 @@ table.t{
   <nav class="public-nav">
     <div class="public-nav-inner">
       <div class="brand">
-        <div class="brand-mark">GA</div>
+        <div class="brand-mark"><img src="logo.png" alt="GA" onload="this.parentElement.classList.add('has-img')" onerror="this.parentElement.classList.remove('has-img');this.outerHTML='GA'" /></div>
         <div class="brand-name"><strong>GA Hotline Portal</strong><span>Riwayat Versi</span></div>
       </div>
       <div class="nav-links">
@@ -958,8 +977,8 @@ table.t{
    ============================================================ */
 
 /* ---------- CONFIG (edit these two values) ---------- */
-const SUPABASE_URL = window.__SUPA_URL__ || 'https://https://ekgebayrtjdjxsegcmru.supabase.co';
-const SUPABASE_ANON_KEY = window.__SUPA_KEY__ || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVrZ2ViYXlydGpkanhzZWdjbXJ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1NzM3OTAsImV4cCI6MjA5NDE0OTc5MH0.JUwWYQiGIY4PkHei0XI1HgdchynMSkQzarpDiH-guyE';
+const SUPABASE_URL = window.__SUPA_URL__ || 'https://YOUR-PROJECT-REF.supabase.co';
+const SUPABASE_ANON_KEY = window.__SUPA_KEY__ || 'YOUR_ANON_KEY';
 
 /* If the user hasn't configured Supabase yet, run in DEMO mode with
    in-memory data so the UI still works for inspection. */
@@ -1220,20 +1239,43 @@ const db = {
       if(!u) throw new Error('Username atau password salah');
       return { id:u.id, username:u.username, full_name:u.full_name, role:u.role };
     }
-    // Try bcrypt-checked match using SQL function fn_login (recommended).
-    // If that function isn't present yet (skipped during quick setup), fall
-    // back to plain-equality comparison.
+    // 1) Preferred: bcrypt-checked match via SQL helper function
     try{
       const { data, error } = await supa.rpc('fn_login', { p_user: username, p_pass: password });
-      if(!error && data && data.length) return data[0];
-    }catch(_){}
-    const { data, error } = await supa.from('app_users')
-      .select('id,username,full_name,role,active,password_hash')
-      .eq('username',username).maybeSingle();
-    if(error) throw error;
-    if(!data || !data.active) throw new Error('Username atau password salah');
-    if(data.password_hash !== password) throw new Error('Username atau password salah');
-    return { id:data.id, username:data.username, full_name:data.full_name, role:data.role };
+      if(error){
+        // Network-level or permission error — report it explicitly
+        if(/fetch|network|failed to fetch/i.test(error.message||'')){
+          throw new Error('Tidak dapat terhubung ke Supabase. Periksa URL & ANON_KEY atau koneksi internet Anda.');
+        }
+        // If function is missing, fall through to plain compare; otherwise rethrow
+        if(!/function .* does not exist|schema cache/i.test(error.message||'')){
+          throw new Error('Login gagal: '+error.message);
+        }
+      } else if(data && data.length){
+        return data[0];
+      } else if(data){
+        // RPC succeeded but returned no row → wrong credentials
+        throw new Error('Username atau password salah');
+      }
+    }catch(e){
+      // Re-throw our own user-facing errors; only swallow TypeError from raw fetch failures
+      if(e && e.message && !/Failed to fetch/i.test(e.message)) throw e;
+    }
+    // 2) Fallback: direct query (works only for plaintext-stored passwords)
+    try{
+      const { data, error } = await supa.from('app_users')
+        .select('id,username,full_name,role,active,password_hash')
+        .eq('username',username).maybeSingle();
+      if(error) throw error;
+      if(!data || !data.active) throw new Error('Username atau password salah');
+      if(data.password_hash !== password) throw new Error('Username atau password salah');
+      return { id:data.id, username:data.username, full_name:data.full_name, role:data.role };
+    }catch(e){
+      if(/Failed to fetch/i.test(e.message||'')){
+        throw new Error('Tidak dapat terhubung ke Supabase. Periksa URL & ANON_KEY di index.html atau koneksi internet Anda.');
+      }
+      throw e;
+    }
   },
 
   async listVersion(){
@@ -1392,109 +1434,130 @@ async function renderLanding(){
     const todayStr = new Date().toISOString().slice(0,10);
     $('#stat-today').textContent = reqs.filter(r=>r.created_at && r.created_at.slice(0,10)===todayStr).length;
 
-    // Chart by category
-    const cats = Object.keys(KATEGORI_KODE);
-    const counts = cats.map(c => reqs.filter(r=>r.kategori===c).length);
-    const ctx = $('#chart-category').getContext('2d');
-    new Chart(ctx, {
-      type:'bar',
-      data:{
-        labels:cats.map(c => c.length>22 ? c.slice(0,20)+'…' : c),
-        datasets:[{
-          label:'Jumlah Permintaan',
-          data:counts,
-          backgroundColor:['#003D7E','#0F4C9C','#1976D2','#00A859','#00C467','#4FC3F7'],
-          borderRadius:8, borderSkipped:false, maxBarThickness:46
-        }]
-      },
-      options:{
-        responsive:true, maintainAspectRatio:false,
-        plugins:{ legend:{display:false}, tooltip:{
-          backgroundColor:'#0F1B2D', padding:10, cornerRadius:8, titleFont:{size:12}, bodyFont:{size:13}
-        }},
-        scales:{
-          y:{beginAtZero:true, ticks:{precision:0,color:'#6B7891'}, grid:{color:'#EDF1F7'}},
-          x:{ticks:{color:'#6B7891',font:{size:11}}, grid:{display:false}}
+    // Chart by category (skip silently if Chart.js CDN unavailable)
+    if(typeof Chart !== 'undefined'){
+      const cats = Object.keys(KATEGORI_KODE);
+      const counts = cats.map(c => reqs.filter(r=>r.kategori===c).length);
+      const ctx = $('#chart-category').getContext('2d');
+      new Chart(ctx, {
+        type:'bar',
+        data:{
+          labels:cats.map(c => c.length>22 ? c.slice(0,20)+'…' : c),
+          datasets:[{
+            label:'Jumlah Permintaan',
+            data:counts,
+            backgroundColor:['#003D7E','#0F4C9C','#1976D2','#00A859','#00C467','#4FC3F7'],
+            borderRadius:8, borderSkipped:false, maxBarThickness:46
+          }]
+        },
+        options:{
+          responsive:true, maintainAspectRatio:false,
+          plugins:{ legend:{display:false}, tooltip:{
+            backgroundColor:'#0F1B2D', padding:10, cornerRadius:8, titleFont:{size:12}, bodyFont:{size:13}
+          }},
+          scales:{
+            y:{beginAtZero:true, ticks:{precision:0,color:'#6B7891'}, grid:{color:'#EDF1F7'}},
+            x:{ticks:{color:'#6B7891',font:{size:11}}, grid:{display:false}}
+          }
         }
-      }
-    });
-  }catch(err){ console.error(err); toast('Gagal memuat statistik','error'); }
+      });
+    }
+  }catch(err){ console.error('[stats]', err); }
 
   // --- Load dropdowns ---
   try{
     const [lok, tuj] = await Promise.all([db.listLokasi(), db.listTujuan()]);
-    const selL = $('#select-lokasi'); selL.innerHTML = '<option value="">-- Pilih Lokasi --</option>' + lok.map(x=>`<option>${escapeHtml(x.name)}</option>`).join('');
-    const selT = $('#select-tujuan'); selT.innerHTML = '<option value="">-- Pilih Tujuan --</option>' + tuj.map(x=>`<option>${escapeHtml(x.name)}</option>`).join('');
-  }catch(err){ console.error(err); }
+    const selL = $('#select-lokasi');
+    if(selL) selL.innerHTML = '<option value="">-- Pilih Lokasi --</option>' + lok.map(x=>`<option>${escapeHtml(x.name)}</option>`).join('');
+    const selT = $('#select-tujuan');
+    if(selT) selT.innerHTML = '<option value="">-- Pilih Tujuan --</option>' + tuj.map(x=>`<option>${escapeHtml(x.name)}</option>`).join('');
+  }catch(err){ console.error('[dropdowns]', err); }
 
-  // --- Tracker ---
-  const trackBtn = $('#track-btn');
-  const trackInput = $('#track-input');
-  const trackResult = $('#track-result');
-  const doTrack = async () => {
-    const code = trackInput.value.trim();
-    if(!code){ toast('Masukkan kode permintaan','warn'); return; }
-    trackResult.innerHTML = '<p class="muted text-sm">Mencari...</p>';
-    trackResult.classList.add('show');
-    try{
-      const r = await db.getRequestByCode(code);
-      if(!r){
-        trackResult.innerHTML = `
-          <div class="card-pad" style="background:#FEF2F2;border-radius:10px;border:1px solid #FECACA;color:#991B1B">
-            <strong>Tidak ditemukan.</strong> Periksa kembali kode permintaan Anda.
-          </div>`;
-        return;
-      }
-      const cls = STATUS_CLASS[r.status] || '';
-      const rating = await db.getRatingByRequest(r.id);
-      trackResult.innerHTML = `
-        <div class="tracker-row"><span class="k">Kode Permintaan</span><span class="v"><span class="code-pill">${escapeHtml(r.kode_permintaan)}</span></span></div>
-        <div class="tracker-row"><span class="k">Kategori</span><span class="v">${escapeHtml(r.kategori)}</span></div>
-        <div class="tracker-row"><span class="k">Pemesan</span><span class="v">${escapeHtml(r.nama_pemesan)}</span></div>
-        <div class="tracker-row"><span class="k">Tanggal Kebutuhan</span><span class="v">${fmtDate(r.tanggal_kebutuhan)}</span></div>
-        <div class="tracker-row"><span class="k">Status</span><span class="v"><span class="badge ${cls}">${escapeHtml(r.status)}</span></span></div>
-        <div class="tracker-row"><span class="k">Keterangan</span><span class="v">${escapeHtml(r.keterangan||'—')}</span></div>
-        <div class="tracker-row"><span class="k">PIC GA</span><span class="v">${escapeHtml(r.nama_pic_ga||'—')}</span></div>
-        <div class="tracker-row"><span class="k">Estimasi Selesai</span><span class="v">${fmtDate(r.estimasi_penyelesaian)}</span></div>
-        ${r.status==='Selesai' && !rating ? `
-          <div class="mt-3"><a href="#/rate/${r.id}" class="btn btn-accent btn-sm"><span class="material-symbols-rounded">star</span>Beri Penilaian</a></div>` : ''}
-        ${rating ? `
-          <div class="mt-3"><span class="tag green">Sudah dinilai · ${rating.rating}★</span></div>` : ''}
-      `;
-    }catch(err){
-      console.error(err);
-      trackResult.innerHTML = `<div class="muted">Gagal memuat data. Coba lagi.</div>`;
+  // --- Tracker (wrapped so failure doesn't break the form below) ---
+  try{
+    const trackBtn = $('#track-btn');
+    const trackInput = $('#track-input');
+    const trackResult = $('#track-result');
+    if(trackBtn && trackInput){
+      const doTrack = async () => {
+        const code = trackInput.value.trim();
+        if(!code){ toast('Masukkan kode permintaan','warn'); return; }
+        trackResult.innerHTML = '<p class="muted text-sm">Mencari...</p>';
+        trackResult.classList.add('show');
+        try{
+          const r = await db.getRequestByCode(code);
+          if(!r){
+            trackResult.innerHTML = `
+              <div class="card-pad" style="background:#FEF2F2;border-radius:10px;border:1px solid #FECACA;color:#991B1B">
+                <strong>Tidak ditemukan.</strong> Periksa kembali kode permintaan Anda.
+              </div>`;
+            return;
+          }
+          const cls = STATUS_CLASS[r.status] || '';
+          const rating = await db.getRatingByRequest(r.id);
+          trackResult.innerHTML = `
+            <div class="tracker-row"><span class="k">Kode Permintaan</span><span class="v"><span class="code-pill">${escapeHtml(r.kode_permintaan)}</span></span></div>
+            <div class="tracker-row"><span class="k">Kategori</span><span class="v">${escapeHtml(r.kategori)}</span></div>
+            <div class="tracker-row"><span class="k">Pemesan</span><span class="v">${escapeHtml(r.nama_pemesan)}</span></div>
+            <div class="tracker-row"><span class="k">Tanggal Kebutuhan</span><span class="v">${fmtDate(r.tanggal_kebutuhan)}</span></div>
+            <div class="tracker-row"><span class="k">Status</span><span class="v"><span class="badge ${cls}">${escapeHtml(r.status)}</span></span></div>
+            <div class="tracker-row"><span class="k">Keterangan</span><span class="v">${escapeHtml(r.keterangan||'—')}</span></div>
+            <div class="tracker-row"><span class="k">PIC GA</span><span class="v">${escapeHtml(r.nama_pic_ga||'—')}</span></div>
+            <div class="tracker-row"><span class="k">Estimasi Selesai</span><span class="v">${fmtDate(r.estimasi_penyelesaian)}</span></div>
+            ${r.status==='Selesai' && !rating ? `
+              <div class="mt-3"><a href="#/rate/${r.id}" class="btn btn-accent btn-sm"><span class="material-symbols-rounded">star</span>Beri Penilaian</a></div>` : ''}
+            ${rating ? `
+              <div class="mt-3"><span class="tag green">Sudah dinilai · ${rating.rating}★</span></div>` : ''}
+          `;
+        }catch(err){
+          console.error(err);
+          trackResult.innerHTML = `<div class="muted">Gagal memuat data. Coba lagi.</div>`;
+        }
+      };
+      trackBtn.addEventListener('click', doTrack);
+      trackInput.addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); doTrack(); } });
     }
-  };
-  trackBtn.addEventListener('click', doTrack);
-  trackInput.addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); doTrack(); } });
+  }catch(err){ console.error('[tracker]', err); }
 
-  // --- Form ---
+  // --- Form collapse + handlers (wrapped, defensive) ---
+  setupRequestForm();
+}
+
+function setupRequestForm(){
   const formToggle = $('#form-toggle');
-  formToggle.addEventListener('click', () => {
-    formToggle.classList.toggle('open');
-    $('#form-body').classList.toggle('open');
-  });
+  const formBody = $('#form-body');
+  if(formToggle && formBody){
+    const toggleFn = () => {
+      const willOpen = !formToggle.classList.contains('open');
+      formToggle.classList.toggle('open', willOpen);
+      formBody.classList.toggle('open', willOpen);
+      formToggle.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+    };
+    formToggle.addEventListener('click', toggleFn);
+    formToggle.addEventListener('keydown', e => { if(e.key==='Enter' || e.key===' '){ e.preventDefault(); toggleFn(); } });
+  }
 
   const form = $('#request-form');
+  if(!form) return;
+
   const katSel = form.querySelector('select[name="kategori"]');
   const kodePreview = $('#kode-preview');
   const smartoffField = $('#smartoffice-field');
   const inputHarga = $('#input-harga');
 
-  katSel.addEventListener('change', () => {
+  if(katSel) katSel.addEventListener('change', () => {
     const k = KATEGORI_KODE[katSel.value];
     if(k){
-      kodePreview.value = `${k}-${todayKey()}#### (nomor urut otomatis saat submit)`;
-      smartoffField.style.display = SMARTOFFICE_REQUIRED.includes(k) ? '' : 'none';
+      if(kodePreview) kodePreview.value = `${k}-${todayKey()}#### (nomor urut otomatis saat submit)`;
+      if(smartoffField) smartoffField.style.display = SMARTOFFICE_REQUIRED.includes(k) ? '' : 'none';
     } else {
-      kodePreview.value = '';
-      smartoffField.style.display = 'none';
+      if(kodePreview) kodePreview.value = '';
+      if(smartoffField) smartoffField.style.display = 'none';
     }
   });
 
   // Rupiah formatter
-  inputHarga.addEventListener('input', e => {
+  if(inputHarga) inputHarga.addEventListener('input', e => {
     const digits = e.target.value.replace(/\D/g,'');
     e.target.value = digits ? 'Rp ' + Number(digits).toLocaleString('id-ID') : '';
   });
@@ -1516,7 +1579,7 @@ async function renderLanding(){
       // Validate file
       const fileInput = $('#input-lampiran');
       let lampiran_url = null;
-      if(fileInput.files.length){
+      if(fileInput && fileInput.files.length){
         const f = fileInput.files[0];
         if(f.size > 2*1024*1024) throw new Error('Lampiran melebihi 2 MB');
         const okType = ['application/pdf','image/png','image/jpeg'].includes(f.type);
@@ -1564,12 +1627,15 @@ async function renderLanding(){
       $('#copy-code-btn').addEventListener('click', (ev)=> copyText(kode, ev.currentTarget));
 
       form.reset();
-      kodePreview.value = ''; smartoffField.style.display='none';
+      if(kodePreview) kodePreview.value = '';
+      if(smartoffField) smartoffField.style.display='none';
       toast('Permintaan tersimpan','success');
       // refresh stats lightly
-      const reqs = await db.listRequests();
-      $('#stat-total').textContent = reqs.length;
-      $('#stat-today').textContent = reqs.filter(r=>r.created_at && r.created_at.slice(0,10)===new Date().toISOString().slice(0,10)).length;
+      try{
+        const reqs = await db.listRequests();
+        const a = $('#stat-total'); if(a) a.textContent = reqs.length;
+        const t = $('#stat-today'); if(t) t.textContent = reqs.filter(r=>r.created_at && r.created_at.slice(0,10)===new Date().toISOString().slice(0,10)).length;
+      }catch{}
     }catch(err){
       console.error(err);
       toast(err.message || 'Gagal mengirim permintaan','error');
@@ -1697,23 +1763,38 @@ async function viewAdminDashboard(c){
       </div>
     </div>
   `;
-  const reqs = await db.listRequests();
+  let reqs;
+  try{
+    reqs = await db.listRequests();
+  }catch(err){
+    console.error('[dashboard]', err);
+    const msg = /Failed to fetch/i.test(err.message||'')
+      ? 'Tidak dapat terhubung ke Supabase. Periksa URL & ANON_KEY di index.html atau koneksi internet.'
+      : ('Gagal memuat data: '+(err.message||''));
+    $('#ads-table-host').innerHTML = `
+      <div class="card-pad" style="background:#FEF2F2;border:1px solid #FECACA;border-radius:10px;color:#991B1B">
+        <strong>Gagal memuat data.</strong><br><span class="text-sm">${escapeHtml(msg)}</span>
+      </div>`;
+    return;
+  }
   $('#ads-total').textContent   = reqs.length;
   $('#ads-pending').textContent = reqs.filter(r=>r.status==='Belum Dikonfirmasi').length;
   $('#ads-ongoing').textContent = reqs.filter(r=>['Mencari Penyedia','Sedang Disiapkan','Tersedia'].includes(r.status)).length;
   $('#ads-done').textContent    = reqs.filter(r=>r.status==='Selesai').length;
 
-  const cats = Object.keys(KATEGORI_KODE);
-  const counts = cats.map(c => reqs.filter(r=>r.kategori===c).length);
-  new Chart($('#ads-chart').getContext('2d'), {
-    type:'bar',
-    data:{ labels:cats, datasets:[{ data:counts,
-      backgroundColor:['#003D7E','#0F4C9C','#1976D2','#00A859','#00C467','#4FC3F7'],
-      borderRadius:8, maxBarThickness:40 }]},
-    options:{ responsive:true, maintainAspectRatio:false,
-      plugins:{legend:{display:false}},
-      scales:{ y:{beginAtZero:true,ticks:{precision:0}}, x:{ticks:{font:{size:11}}} } }
-  });
+  if(typeof Chart !== 'undefined'){
+    const cats = Object.keys(KATEGORI_KODE);
+    const counts = cats.map(c => reqs.filter(r=>r.kategori===c).length);
+    new Chart($('#ads-chart').getContext('2d'), {
+      type:'bar',
+      data:{ labels:cats, datasets:[{ data:counts,
+        backgroundColor:['#003D7E','#0F4C9C','#1976D2','#00A859','#00C467','#4FC3F7'],
+        borderRadius:8, maxBarThickness:40 }]},
+      options:{ responsive:true, maintainAspectRatio:false,
+        plugins:{legend:{display:false}},
+        scales:{ y:{beginAtZero:true,ticks:{precision:0}}, x:{ticks:{font:{size:11}}} } }
+    });
+  }
 
   // Mini table — reuse the requests table renderer in compact mode
   renderRequestsTable($('#ads-table-host'), reqs, { compact:true });

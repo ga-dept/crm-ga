@@ -72,7 +72,16 @@ Ganti dengan nilai dari Supabase Anda.
 
 > 💡 **Mode demo** — jika nilai belum diganti, aplikasi otomatis berjalan dengan **data in-memory** (hilang saat refresh). Berguna untuk preview UI tanpa setup Supabase.
 
-### 3. Jalankan
+### 3. Tambahkan logo
+
+Upload file `logo.png` (ukuran disarankan **square, minimum 128×128 px**) di folder yang sama dengan `index.html`. File ini dipakai sebagai:
+- **Favicon** browser
+- **Logo** di pojok kiri atas (navbar landing & sidebar admin)
+- **Apple touch icon**
+
+Jika `logo.png` belum ada, halaman tetap berjalan normal — placeholder bertuliskan **"GA"** dengan gradien biru-hijau akan tampil sebagai fallback otomatis.
+
+### 4. Jalankan
 
 Karena ini *single HTML file*, Anda bisa:
 
@@ -172,10 +181,29 @@ Konfigurasi default sengaja **permisif** agar mudah diuji:
 
 ## 🛠️ Kustomisasi
 
-- **Logo / branding**: ubah elemen `.brand-mark` (saat ini teks "GA") menjadi `<img>` Anda.
+- **Logo / favicon**: ganti file `logo.png` di folder yang sama dengan `index.html`.
 - **Warna**: ubah variabel CSS di bagian `:root` (`--mrt-blue`, `--mrt-green`, dst.).
 - **Kategori baru**: tambahkan key ke `KATEGORI_KODE` di JS **dan** ke `check` constraint pada tabel `requests` di SQL.
 - **Tambah master data lain**: ikuti pola `lokasi_options` / `tujuan_options` di SQL dan fungsi `db.*` di JS.
+
+---
+
+## 🧯 Troubleshooting
+
+### "Failed to fetch" / "Tidak dapat terhubung ke Supabase"
+Muncul saat login atau saat memuat dashboard admin. Penyebab paling umum:
+
+1. **URL atau ANON_KEY salah** — cek kembali nilai di `index.html`.
+2. **Skrip `database.sql` belum dijalankan** — fungsi `fn_login` belum ada, sehingga login default gagal. Jalankan ulang `database.sql` di Supabase SQL Editor.
+3. **Project Supabase paused** — login ke dashboard Supabase dan resume.
+4. **Browser memblokir request** — periksa di DevTools tab Network/Console untuk detail.
+
+### Login berhasil tetapi data tidak muncul
+Pastikan RLS policy sudah aktif (skrip `database.sql` mengaturnya). Cek di Supabase **Authentication → Policies** bahwa tabel `requests`, `ratings`, `app_users`, `lokasi_options`, `tujuan_options` memiliki policy `for all using (true)`.
+
+### Logo tidak muncul
+- Pastikan file bernama persis `logo.png` (lowercase) di folder yang sama dengan `index.html`.
+- Jika di-host di GitHub Pages, path relatif `logo.png` akan resolve otomatis terhadap URL `index.html`.
 
 ---
 
