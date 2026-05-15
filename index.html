@@ -3858,6 +3858,8 @@ async function downloadTandaTerima(req){
   const qrSize = 32;
   const qrX = W - M - qrSize;
   const qrY = afterTableY;
+  const qrBottomY = qrY + qrSize + 10;  // QR + caption + sedikit napas
+   
   if(qrData){
     try{ doc.addImage(qrData, 'PNG', qrX, qrY, qrSize, qrSize); }catch{}
   }
@@ -3883,7 +3885,10 @@ async function downloadTandaTerima(req){
   doc.text(keteranganLines, M, afterTableY + 10);
 
   // ----- Signature block at the bottom -----
-  let sigY = afterTableY + qrSize + 18;
+  // Pastikan signature mulai DI BAWAH QR (bukan di sampingnya)
+  // dan juga di bawah teks keterangan
+  const keteranganBottomY = afterTableY + 10 + (keteranganLines.length * 4.5);
+  let sigY = Math.max(qrBottomY, keteranganBottomY) + 6;
   // Cegah signature melewati margin bawah halaman
   if(sigY + 50 > H - 14) sigY = H - 60;
 
