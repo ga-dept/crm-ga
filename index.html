@@ -12,6 +12,9 @@
 <link href="https://fonts.googleapis.com/icon?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
 
 <style>
 /* ============================================================
@@ -784,7 +787,7 @@ table.t{
         <a href="#tracker">Cek Permintaan</a>
         <a href="#howto">Cara Pakai</a>
         <a href="#form">Buat Permintaan</a>
-        <span id="landing-auth-slot"><a href="#/login" class="btn btn-nav-admin btn-sm"><span class="material-symbols-rounded" style="font-size:18px">login</span>Masuk</a></span>
+        <span id="landing-auth-slot"><a href="#/login" class="btn btn-nav-admin btn-sm"><span class="material-symbols-rounded" style="font-size:18px">login</span>Login</a></span>
       </div>
     </div>
   </nav>
@@ -792,7 +795,7 @@ table.t{
   <section class="hero">
     <div class="hero-shape"></div>
     <div class="hero-inner">
-      <h1>CRM Dashboard<br>General Affairs Department <br><span class="accent">PT MRT Jakarta (Perseroda)</span></h1>
+      <h1>CRM Dashboard<br>General Affairs Department<br><span class="accent">PT MRT Jakarta</span></h1>
       <div class="hero-actions">
         <a href="#form" class="btn btn-primary"><span class="material-symbols-rounded">add_circle</span>Buat Permintaan</a>
         <a href="#tracker" class="btn btn-accent"><span class="material-symbols-rounded">search</span>Cek Status</a>
@@ -815,12 +818,12 @@ table.t{
 
       <div class="split-2 mt-6">
         <div class="card">
-          <div class="card-head"><h3>Permintaan per Kategori</h3><span class="tag">Bar Chart</span></div>
+          <div class="card-head"><h3>Permintaan per Kategori</h3></div>
           <div class="card-body"><canvas id="chart-category" height="180"></canvas></div>
         </div>
 
         <div class="card" id="tracker">
-          <div class="card-head"><h3>Cek Status Permintaan</h3><span class="tag green">Tracking</span></div>
+          <div class="card-head"><h3>Cek Status Permintaan</h3></div>
           <div class="card-body">
             <p class="muted text-sm" style="margin:0 0 12px">Masukkan kode permintaan Anda (contoh: <span class="code-pill" style="padding:2px 8px;font-size:12px">FB-120520260001</span>) untuk melihat status terkini.</p>
             <div class="tracker-input-row">
@@ -839,7 +842,6 @@ table.t{
       <div class="section-head">
         <div class="kicker">Formulir</div>
         <h2>Buat Permintaan Baru</h2>
-        <p>Lengkapi formulir berikut. Klik judul kartu untuk minimize/expand bila perlu.</p>
       </div>
 
       <div class="collapse-card">
@@ -941,7 +943,8 @@ table.t{
   <section class="section" id="howto" style="background:#fff;border-top:1px solid var(--border-2);border-bottom:1px solid var(--border-2)">
     <div class="section-inner">
       <div class="section-head center">
-        <h2>Petunjuk Penggunaan</h2>
+        <h2>Cara Pakai Portal</h2>
+        <p style="margin:6px auto 0">Empat langkah sederhana untuk mengajukan dan memantau permintaan Anda.</p>
       </div>
       <div class="steps">
         <div class="step"><div class="step-num">1</div>
@@ -962,8 +965,8 @@ table.t{
 
   <footer class="public-footer">
     <div class="public-footer-inner">
-      <div>© 2026 General Affairs · PT MRT Jakarta. All rights reserved.</div>
-      <div><a href="#/version">Riwayat Versi</a></div>
+      <div>© 2026 General Affairs · PT MRT Jakarta.</div>
+      <div><a href="#/version">Riwayat Versi</a> · <a href="#/login">Login Admin</a></div>
     </div>
   </footer>
 </template>
@@ -982,8 +985,8 @@ table.t{
     </div>
     <div class="login-right">
       <div class="login-box">
-        <h3>Masuk untuk Melanjutkan</h3>
-        <p class="sub">Gunakan akun Anda</p>
+        <h3>Masuk ke CPanel</h3>
+        <p class="sub">Gunakan akun admin GA Anda</p>
         <form id="login-form">
           <div class="field"><label>Username</label><input type="text" class="input" name="username" required autocomplete="username" /></div>
           <div class="field"><label>Password</label><input type="password" class="input" name="password" required autocomplete="current-password" /></div>
@@ -1013,6 +1016,7 @@ table.t{
         <a class="nav-item" data-route="ratings"><span class="material-symbols-rounded">star</span><span class="nav-label">Daftar Penilaian</span></a>
         <a class="nav-item" data-route="masterdata"><span class="material-symbols-rounded">tune</span><span class="nav-label">Master Data</span></a>
         <a class="nav-item" data-route="users"><span class="material-symbols-rounded">manage_accounts</span><span class="nav-label">Manajemen User</span></a>
+        <a class="nav-item" data-route="activity"><span class="material-symbols-rounded">receipt_long</span><span class="nav-label">Log Aktivitas</span></a>
         <a class="nav-item" data-route="version"><span class="material-symbols-rounded">history</span><span class="nav-label">Riwayat Versi</span></a>
       </nav>
       <div class="sidebar-foot">
@@ -1214,6 +1218,13 @@ const demo = (() => {
     {id:'l7',name:'Depo Lebak Bulus'},{id:'l8',name:'Depo Velodrome'},
     {id:'l9',name:'Stasiun Bundaran HI'}
   ];
+  const lokasiKerja = [
+    {id:'lk1',name:'Wisma Nusantara'},
+    {id:'lk2',name:'Transport Hub'},
+    {id:'lk3',name:'Depo Lebak Bulus'},
+    {id:'lk4',name:'JB Tower'}
+  ];
+  const activityLogs = [];
   const tujuan = [
     {id:'t1',name:'Rapat Internal'},{id:'t2',name:'Rapat dengan Vendor'},
     {id:'t3',name:'Rapat dengan Stakeholder Eksternal'},{id:'t4',name:'Training / Workshop'},
@@ -1222,25 +1233,26 @@ const demo = (() => {
   ];
   const users = [
     {id:'u1',username:'admin',password:'admin123',full_name:'Super Admin',role:'superadmin',
-       jabatan:'Head of General Affairs',lokasi_kerja:'Kantor Pusat',active:true},
+       jabatan:'Head of General Affairs',lokasi_kerja:'Wisma Nusantara',active:true},
     {id:'u2',username:'ga.budi',password:'budi123',full_name:'Budi Santoso',role:'admin',
-       jabatan:'GA Coordinator',lokasi_kerja:'Kantor Pusat',active:true},
+       jabatan:'GA Coordinator',lokasi_kerja:'Wisma Nusantara',active:true},
     {id:'u3',username:'ga.siti',password:'siti123',full_name:'Siti Nurhaliza',role:'pic',
        jabatan:'GA Officer',lokasi_kerja:'Depo Lebak Bulus',active:true},
     {id:'u4',username:'ga.rian',password:'rian123',full_name:'Rian Pratama',role:'pic',
-       jabatan:'GA Officer',lokasi_kerja:'Depo Velodrome',active:true},
+       jabatan:'GA Officer',lokasi_kerja:'Transport Hub',active:true},
     {id:'u5',username:'ga.dewi',password:'dewi123',full_name:'Dewi Anggraini',role:'pic',
-       jabatan:'GA Officer',lokasi_kerja:'Stasiun Bundaran HI',active:true}
+       jabatan:'GA Officer',lokasi_kerja:'JB Tower',active:true}
   ];
   const notifications = [];
   const version = [
     {id:'v1',version:'1.0.0',release_date:'2026-05-01',changes:'Rilis pertama portal GA Hotline: input permintaan, tracking publik, dashboard admin.'},
     {id:'v2',version:'1.1.0',release_date:'2026-05-08',changes:'Tambah fitur penilaian kepuasan via tautan & halaman Daftar Penilaian.'},
     {id:'v3',version:'1.2.0',release_date:'2026-05-12',changes:'Manajemen master data lokasi & tujuan, ekspor CSV, role-based user management.'},
-    {id:'v4',version:'1.3.0',release_date:'2026-05-14',changes:'Mass upload CSV permintaan, notifikasi lonceng, halaman Tiket Saya per personil GA, kolom jabatan & lokasi kerja di user, filter per kolom di Daftar Permintaan, persistent session.'}
+    {id:'v4',version:'1.3.0',release_date:'2026-05-14',changes:'Mass upload CSV permintaan, notifikasi lonceng, halaman Tiket Saya per personil GA, kolom jabatan & lokasi kerja di user, filter per kolom di Daftar Permintaan, persistent session.'},
+    {id:'v5',version:'1.4.0',release_date:'2026-05-16',changes:'Master data Lokasi Kerja terpisah, halaman Log Aktivitas, download tanda terima PDF saat status Tersedia, QR Code penilaian di tanda terima.'}
   ];
 
-  return { requests, ratings, notifications, lokasi, tujuan, users, version, seq, todayKey, nextCode };
+  return { requests, ratings, notifications, lokasi, lokasiKerja, tujuan, users, version, activityLogs, seq, todayKey, nextCode };
 })();
 
 /* ============================================================
@@ -1371,6 +1383,62 @@ const db = {
     if(!SUPA_CONFIGURED){ demo.tujuan = demo.tujuan.filter(x=>x.id!==id); return; }
     const { error } = await supa.from('tujuan_options').delete().eq('id',id);
     if(error) throw error;
+  },
+
+  // -------- Master: Lokasi Kerja (work location of GA personnel) --------
+  async listLokasiKerja(){
+    if(!SUPA_CONFIGURED) return [...demo.lokasiKerja];
+    const { data, error } = await supa.from('lokasi_kerja_options').select('*').order('name');
+    if(error) throw error; return data || [];
+  },
+  async addLokasiKerja(name){
+    if(!SUPA_CONFIGURED){ const r={id:'lk'+(demo.lokasiKerja.length+10),name}; demo.lokasiKerja.push(r); return r; }
+    const { data, error } = await supa.from('lokasi_kerja_options').insert({name}).select().single();
+    if(error) throw error; return data;
+  },
+  async deleteLokasiKerja(id){
+    if(!SUPA_CONFIGURED){ demo.lokasiKerja = demo.lokasiKerja.filter(x=>x.id!==id); return; }
+    const { error } = await supa.from('lokasi_kerja_options').delete().eq('id',id);
+    if(error) throw error;
+  },
+
+  // -------- Activity Logs --------
+  async listActivityLogs(opts){
+    opts = opts || {};
+    if(!SUPA_CONFIGURED){
+      let arr = [...demo.activityLogs].sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+      if(opts.userId) arr = arr.filter(l => l.user_id === opts.userId);
+      if(opts.action) arr = arr.filter(l => l.action === opts.action);
+      if(opts.targetType) arr = arr.filter(l => l.target_type === opts.targetType);
+      return arr.slice(0, opts.limit || 500);
+    }
+    let q = supa.from('activity_logs').select('*').order('created_at',{ascending:false}).limit(opts.limit || 500);
+    if(opts.userId)     q = q.eq('user_id', opts.userId);
+    if(opts.action)     q = q.eq('action', opts.action);
+    if(opts.targetType) q = q.eq('target_type', opts.targetType);
+    const { data, error } = await q;
+    if(error) throw error; return data || [];
+  },
+  async logActivity(entry){
+    const cur = session.get();
+    const payload = {
+      user_id:    entry.user_id   || cur?.id     || null,
+      username:   entry.username  || cur?.username || null,
+      full_name:  entry.full_name || cur?.full_name|| null,
+      action:     entry.action,
+      target_type:entry.target_type || null,
+      target_id:  entry.target_id   ? String(entry.target_id) : null,
+      detail:     entry.detail      || null,
+      meta:       entry.meta        || null
+    };
+    if(!SUPA_CONFIGURED){
+      demo.activityLogs.unshift({ id:'al'+(demo.activityLogs.length+1), created_at:new Date().toISOString(), ...payload });
+      return;
+    }
+    try{
+      const { error } = await supa.from('activity_logs').insert(payload);
+      if(error) console.warn('[activity_log]', error);
+    }catch(e){ console.warn('[activity_log]', e); }
   },
 
   async listUsers(){
@@ -1854,7 +1922,13 @@ function setupRequestForm(){
         status: 'Belum Dikonfirmasi'
       };
 
-      await db.insertRequest(payload);
+      const inserted = await db.insertRequest(payload);
+      db.logActivity({
+        user_id:null, username:null, full_name:payload.nama_pemesan,
+        action:'request.create.public',
+        target_type:'request', target_id:inserted?.id,
+        detail:`Permintaan baru ${kode} dari ${payload.nama_pemesan} (${payload.kategori})`
+      });
 
       // success popup
       openModal(`
@@ -1907,6 +1981,7 @@ function renderLogin(){
       const fd = new FormData(e.target);
       const user = await db.loginUser(fd.get('username').trim(), fd.get('password'));
       session.set(user);
+      db.logActivity({ action:'auth.login', target_type:'auth', target_id:user.id, detail:'Login berhasil' });
       toast('Selamat datang, '+user.full_name,'success');
       navigate('/admin/dashboard');
     }catch(err){
@@ -1931,6 +2006,7 @@ async function renderAdmin(page){
   $('#user-avatar').textContent = (u.full_name||'A').slice(0,1).toUpperCase();
 
   const doLogout = () => {
+    db.logActivity({ action:'auth.logout', target_type:'auth', detail:'Logout' });
     if(_bellTimer){ clearInterval(_bellTimer); _bellTimer = null; }
     session.clear(); toast('Berhasil keluar','info'); navigate('/');
   };
@@ -1975,6 +2051,7 @@ async function renderAdmin(page){
     ratings:'Daftar Penilaian',
     masterdata:'Master Data',
     users:'Manajemen User',
+    activity:'Log Aktivitas',
     version:'Riwayat Versi'
   };
   $('#admin-title').textContent = titles[page] || 'Admin';
@@ -1988,6 +2065,7 @@ async function renderAdmin(page){
   else if(page==='ratings')    await viewAdminRatings(c);
   else if(page==='masterdata') await viewAdminMaster(c);
   else if(page==='users')      await viewAdminUsers(c);
+  else if(page==='activity')   await viewAdminActivity(c);
   else if(page==='version')    await viewAdminVersion(c);
   else { navigate('/admin/dashboard'); }
 }
@@ -2316,6 +2394,7 @@ function renderRequestsTable(host, data, opts){
                   <button class="btn-icon" data-act="view" data-id="${r.id}" title="Detail"><span class="material-symbols-rounded">visibility</span></button>
                   ${!compact?`
                     <button class="btn-icon" data-act="edit" data-id="${r.id}" title="Edit / Update Status"><span class="material-symbols-rounded">edit</span></button>
+                    ${r.status==='Tersedia' ? `<button class="btn-icon" data-act="pdf" data-id="${r.id}" title="Download tanda terima PDF" style="color:var(--mrt-green)"><span class="material-symbols-rounded">picture_as_pdf</span></button>` : ''}
                     ${r.status==='Selesai' ? `<button class="btn-icon" data-act="link" data-id="${r.id}" title="Salin tautan penilaian"><span class="material-symbols-rounded">link</span></button>` : ''}
                     <button class="btn-icon" data-act="del" data-id="${r.id}" title="Hapus"><span class="material-symbols-rounded">delete</span></button>
                   `:''}
@@ -2364,11 +2443,25 @@ function renderRequestsTable(host, data, opts){
     else if(act==='link') {
       const link = location.origin + location.pathname + '#/rate/' + id;
       copyText(link, b);
+      const r = _adminReqsCache.find(x => x.id === id);
+      db.logActivity({ action:'request.link_copy', target_type:'request', target_id:id,
+                       detail:`Salin tautan penilaian untuk ${r?.kode_permintaan||id}` });
+    }
+    else if(act==='pdf'){
+      const r = _adminReqsCache.find(x => x.id === id);
+      if(r){
+        downloadTandaTerima(r);
+        db.logActivity({ action:'request.pdf_download', target_type:'request', target_id:id,
+                         detail:`Download tanda terima ${r.kode_permintaan}` });
+      }
     }
     else if(act==='del')  {
       if(confirm('Hapus permintaan ini? Tindakan ini tidak bisa dibatalkan.')){
         try{
+          const r = _adminReqsCache.find(x => x.id === id);
           await db.deleteRequest(id);
+          db.logActivity({ action:'request.delete', target_type:'request', target_id:id,
+                           detail:`Hapus permintaan ${r?.kode_permintaan||id}` });
           _adminReqsCache = await db.listRequests();
           renderRequestsTable(host, _adminReqsCache, opts);
           toast('Permintaan dihapus','success');
@@ -2498,7 +2591,16 @@ async function openRequestEdit(id){
       detail_kebutuhan: fd.get('detail_kebutuhan') || null
     };
     try{
+      const changes = [];
+      if(r.status !== patch.status) changes.push(`status: ${r.status} → ${patch.status}`);
+      if((r.nama_pic_ga||'') !== (patch.nama_pic_ga||'')) changes.push(`PIC: ${r.nama_pic_ga||'—'} → ${patch.nama_pic_ga||'—'}`);
       await db.updateRequest(id, patch);
+      db.logActivity({
+        action: r.status !== patch.status ? 'request.status_change' : 'request.update',
+        target_type:'request', target_id:id,
+        detail: `${r.kode_permintaan}: ${changes.join(' · ') || 'detail diperbarui'}`,
+        meta: { from_status:r.status, to_status:patch.status }
+      });
       _adminReqsCache = await db.listRequests();
       const host = $('#req-table-host'); if(host) renderRequestsTable(host, _adminReqsCache, {compact:false});
       const dh = $('#ads-table-host'); if(dh) renderRequestsTable(dh, _adminReqsCache, {compact:true});
@@ -2681,23 +2783,36 @@ async function viewAdminRatings(c){
 /* ----------- ADMIN: MASTER DATA ----------- */
 async function viewAdminMaster(c){
   c.innerHTML = `
-    <div class="split-2">
+    <div class="split-3">
       <div class="card">
         <div class="card-head"><h3>Lokasi Kebutuhan</h3></div>
         <div class="card-body">
+          <p class="muted text-sm" style="margin:0 0 10px">Lokasi tujuan pengantaran/penggunaan permintaan.</p>
           <div class="flex gap-2 mb-3">
             <input class="input" id="new-lok" placeholder="Tambah lokasi baru..." style="flex:1"/>
-            <button class="btn btn-primary" id="add-lok"><span class="material-symbols-rounded">add</span></button>
+            <button class="btn btn-primary" id="add-lok" title="Tambah"><span class="material-symbols-rounded">add</span></button>
           </div>
           <div id="list-lok"></div>
         </div>
       </div>
       <div class="card">
+        <div class="card-head"><h3>Lokasi Kerja Personil</h3></div>
+        <div class="card-body">
+          <p class="muted text-sm" style="margin:0 0 10px">Lokasi kantor/depo tempat personil GA bekerja.</p>
+          <div class="flex gap-2 mb-3">
+            <input class="input" id="new-lokker" placeholder="Tambah lokasi kerja..." style="flex:1"/>
+            <button class="btn btn-primary" id="add-lokker" title="Tambah"><span class="material-symbols-rounded">add</span></button>
+          </div>
+          <div id="list-lokker"></div>
+        </div>
+      </div>
+      <div class="card">
         <div class="card-head"><h3>Tujuan Kebutuhan</h3></div>
         <div class="card-body">
+          <p class="muted text-sm" style="margin:0 0 10px">Tujuan/keperluan dari permintaan (mis. rapat, training).</p>
           <div class="flex gap-2 mb-3">
             <input class="input" id="new-tuj" placeholder="Tambah tujuan baru..." style="flex:1"/>
-            <button class="btn btn-primary" id="add-tuj"><span class="material-symbols-rounded">add</span></button>
+            <button class="btn btn-primary" id="add-tuj" title="Tambah"><span class="material-symbols-rounded">add</span></button>
           </div>
           <div id="list-tuj"></div>
         </div>
@@ -2705,7 +2820,7 @@ async function viewAdminMaster(c){
     </div>
   `;
   async function refresh(){
-    const [lok, tuj] = await Promise.all([db.listLokasi(), db.listTujuan()]);
+    const [lok, lokker, tuj] = await Promise.all([db.listLokasi(), db.listLokasiKerja(), db.listTujuan()]);
     const renderList = (items, target, kind) => {
       $(target).innerHTML = items.length ? items.map(o=>`
         <div class="flex between items-center" style="padding:10px 0;border-bottom:1px solid var(--border-2)">
@@ -2716,25 +2831,44 @@ async function viewAdminMaster(c){
       $$('button[data-id]', $(target)).forEach(b => b.addEventListener('click', async () => {
         if(!confirm('Hapus item ini?')) return;
         try{
-          if(b.dataset.kind==='lok') await db.deleteLokasi(b.dataset.id);
-          else await db.deleteTujuan(b.dataset.id);
+          const kind = b.dataset.kind; const id = b.dataset.id;
+          const itemName = items.find(x => x.id === id)?.name;
+          if(kind==='lok')         await db.deleteLokasi(id);
+          else if(kind==='lokker') await db.deleteLokasiKerja(id);
+          else                     await db.deleteTujuan(id);
+          db.logActivity({ action:'masterdata.delete', target_type:kind, target_id:id, detail:`Hapus ${kind}: ${itemName||id}` });
           toast('Item dihapus','success'); refresh();
         }catch(err){ toast('Gagal menghapus','error'); }
       }));
     };
-    renderList(lok, '#list-lok', 'lok');
-    renderList(tuj, '#list-tuj', 'tuj');
+    renderList(lok,    '#list-lok',    'lok');
+    renderList(lokker, '#list-lokker', 'lokker');
+    renderList(tuj,    '#list-tuj',    'tuj');
   }
   await refresh();
   $('#add-lok').addEventListener('click', async () => {
     const v = $('#new-lok').value.trim(); if(!v) return;
-    try{ await db.addLokasi(v); $('#new-lok').value=''; toast('Lokasi ditambahkan','success'); refresh(); }
-    catch(err){ toast('Gagal menambah: '+(err.message||''),'error'); }
+    try{
+      await db.addLokasi(v);
+      db.logActivity({ action:'masterdata.create', target_type:'lok', detail:'Tambah lokasi kebutuhan: '+v });
+      $('#new-lok').value=''; toast('Lokasi ditambahkan','success'); refresh();
+    }catch(err){ toast('Gagal menambah: '+(err.message||''),'error'); }
+  });
+  $('#add-lokker').addEventListener('click', async () => {
+    const v = $('#new-lokker').value.trim(); if(!v) return;
+    try{
+      await db.addLokasiKerja(v);
+      db.logActivity({ action:'masterdata.create', target_type:'lokker', detail:'Tambah lokasi kerja: '+v });
+      $('#new-lokker').value=''; toast('Lokasi kerja ditambahkan','success'); refresh();
+    }catch(err){ toast('Gagal menambah: '+(err.message||''),'error'); }
   });
   $('#add-tuj').addEventListener('click', async () => {
     const v = $('#new-tuj').value.trim(); if(!v) return;
-    try{ await db.addTujuan(v); $('#new-tuj').value=''; toast('Tujuan ditambahkan','success'); refresh(); }
-    catch(err){ toast('Gagal menambah: '+(err.message||''),'error'); }
+    try{
+      await db.addTujuan(v);
+      db.logActivity({ action:'masterdata.create', target_type:'tuj', detail:'Tambah tujuan kebutuhan: '+v });
+      $('#new-tuj').value=''; toast('Tujuan ditambahkan','success'); refresh();
+    }catch(err){ toast('Gagal menambah: '+(err.message||''),'error'); }
   });
 }
 
@@ -2788,7 +2922,11 @@ async function viewAdminUsers(c){
       const id = b.dataset.id; const u = users.find(x=>x.id===id);
       if(b.dataset.act==='del'){
         if(!confirm('Hapus user '+u.username+'?')) return;
-        try{ await db.deleteUser(id); toast('User dihapus','success'); refresh(); }
+        try{
+          await db.deleteUser(id);
+          db.logActivity({ action:'user.delete', target_type:'user', target_id:id, detail:`Hapus user ${u.username}` });
+          toast('User dihapus','success'); refresh();
+        }
         catch(err){ toast('Gagal menghapus','error'); }
       } else if(b.dataset.act==='edit'){
         openUserModal(u, refresh);
@@ -2803,7 +2941,7 @@ async function viewAdminUsers(c){
 
 async function openUserModal(user, onDone){
   const isEdit = !!user;
-  const lokOpts = await db.listLokasi();
+  const lokKerjaOpts = await db.listLokasiKerja();
   openModal(`
     <div class="modal-head">
       <h3><span class="material-symbols-rounded" style="vertical-align:-6px;color:var(--mrt-blue)">${isEdit?'edit':'person_add'}</span> ${isEdit?'Edit User':'Tambah User'}</h3>
@@ -2823,11 +2961,13 @@ async function openUserModal(user, onDone){
           <div class="field"><label>Jabatan</label>
             <input class="input" name="jabatan" value="${escapeHtml(user?.jabatan||'')}" placeholder="mis. GA Officer, Coordinator"/></div>
           <div class="field"><label>Lokasi Kerja</label>
-            <input class="input" name="lokasi_kerja" list="lokasi-kerja-options" value="${escapeHtml(user?.lokasi_kerja||'')}" placeholder="mis. Kantor Pusat / Depo Lebak Bulus"/>
-            <datalist id="lokasi-kerja-options">
-              <option value="Kantor Pusat"></option>
-              ${lokOpts.map(l => `<option value="${escapeHtml(l.name)}"></option>`).join('')}
-            </datalist>
+            <select class="select" name="lokasi_kerja">
+              <option value="">— Pilih Lokasi Kerja —</option>
+              ${lokKerjaOpts.map(l => `<option value="${escapeHtml(l.name)}" ${user?.lokasi_kerja===l.name?'selected':''}>${escapeHtml(l.name)}</option>`).join('')}
+              ${user?.lokasi_kerja && !lokKerjaOpts.find(l => l.name === user.lokasi_kerja)
+                ? `<option value="${escapeHtml(user.lokasi_kerja)}" selected>${escapeHtml(user.lokasi_kerja)} (legacy)</option>` : ''}
+            </select>
+            <span class="hint">Atur daftar pilihan di menu <em>Master Data → Lokasi Kerja Personil</em>.</span>
           </div>
           ${isEdit?`
             <div class="field full"><label>Status</label>
@@ -2858,6 +2998,8 @@ async function openUserModal(user, onDone){
           lokasi_kerja: fd.get('lokasi_kerja') || null,
           active: fd.get('active')==='true'
         });
+        db.logActivity({ action:'user.update', target_type:'user', target_id:user.id,
+                         detail:`Update user ${user.username}` });
         // If the edited user is the current session user, refresh session info
         const cur = session.get();
         if(cur && cur.id === user.id){
@@ -2869,7 +3011,7 @@ async function openUserModal(user, onDone){
         }
         toast('User diperbarui','success');
       } else {
-        await db.addUser({
+        const created = await db.addUser({
           username: fd.get('username').trim(),
           full_name: fd.get('full_name'),
           role: fd.get('role'),
@@ -2877,6 +3019,8 @@ async function openUserModal(user, onDone){
           lokasi_kerja: fd.get('lokasi_kerja') || null,
           password: fd.get('password')
         });
+        db.logActivity({ action:'user.create', target_type:'user', target_id:created?.id,
+                         detail:`Tambah user ${fd.get('username').trim()} (${fd.get('role')})` });
         toast('User ditambahkan','success');
       }
       closeModal(); onDone && onDone();
@@ -3372,6 +3516,436 @@ function openMassUploadModal(){
   // open with step 1
   openModal('<div></div>', 'lg');
   setStep(1);
+}
+
+/* ============================================================
+   ADMIN: LOG AKTIVITAS
+   ============================================================ */
+let _actState = { search:'', user:'', action:'', from:'', to:'', page:1, pageSize:20 };
+
+async function viewAdminActivity(c){
+  c.innerHTML = `
+    <div class="card">
+      <div class="card-head">
+        <h3>Log Aktivitas</h3>
+        <div class="flex gap-2">
+          <button class="btn btn-ghost btn-sm" id="csv-act"><span class="material-symbols-rounded" style="font-size:18px">download</span>Download CSV</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="toolbar" style="flex-wrap:wrap">
+          <div class="search">
+            <span class="material-symbols-rounded">search</span>
+            <input type="text" class="input" id="act-search" placeholder="Cari detail / target..." />
+          </div>
+          <select class="select" id="act-filter-user" style="max-width:200px"><option value="">Semua User</option></select>
+          <select class="select" id="act-filter-action" style="max-width:220px"><option value="">Semua Aktivitas</option></select>
+          <input type="date" class="input" id="act-from" style="max-width:160px" title="Dari tanggal"/>
+          <input type="date" class="input" id="act-to"   style="max-width:160px" title="Sampai tanggal"/>
+        </div>
+        <div id="act-table-host"></div>
+      </div>
+    </div>
+  `;
+
+  let logs = [];
+  try{
+    logs = await db.listActivityLogs({ limit: 1000 });
+  }catch(err){
+    console.error('[activity]', err);
+    $('#act-table-host').innerHTML = `
+      <div class="card-pad" style="background:#FEF2F2;border:1px solid #FECACA;border-radius:10px;color:#991B1B">
+        <strong>Gagal memuat log.</strong><br><span class="text-sm">${escapeHtml(err.message||'')}</span>
+      </div>`;
+    return;
+  }
+
+  // populate filter dropdowns
+  const users = [...new Set(logs.map(l => l.full_name || l.username).filter(Boolean))].sort();
+  const actions = [...new Set(logs.map(l => l.action))].sort();
+  const uSel = $('#act-filter-user');
+  users.forEach(u => { const o = document.createElement('option'); o.value = u; o.textContent = u; uSel.appendChild(o); });
+  const aSel = $('#act-filter-action');
+  actions.forEach(a => { const o = document.createElement('option'); o.value = a; o.textContent = a; aSel.appendChild(o); });
+
+  function actionIcon(a){
+    if(a.startsWith('auth.'))         return ['login','#1976D2'];
+    if(a.startsWith('request.create'))return ['add_circle','#16A34A'];
+    if(a.startsWith('request.status'))return ['sync','#7C3AED'];
+    if(a.startsWith('request.update'))return ['edit','#0EA5E9'];
+    if(a.startsWith('request.delete'))return ['delete','#DC2626'];
+    if(a.startsWith('request.pdf'))   return ['picture_as_pdf','#16A34A'];
+    if(a.startsWith('request.link'))  return ['link','#1976D2'];
+    if(a.startsWith('user.create'))   return ['person_add','#16A34A'];
+    if(a.startsWith('user.update'))   return ['manage_accounts','#0EA5E9'];
+    if(a.startsWith('user.delete'))   return ['person_remove','#DC2626'];
+    if(a.startsWith('masterdata.'))   return ['tune','#7C3AED'];
+    return ['receipt_long','#6B7891'];
+  }
+
+  function render(){
+    const s = _actState;
+    let arr = logs.slice();
+    if(s.search){
+      const q = s.search.toLowerCase();
+      arr = arr.filter(l =>
+        (l.detail||'').toLowerCase().includes(q) ||
+        (l.target_id||'').toLowerCase().includes(q) ||
+        (l.username||'').toLowerCase().includes(q) ||
+        (l.full_name||'').toLowerCase().includes(q));
+    }
+    if(s.user)   arr = arr.filter(l => (l.full_name||l.username) === s.user);
+    if(s.action) arr = arr.filter(l => l.action === s.action);
+    if(s.from){
+      const f = new Date(s.from).getTime();
+      arr = arr.filter(l => new Date(l.created_at).getTime() >= f);
+    }
+    if(s.to){
+      const t = new Date(s.to).getTime() + 86400000; // inclusive
+      arr = arr.filter(l => new Date(l.created_at).getTime() < t);
+    }
+    const total = arr.length;
+    const totalPages = Math.max(1, Math.ceil(total / s.pageSize));
+    if(s.page > totalPages) s.page = totalPages;
+    const slice = arr.slice((s.page-1)*s.pageSize, (s.page-1)*s.pageSize + s.pageSize);
+
+    $('#act-table-host').innerHTML = `
+      <div class="table-wrap">
+        <table class="t">
+          <thead><tr>
+            <th style="width:48px">#</th>
+            <th style="width:170px">Waktu</th>
+            <th style="width:200px">Pengguna</th>
+            <th style="width:220px">Aktivitas</th>
+            <th>Detail</th>
+          </tr></thead>
+          <tbody>
+            ${slice.length ? slice.map((l,i) => {
+              const [ic, col] = actionIcon(l.action);
+              return `
+                <tr>
+                  <td>${(s.page-1)*s.pageSize + i + 1}</td>
+                  <td><div class="fw-700">${fmtDateTime(l.created_at)}</div><div class="text-sm muted">${relTime(l.created_at)}</div></td>
+                  <td>
+                    ${l.full_name||l.username
+                      ? `<div class="fw-700">${escapeHtml(l.full_name||'—')}</div><div class="text-sm muted">${escapeHtml(l.username||'')}</div>`
+                      : '<span class="muted">(publik/anonim)</span>'}
+                  </td>
+                  <td>
+                    <span class="flex items-center gap-2">
+                      <span class="material-symbols-rounded" style="font-size:18px;color:${col}">${ic}</span>
+                      <span class="mono text-sm">${escapeHtml(l.action)}</span>
+                    </span>
+                  </td>
+                  <td>${escapeHtml(l.detail || '—')}${l.target_type?`<div class="text-sm muted">${escapeHtml(l.target_type)}${l.target_id?' · '+escapeHtml(String(l.target_id).slice(0,8)):''}</div>`:''}</td>
+                </tr>
+              `;
+            }).join('') : '<tr><td colspan="5" class="empty-row">Tidak ada log aktivitas</td></tr>'}
+          </tbody>
+        </table>
+      </div>
+      <div class="pagination">
+        <div>Menampilkan <strong>${slice.length}</strong> dari <strong>${total}</strong> log</div>
+        <div class="pages">
+          <button class="page-btn" id="apg-prev" ${s.page===1?'disabled':''}><span class="material-symbols-rounded" style="font-size:18px">chevron_left</span></button>
+          ${Array.from({length:totalPages}).map((_,i)=>{
+            const p=i+1;
+            if(totalPages>7){
+              if(p!==1 && p!==totalPages && Math.abs(p-s.page)>1){
+                if(p===2 || p===totalPages-1) return '<span style="padding:0 4px">…</span>';
+                return '';
+              }
+            }
+            return `<button class="page-btn ${p===s.page?'active':''}" data-page="${p}">${p}</button>`;
+          }).join('')}
+          <button class="page-btn" id="apg-next" ${s.page===totalPages?'disabled':''}><span class="material-symbols-rounded" style="font-size:18px">chevron_right</span></button>
+        </div>
+      </div>
+    `;
+    $('#apg-prev')?.addEventListener('click', () => { if(s.page>1){ s.page--; render(); } });
+    $('#apg-next')?.addEventListener('click', () => { if(s.page<totalPages){ s.page++; render(); } });
+    $$('button[data-page]', $('#act-table-host')).forEach(b => b.addEventListener('click', () => { s.page = Number(b.dataset.page); render(); }));
+  }
+  render();
+
+  $('#act-search').addEventListener('input', e => { _actState.search = e.target.value; _actState.page=1; render(); });
+  $('#act-filter-user').addEventListener('change', e => { _actState.user = e.target.value; _actState.page=1; render(); });
+  $('#act-filter-action').addEventListener('change', e => { _actState.action = e.target.value; _actState.page=1; render(); });
+  $('#act-from').addEventListener('change', e => { _actState.from = e.target.value; _actState.page=1; render(); });
+  $('#act-to').addEventListener('change',   e => { _actState.to   = e.target.value; _actState.page=1; render(); });
+  $('#csv-act').addEventListener('click', () => {
+    const rows = logs.map(l => ({
+      Waktu: l.created_at,
+      Pengguna: l.full_name || l.username || '',
+      Username: l.username || '',
+      Aktivitas: l.action,
+      Target_Type: l.target_type || '',
+      Target_ID: l.target_id || '',
+      Detail: l.detail || ''
+    }));
+    csvDownload('log-aktivitas-'+new Date().toISOString().slice(0,10)+'.csv', rows);
+  });
+}
+
+/* ============================================================
+   PDF TANDA TERIMA — generated when status = "Tersedia"
+   ============================================================ */
+function generateQRDataURL(text, size){
+  size = size || 140;
+  if(typeof QRCode === 'undefined'){
+    console.warn('QRCode library not loaded; skipping QR');
+    return null;
+  }
+  // qrcodejs renders into a DOM node; use a hidden div to extract canvas
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'position:absolute;left:-9999px;top:-9999px';
+  document.body.appendChild(wrap);
+  try{
+    new QRCode(wrap, {
+      text: text, width: size, height: size,
+      colorDark: '#003D7E', colorLight: '#FFFFFF',
+      correctLevel: QRCode.CorrectLevel.M
+    });
+    const canvas = wrap.querySelector('canvas');
+    let dataUrl = null;
+    if(canvas){
+      dataUrl = canvas.toDataURL('image/png');
+    } else {
+      // Fallback: qrcodejs may render <img> in some browsers
+      const img = wrap.querySelector('img');
+      if(img) dataUrl = img.src;
+    }
+    return dataUrl;
+  }finally{
+    setTimeout(() => wrap.remove(), 0);
+  }
+}
+
+function loadImageAsDataURL(url){
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      try{
+        const canvas = document.createElement('canvas');
+        canvas.width = img.naturalWidth; canvas.height = img.naturalHeight;
+        canvas.getContext('2d').drawImage(img, 0, 0);
+        resolve(canvas.toDataURL('image/png'));
+      }catch(_){ resolve(null); }
+    };
+    img.onerror = () => resolve(null);
+    img.src = url;
+  });
+}
+
+async function downloadTandaTerima(req){
+  if(!window.jspdf || !window.jspdf.jsPDF){
+    toast('Library PDF belum termuat. Coba lagi sebentar.', 'warn');
+    return;
+  }
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit:'mm', format:'a4' });
+  const W = doc.internal.pageSize.getWidth();    // 210
+  const H = doc.internal.pageSize.getHeight();   // 297
+  const M = 14;                                  // margin
+
+  // ----- Header (logo + title) -----
+  const logoData = await loadImageAsDataURL('logo.png');
+  if(logoData){
+    try{ doc.addImage(logoData, 'PNG', M, M, 22, 22); }catch{}
+  } else {
+    // Fallback brand mark (gradient-like solid box)
+    doc.setFillColor(0, 61, 126);
+    doc.roundedRect(M, M, 22, 22, 3, 3, 'F');
+    doc.setTextColor(255);
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(11);
+    doc.text('GA', M + 11, M + 13, { align:'center' });
+  }
+
+  doc.setTextColor(0, 61, 126);
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(16);
+  doc.text('TANDA TERIMA PERMINTAAN', M + 28, M + 9);
+  doc.setTextColor(80);
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(10);
+  doc.text('General Affairs Department · PT MRT Jakarta', M + 28, M + 15);
+  doc.text('GA Hotline Portal', M + 28, M + 20);
+
+  // Code pill on the right
+  doc.setFillColor(232, 240, 251);
+  doc.setDrawColor(232, 240, 251);
+  const codeText = req.kode_permintaan || '-';
+  doc.setFontSize(11);
+  const codeWidth = doc.getTextWidth(codeText) + 10;
+  doc.roundedRect(W - M - codeWidth, M + 4, codeWidth, 10, 2, 2, 'F');
+  doc.setTextColor(0, 61, 126);
+  doc.setFont('helvetica','bold');
+  doc.text(codeText, W - M - codeWidth / 2, M + 11, { align:'center' });
+
+  // Divider
+  doc.setDrawColor(0, 168, 89);
+  doc.setLineWidth(0.8);
+  doc.line(M, M + 26, W - M, M + 26);
+  doc.setDrawColor(200);
+  doc.setLineWidth(0.2);
+
+  // ----- Intro text -----
+  let y = M + 34;
+  doc.setTextColor(50);
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(10);
+  doc.text('Dokumen ini menjadi bukti bahwa permintaan berikut telah diproses dan tersedia untuk diserahkan.', M, y);
+  y += 8;
+
+  // ----- Detail table -----
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(11);
+  doc.setTextColor(0, 61, 126);
+  doc.text('DETAIL PERMINTAAN', M, y);
+  y += 2;
+
+  const fmtDateID = (d) => {
+    if(!d) return '—';
+    const dt = new Date(d);
+    return dt.toLocaleDateString('id-ID', { day:'2-digit', month:'long', year:'numeric' });
+  };
+
+  const rows = [
+    ['Kode Permintaan',        req.kode_permintaan || '—'],
+    ['Kode SmartOffice',       req.kode_smartoffice || '—'],
+    ['Kategori',               req.kategori || '—'],
+    ['Sumber Pemesanan',       req.sumber_pemesanan || '—'],
+    ['Nama Pemesan',           req.nama_pemesan || '—'],
+    ['Nama Kegiatan',          req.nama_kegiatan || '—'],
+    ['Lokasi Kebutuhan',       req.lokasi_kebutuhan || '—'],
+    ['Tujuan Kebutuhan',       req.tujuan_kebutuhan || '—'],
+    ['Tanggal Kebutuhan',      fmtDateID(req.tanggal_kebutuhan)],
+    ['Detail Kebutuhan',       req.detail_kebutuhan || '—'],
+    ['Estimasi Harga',         req.estimasi_harga ? fmtRupiah(req.estimasi_harga) : '—'],
+    ['Total Anggaran',         req.total_anggaran ? fmtRupiah(req.total_anggaran) : '—'],
+    ['Nama Vendor',            req.nama_vendor || '—'],
+    ['PIC General Affairs',    req.nama_pic_ga || '—'],
+    ['Estimasi Penyelesaian',  fmtDateID(req.estimasi_penyelesaian)],
+    ['Status',                 req.status || '—']
+  ];
+
+  doc.autoTable({
+    startY: y + 2,
+    margin: { left: M, right: M },
+    head: [['Keterangan', 'Nilai']],
+    body: rows,
+    theme: 'grid',
+    styles: { font:'helvetica', fontSize:9.5, cellPadding:2.4, lineColor:[227,232,240], textColor:[30,40,55] },
+    headStyles: { fillColor:[0,61,126], textColor:[255,255,255], fontStyle:'bold', halign:'left' },
+    columnStyles: { 0:{ cellWidth:60, fontStyle:'bold', textColor:[80,90,110], fillColor:[249,250,252] }, 1:{ cellWidth:'auto' } }
+  });
+
+  let afterTableY = doc.lastAutoTable.finalY + 8;
+
+  // ----- QR code (bottom-right of detail block) -----
+  const ratingUrl = location.origin + location.pathname + '#/rate/' + req.id;
+  const qrData = generateQRDataURL(ratingUrl, 220);
+
+  // If page space tight, add a new page
+  const needed = 70; // signature block + qr area
+  if(afterTableY + needed > H - 16){
+    doc.addPage();
+    afterTableY = M;
+  }
+
+  const qrSize = 32;
+  const qrX = W - M - qrSize;
+  const qrY = afterTableY;
+  if(qrData){
+    try{ doc.addImage(qrData, 'PNG', qrX, qrY, qrSize, qrSize); }catch{}
+  }
+  // QR caption
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(8.5);
+  doc.setTextColor(0, 61, 126);
+  doc.text('PENILAIAN PELAYANAN', qrX + qrSize/2, qrY + qrSize + 4, { align:'center' });
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(7.5);
+  doc.setTextColor(100);
+  doc.text('Scan QR untuk menilai (skala 1-5 bintang)', qrX + qrSize/2, qrY + qrSize + 8, { align:'center' });
+
+  // Notes column on the left of the QR
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(10);
+  doc.setTextColor(0, 61, 126);
+  doc.text('KETERANGAN', M, afterTableY + 4);
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(9.5);
+  doc.setTextColor(50);
+  const keteranganLines = doc.splitTextToSize(req.keterangan || '(tidak ada keterangan)', qrX - M - 8);
+  doc.text(keteranganLines, M, afterTableY + 10);
+
+  // ----- Signature block at the bottom -----
+  let sigY = Math.max(afterTableY + qrSize + 16, H - 60);
+  if(sigY + 50 > H - 14) sigY = H - 60;
+
+  doc.setDrawColor(0, 168, 89);
+  doc.setLineWidth(0.5);
+  doc.line(M, sigY - 4, W - M, sigY - 4);
+
+  const colW = (W - M*2 - 14) / 2;
+  // Left column: Diserahkan oleh
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(10);
+  doc.setTextColor(0, 61, 126);
+  doc.text('Diserahkan oleh,', M, sigY + 2);
+  doc.setFont('helvetica','normal');
+  doc.setTextColor(50);
+  doc.setFontSize(9.5);
+  doc.text('General Affairs Department', M, sigY + 7);
+  doc.text('PT MRT Jakarta', M, sigY + 11.5);
+  // signature space (line)
+  doc.setDrawColor(180);
+  doc.setLineWidth(0.3);
+  doc.line(M, sigY + 38, M + colW - 8, sigY + 38);
+  doc.setFont('helvetica','italic');
+  doc.setFontSize(8.5);
+  doc.setTextColor(120);
+  doc.text('(Nama lengkap & tanda tangan)', M + 2, sigY + 43);
+  if(req.nama_pic_ga){
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(9.5);
+    doc.setTextColor(50);
+    doc.text(req.nama_pic_ga, M, sigY + 36);
+  }
+
+  // Right column: Diterima oleh
+  const rx = M + colW + 14;
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(10);
+  doc.setTextColor(0, 61, 126);
+  doc.text('Diterima oleh,', rx, sigY + 2);
+  doc.setFont('helvetica','normal');
+  doc.setTextColor(50);
+  doc.setFontSize(9.5);
+  doc.text(req.nama_pemesan || '(Nama Pemesan)', rx, sigY + 7);
+  if(req.nama_kegiatan){
+    doc.text(req.nama_kegiatan, rx, sigY + 11.5);
+  }
+  doc.setDrawColor(180);
+  doc.setLineWidth(0.3);
+  doc.line(rx, sigY + 38, rx + colW - 8, sigY + 38);
+  doc.setFont('helvetica','italic');
+  doc.setFontSize(8.5);
+  doc.setTextColor(120);
+  doc.text('(Nama lengkap & tanda tangan)', rx + 2, sigY + 43);
+
+  // ----- Footer -----
+  doc.setFontSize(7.5);
+  doc.setTextColor(140);
+  const issued = new Date().toLocaleString('id-ID', { day:'2-digit', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit' });
+  doc.text('Dicetak: ' + issued + ' · GA Hotline Portal · v1.4.0', W/2, H - 8, { align:'center' });
+
+  // Save
+  const safeCode = (req.kode_permintaan || 'tanda-terima').replace(/[^A-Za-z0-9_-]/g,'_');
+  doc.save(`tanda-terima-${safeCode}.pdf`);
 }
 
 /* ----------- PUBLIC: VERSION ----------- */

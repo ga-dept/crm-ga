@@ -24,11 +24,14 @@ Portal internal **General Affairs MRT Jakarta** untuk merangkum permintaan opera
   - Search bebas (kode/nama/detail).
   - CRUD lengkap melalui modal — update status, keterangan (wajib), total anggaran (delimiter Rupiah), vendor, **PIC GA (dropdown dari daftar user)**, estimasi penyelesaian.
   - Tombol **rantai** untuk menyalin tautan penilaian (muncul saat status = "Selesai").
+  - Tombol **PDF tanda terima** (muncul saat status = "Tersedia") — download PDF resmi berisi logo MRT, detail tiket, QR Code link penilaian, dan 2 kolom tanda tangan (Diserahkan oleh GA Department / Diterima oleh Nama Pemesan).
   - **Mass Upload CSV** — modal stepper 3 langkah (Upload → Periksa & Preview → Submit) lengkap dengan tombol download template dan tutorial in-place.
   - Ekspor **CSV**.
 - **Daftar Penilaian** — seluruh permintaan selesai dengan kolom *Sudah/Belum Dinilai*, tombol info untuk popup detail, ekspor CSV.
 - **Master Data** — CRUD untuk Lokasi & Tujuan Kebutuhan (langsung memengaruhi dropdown di formulir publik).
-- **Manajemen User** — CRUD user dengan kolom **Username, Nama Lengkap, Jabatan, Lokasi Kerja, Role** (`superadmin` / `admin` / `pic`), status aktif/nonaktif, dan ubah password.
+- **Manajemen User** — CRUD user dengan kolom **Username, Nama Lengkap, Jabatan, Lokasi Kerja, Role** (`superadmin` / `admin` / `pic`), status aktif/nonaktif, dan ubah password. Field Lokasi Kerja kini adalah dropdown dari master *Lokasi Kerja Personil*.
+- **Master Data** — 3 card terpisah: **Lokasi Kebutuhan** (lokasi pengantaran), **Lokasi Kerja Personil** (kantor/depo personil GA), **Tujuan Kebutuhan**. CRUD penuh untuk masing-masing.
+- **Log Aktivitas** — audit trail seluruh aktivitas pengguna: login/logout, CRUD permintaan & user & master data, status change, download PDF, copy link penilaian. Bisa difilter per user, per jenis aktivitas, dan per rentang tanggal. Export CSV.
 - **Riwayat Versi** changelog yang sama dengan halaman publik.
 - **Notifikasi lonceng** di header — badge angka untuk unread, dropdown daftar notifikasi, polling 30 detik, tombol "Tandai Sudah Dibaca". Notifikasi otomatis dibuat ketika PIC diubah/ditugaskan ke permintaan baru.
 - **Sidebar dengan hamburger** — collapse di desktop, slide-in overlay di mobile.
@@ -112,11 +115,11 @@ Karena ini *single HTML file*, Anda bisa:
 
 | Username | Password   | Role         | Jabatan                | Lokasi Kerja          |
 | -------- | ---------- | ------------ | ---------------------- | --------------------- |
-| `admin`  | `admin123` | superadmin   | Head of General Affairs| Kantor Pusat          |
-| `ga.budi`| `budi123`  | admin        | GA Coordinator         | Kantor Pusat          |
+| `admin`  | `admin123` | superadmin   | Head of General Affairs| Wisma Nusantara       |
+| `ga.budi`| `budi123`  | admin        | GA Coordinator         | Wisma Nusantara       |
 | `ga.siti`| `siti123`  | pic          | GA Officer             | Depo Lebak Bulus      |
-| `ga.rian`| `rian123`  | pic          | GA Officer             | Depo Velodrome        |
-| `ga.dewi`| `dewi123`  | pic          | GA Officer             | Stasiun Bundaran HI   |
+| `ga.rian`| `rian123`  | pic          | GA Officer             | Transport Hub         |
+| `ga.dewi`| `dewi123`  | pic          | GA Officer             | JB Tower              |
 
 > **Ganti segera setelah login pertama** dari halaman *Manajemen User*.
 
@@ -124,16 +127,18 @@ Karena ini *single HTML file*, Anda bisa:
 
 ## 🗃️ Skema Database (ringkas)
 
-| Tabel             | Fungsi                                                            |
-| ----------------- | ----------------------------------------------------------------- |
-| `requests`        | Tabel utama permintaan (kode unik, kategori, status, `pic_user_id`)|
-| `ratings`         | 1 penilaian per permintaan (1–5 bintang + kritik/saran)           |
-| `notifications`   | Inbox notifikasi per user (dibuat otomatis oleh trigger SQL)      |
-| `app_users`       | Akun admin/staff (password bcrypt, + `jabatan` & `lokasi_kerja`)  |
-| `lokasi_options`  | Master lokasi (dropdown)                                          |
-| `tujuan_options`  | Master tujuan (dropdown)                                          |
-| `counters`        | Counter harian untuk nomor urut kode permintaan                   |
-| `version_history` | Changelog                                                         |
+| Tabel                  | Fungsi                                                            |
+| ---------------------- | ----------------------------------------------------------------- |
+| `requests`             | Tabel utama permintaan (kode unik, kategori, status, `pic_user_id`)|
+| `ratings`              | 1 penilaian per permintaan (1–5 bintang + kritik/saran)           |
+| `notifications`        | Inbox notifikasi per user (dibuat otomatis oleh trigger SQL)      |
+| `activity_logs`        | Audit trail aktivitas user (login/CRUD/status change/download PDF)|
+| `app_users`            | Akun admin/staff (password bcrypt, + `jabatan` & `lokasi_kerja`)  |
+| `lokasi_options`       | Master lokasi kebutuhan (dropdown formulir publik)                |
+| `lokasi_kerja_options` | Master lokasi kerja personil GA (dropdown Manajemen User)         |
+| `tujuan_options`       | Master tujuan kebutuhan (dropdown)                                |
+| `counters`             | Counter harian untuk nomor urut kode permintaan                   |
+| `version_history`      | Changelog                                                         |
 
 ### Fungsi RPC yang dipakai aplikasi
 
@@ -198,6 +203,43 @@ Konfigurasi default sengaja **permisif** agar mudah diuji:
 - **Warna**: ubah variabel CSS di bagian `:root` (`--mrt-blue`, `--mrt-green`, dst.).
 - **Kategori baru**: tambahkan key ke `KATEGORI_KODE` di JS **dan** ke `check` constraint pada tabel `requests` di SQL.
 - **Tambah master data lain**: ikuti pola `lokasi_options` / `tujuan_options` di SQL dan fungsi `db.*` di JS.
+
+---
+
+## 📄 Tanda Terima PDF
+
+Setiap permintaan yang sudah berstatus **"Tersedia"** otomatis menampilkan ikon PDF hijau (📄) di kolom Aksi pada Daftar Permintaan. Klik untuk mengunduh dokumen PDF resmi (A4) berisi:
+
+- **Header**: logo MRT (file `logo.png` di folder yang sama dengan `index.html`), judul "TANDA TERIMA PERMINTAAN", kode permintaan dalam pill biru.
+- **Tabel detail**: 16 baris lengkap (kode, kategori, sumber, pemesan, kegiatan, lokasi, tujuan, tanggal, detail, estimasi harga, total anggaran, vendor, PIC GA, estimasi selesai, status).
+- **Keterangan** (kiri) dan **QR Code penilaian** (kanan bawah) — QR mengarah ke tautan `#/rate/<id>` untuk diisi pemesan (skala bintang 1–5 + kolom kritik/saran + Submit).
+- **2 kolom tanda tangan** di bawah:
+  - **Diserahkan oleh**: General Affairs Department · PT MRT Jakarta · (di atas baris tanda tangan: nama PIC GA jika sudah di-assign).
+  - **Diterima oleh**: Nama Pemesan (otomatis terisi dari data permintaan).
+  - Garis tanda tangan dengan placeholder *(Nama lengkap & tanda tangan)*.
+- **Footer**: tanggal cetak + versi portal.
+
+> Jika `logo.png` tidak ditemukan, header otomatis menampilkan placeholder bertulis "GA" dengan warna biru MRT.
+
+---
+
+## 📋 Log Aktivitas
+
+Halaman **Log Aktivitas** di sidebar mencatat seluruh tindakan yang terjadi di portal:
+
+| Action key                  | Dipicu saat                                  |
+| --------------------------- | -------------------------------------------- |
+| `auth.login` / `auth.logout`| Login dan logout admin                       |
+| `request.create.public`     | Pemesan submit form publik                   |
+| `request.update`            | Admin edit detail (selain status)            |
+| `request.status_change`     | Admin ubah status                            |
+| `request.delete`            | Admin hapus permintaan                       |
+| `request.pdf_download`      | Admin download tanda terima PDF              |
+| `request.link_copy`         | Admin salin tautan penilaian                 |
+| `user.create` / `user.update` / `user.delete` | CRUD user di Manajemen User |
+| `masterdata.create` / `masterdata.delete` | CRUD master Lokasi/Lokasi Kerja/Tujuan |
+
+Halaman ini mendukung **filter** per user, per jenis aktivitas, rentang tanggal (dari–sampai), dan search bebas di kolom detail. Tersedia juga **export CSV**.
 
 ---
 
@@ -293,6 +335,8 @@ Mode ini berguna untuk *walkthrough* UI ke stakeholder sebelum infrastruktur Sup
 
 - **Frontend**: Vanilla HTML/CSS/JS (single file, tanpa build step).
 - **Charts**: [Chart.js 4](https://www.chartjs.org/).
+- **PDF**: [jsPDF 2.5](https://github.com/parallax/jsPDF) + [jspdf-autotable 3.8](https://github.com/simonbengtsson/jsPDF-AutoTable).
+- **QR Code**: [qrcodejs](https://github.com/davidshimjs/qrcodejs).
 - **Backend**: [Supabase](https://supabase.com) — PostgreSQL + PostgREST + Storage.
 - **Fonts**: Plus Jakarta Sans, Material Symbols Rounded (Google Fonts).
 

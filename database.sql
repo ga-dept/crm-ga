@@ -17,7 +17,9 @@ drop table if exists ratings           cascade;
 drop table if exists requests          cascade;
 drop table if exists app_users         cascade;
 drop table if exists lokasi_options    cascade;
+drop table if exists lokasi_kerja_options cascade;
 drop table if exists tujuan_options    cascade;
+drop table if exists activity_logs     cascade;
 drop table if exists version_history   cascade;
 drop table if exists counters          cascade;
 
@@ -25,6 +27,13 @@ drop table if exists counters          cascade;
 
 -- Lookup: locations (editable from Admin)
 create table lokasi_options (
+  id         uuid primary key default gen_random_uuid(),
+  name       text not null unique,
+  created_at timestamptz default now()
+);
+
+-- Lookup: work locations for GA personnel (editable from Admin)
+create table lokasi_kerja_options (
   id         uuid primary key default gen_random_uuid(),
   name       text not null unique,
   created_at timestamptz default now()
@@ -135,6 +144,23 @@ create table notifications (
 create index idx_notif_user    on notifications(user_id, read_at);
 create index idx_notif_created on notifications(created_at desc);
 
+-- Activity logs — append-only audit trail of admin actions
+create table activity_logs (
+  id          uuid primary key default gen_random_uuid(),
+  user_id     uuid references app_users(id) on delete set null,
+  username    text,                   -- denormalized snapshot (in case user is deleted)
+  full_name   text,
+  action      text not null,          -- e.g. 'login', 'request.update', 'user.create'
+  target_type text,                   -- 'request' | 'user' | 'lokasi' | 'tujuan' | 'auth'
+  target_id   text,                   -- id of the affected row (uuid as text)
+  detail      text,                   -- human-readable description
+  meta        jsonb,                  -- optional structured data
+  created_at  timestamptz default now()
+);
+create index idx_actlog_user    on activity_logs(user_id);
+create index idx_actlog_created on activity_logs(created_at desc);
+create index idx_actlog_action  on activity_logs(action);
+
 -- Version history
 create table version_history (
   id           uuid primary key default gen_random_uuid(),
@@ -238,21 +264,25 @@ from requests;
 alter table requests        enable row level security;
 alter table ratings         enable row level security;
 alter table notifications   enable row level security;
+alter table activity_logs   enable row level security;
 alter table app_users       enable row level security;
 alter table lokasi_options  enable row level security;
+alter table lokasi_kerja_options enable row level security;
 alter table tujuan_options  enable row level security;
 alter table version_history enable row level security;
 alter table counters        enable row level security;
 
 -- Permissive policies for the anon role (demo / internal portal scope).
-create policy p_requests_all        on requests        for all using (true) with check (true);
-create policy p_ratings_all         on ratings         for all using (true) with check (true);
-create policy p_notifications_all   on notifications   for all using (true) with check (true);
-create policy p_app_users_all       on app_users       for all using (true) with check (true);
-create policy p_lokasi_all          on lokasi_options  for all using (true) with check (true);
-create policy p_tujuan_all          on tujuan_options  for all using (true) with check (true);
-create policy p_version_all         on version_history for all using (true) with check (true);
-create policy p_counters_all        on counters        for all using (true) with check (true);
+create policy p_requests_all        on requests              for all using (true) with check (true);
+create policy p_ratings_all         on ratings               for all using (true) with check (true);
+create policy p_notifications_all   on notifications         for all using (true) with check (true);
+create policy p_activity_all        on activity_logs         for all using (true) with check (true);
+create policy p_app_users_all       on app_users             for all using (true) with check (true);
+create policy p_lokasi_all          on lokasi_options        for all using (true) with check (true);
+create policy p_lokasi_kerja_all    on lokasi_kerja_options  for all using (true) with check (true);
+create policy p_tujuan_all          on tujuan_options        for all using (true) with check (true);
+create policy p_version_all         on version_history       for all using (true) with check (true);
+create policy p_counters_all        on counters              for all using (true) with check (true);
 
 -- Login helper: returns user row if credentials match (bcrypt compare).
 create or replace function fn_login(p_user text, p_pass text)
@@ -302,15 +332,15 @@ grant execute on function fn_generate_request_code(text)  to anon, authenticated
 insert into app_users (username, password_hash, full_name, role, jabatan, lokasi_kerja)
 values
   ('admin',     crypt('admin123', gen_salt('bf')), 'Super Admin',     'superadmin',
-     'Head of General Affairs', 'Kantor Pusat'),
+     'Head of General Affairs', 'Wisma Nusantara'),
   ('ga.budi',   crypt('budi123',  gen_salt('bf')), 'Budi Santoso',    'admin',
-     'GA Coordinator',          'Kantor Pusat'),
+     'GA Coordinator',          'Wisma Nusantara'),
   ('ga.siti',   crypt('siti123',  gen_salt('bf')), 'Siti Nurhaliza',  'pic',
      'GA Officer',              'Depo Lebak Bulus'),
   ('ga.rian',   crypt('rian123',  gen_salt('bf')), 'Rian Pratama',    'pic',
-     'GA Officer',              'Depo Velodrome'),
+     'GA Officer',              'Transport Hub'),
   ('ga.dewi',   crypt('dewi123',  gen_salt('bf')), 'Dewi Anggraini',  'pic',
-     'GA Officer',              'Stasiun Bundaran HI');
+     'GA Officer',              'JB Tower');
 
 -- Locations
 insert into lokasi_options (name) values
@@ -323,6 +353,13 @@ insert into lokasi_options (name) values
   ('Depo Lebak Bulus'),
   ('Depo Velodrome'),
   ('Stasiun Bundaran HI');
+
+-- Work locations for GA personnel (separate from Lokasi Kebutuhan)
+insert into lokasi_kerja_options (name) values
+  ('Wisma Nusantara'),
+  ('Transport Hub'),
+  ('Depo Lebak Bulus'),
+  ('JB Tower');
 
 -- Purposes
 insert into tujuan_options (name) values
@@ -340,7 +377,8 @@ insert into version_history (version, release_date, changes) values
   ('1.0.0', '2026-05-01', 'Rilis pertama portal GA Hotline: input permintaan, tracking publik, dashboard admin.'),
   ('1.1.0', '2026-05-08', 'Tambah fitur penilaian kepuasan via tautan & halaman Daftar Penilaian.'),
   ('1.2.0', '2026-05-12', 'Manajemen master data lokasi & tujuan, ekspor CSV, role-based user management.'),
-  ('1.3.0', '2026-05-14', 'Mass upload CSV permintaan, notifikasi lonceng, halaman Tiket Saya per personil GA, kolom jabatan & lokasi kerja di user, filter per kolom di Daftar Permintaan, persistent session.');
+  ('1.3.0', '2026-05-14', 'Mass upload CSV permintaan, notifikasi lonceng, halaman Tiket Saya per personil GA, kolom jabatan & lokasi kerja di user, filter per kolom di Daftar Permintaan, persistent session.'),
+  ('1.4.0', '2026-05-16', 'Master data Lokasi Kerja terpisah, halaman Log Aktivitas, download tanda terima PDF saat status Tersedia, QR Code penilaian di tanda terima.');
 
 -- Sample requests (so the dashboard is not empty on first run)
 do $$
