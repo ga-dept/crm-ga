@@ -3842,17 +3842,17 @@ async function downloadTandaTerima(req){
     columnStyles: { 0:{ cellWidth:60, fontStyle:'bold', textColor:[80,90,110], fillColor:[249,250,252] }, 1:{ cellWidth:'auto' } }
   });
 
-  let afterTableY = doc.lastAutoTable.finalY + 8;
+  let afterTableY = doc.lastAutoTable.finalY + 2;
 
   // ----- QR code (bottom-right of detail block) -----
   const ratingUrl = location.origin + location.pathname + '#/rate/' + req.id;
   const qrData = generateQRDataURL(ratingUrl, 220);
 
-  // If page space tight, add a new page
-  const needed = 70; // signature block + qr area
-  if(afterTableY + needed > H - 16){
+ // Move to next page only if there's literally no room for the QR
+  const needed = 55; // signature block + qr area (tighter)
+  if(afterTableY + needed > H - 12){
     doc.addPage();
-    afterTableY = M;
+    afterTableY = M + 6;
   }
 
   const qrSize = 32;
@@ -3883,7 +3883,8 @@ async function downloadTandaTerima(req){
   doc.text(keteranganLines, M, afterTableY + 10);
 
   // ----- Signature block at the bottom -----
-  let sigY = Math.max(afterTableY + qrSize + 16, H - 60);
+  let sigY = afterTableY + qrSize + 18;
+  // Cegah signature melewati margin bawah halaman
   if(sigY + 50 > H - 14) sigY = H - 60;
 
   doc.setDrawColor(0, 168, 89);
