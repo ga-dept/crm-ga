@@ -16,22 +16,25 @@ Portal internal **General Affairs MRT Jakarta** untuk merangkum permintaan opera
 - **Riwayat versi** changelog.
 
 ### Panel Admin
-- **Dashboard** statistik & chart per kategori + tabel ringkas permintaan terbaru.
+- **Dashboard** statistik & chart per kategori + **SLA metrics** (rata-rata resolusi, on-time count, terlambat count, SLA compliance %) + chart SLA per kategori + tabel ringkas permintaan terbaru.
 - **Tiket Saya** — halaman pribadi setiap personil GA yang menampilkan tiket pending miliknya, dipisah menjadi 4 tabel berdasarkan status (`Belum Dikonfirmasi`, `Mencari Penyedia`, `Sedang Disiapkan`, `Tersedia`). Superadmin/admin punya toggle **Tampilan Tim** untuk melihat tiket pending semua personil dikelompokkan per PIC.
 - **Daftar Permintaan** dengan:
   - Pagination (10 baris per halaman) + sort per kolom.
-  - **Filter per kolom**: Kategori, Status, Sumber, PIC.
+  - **Filter per kolom**: Kategori, Status, Sumber, PIC, **SLA** (On-time / Terlambat / Belum Selesai).
   - Search bebas (kode/nama/detail).
+  - **Kolom SLA** dengan badge `On-time`/`Terlambat` + waktu resolusi / selisih dari target.
   - CRUD lengkap melalui modal — update status, keterangan (wajib), total anggaran (delimiter Rupiah), vendor, **PIC GA (dropdown dari daftar user)**, estimasi penyelesaian.
+  - **Upload bukti penyelesaian** (opsional) saat status = "Selesai" — 2 kolom terpisah: bukti foto & bukti tanda terima (JPG/PNG/PDF maks 5 MB). Confirm dialog mengingatkan bila Selesai tanpa bukti.
   - Tombol **rantai** untuk menyalin tautan penilaian (muncul saat status = "Selesai").
   - Tombol **PDF tanda terima** (muncul saat status = "Tersedia") — download PDF resmi berisi logo MRT, detail tiket, QR Code link penilaian, dan 2 kolom tanda tangan (Diserahkan oleh GA Department / Diterima oleh Nama Pemesan).
   - **Mass Upload CSV** — modal stepper 3 langkah (Upload → Periksa & Preview → Submit) lengkap dengan tombol download template dan tutorial in-place.
-  - Ekspor **CSV**.
+  - Ekspor **CSV** termasuk kolom SLA (target jam, resolusi jam, status SLA, URL bukti foto, URL bukti tanda terima).
 - **Daftar Penilaian** — seluruh permintaan selesai dengan kolom *Sudah/Belum Dinilai*, tombol info untuk popup detail, ekspor CSV.
-- **Master Data** — CRUD untuk Lokasi & Tujuan Kebutuhan (langsung memengaruhi dropdown di formulir publik).
-- **Manajemen User** — CRUD user dengan kolom **Username, Nama Lengkap, Jabatan, Lokasi Kerja, Role** (`superadmin` / `admin` / `pic`), status aktif/nonaktif, dan ubah password. Field Lokasi Kerja kini adalah dropdown dari master *Lokasi Kerja Personil*.
 - **Master Data** — 3 card terpisah: **Lokasi Kebutuhan** (lokasi pengantaran), **Lokasi Kerja Personil** (kantor/depo personil GA), **Tujuan Kebutuhan**. CRUD penuh untuk masing-masing.
-- **Log Aktivitas** — audit trail seluruh aktivitas pengguna: login/logout, CRUD permintaan & user & master data, status change, download PDF, copy link penilaian. Bisa difilter per user, per jenis aktivitas, dan per rentang tanggal. Export CSV.
+- **Manajemen User** — CRUD user dengan kolom **Username, Nama Lengkap, Jabatan, Lokasi Kerja, Role** (`superadmin` / `admin` / `pic`), status aktif/nonaktif, dan ubah password. Field Lokasi Kerja kini adalah dropdown dari master *Lokasi Kerja Personil*.
+- **SLA Target** 🔒 **(khusus superadmin)** — modul untuk menentukan target resolusi (dalam jam) untuk masing-masing dari 6 kategori. Setiap perubahan tercatat di Log Aktivitas. Nilai ini yang menentukan status On-time/Terlambat di seluruh sistem. Menu ini disembunyikan untuk admin dan PIC.
+- **Override Tanggal Selesai** 🔒 **(khusus superadmin)** — di modal edit permintaan yang sudah Selesai, superadmin bisa mengubah timestamp `completed_at` (mis. bila status di-update terlambat karena PIC libur). Wajib mengisi alasan; perubahan tercatat di Log Aktivitas.
+- **Log Aktivitas** — audit trail seluruh aktivitas pengguna: login/logout, CRUD permintaan & user & master data, status change, download PDF, copy link penilaian, **SLA target update**, **override completed_at**. Bisa difilter per user, per jenis aktivitas, dan per rentang tanggal. Export CSV.
 - **Riwayat Versi** changelog yang sama dengan halaman publik.
 - **Notifikasi lonceng** di header — badge angka untuk unread, dropdown daftar notifikasi, polling 30 detik, tombol "Tandai Sudah Dibaca". Notifikasi otomatis dibuat ketika PIC diubah/ditugaskan ke permintaan baru.
 - **Sidebar dengan hamburger** — collapse di desktop, slide-in overlay di mobile.

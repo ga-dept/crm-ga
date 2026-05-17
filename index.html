@@ -737,6 +737,7 @@ table.t{
   .stat-grid{grid-template-columns:1fr 1fr;gap:12px;margin-top:-40px}
   .stat-card{padding:14px}
   .stat-value{font-size:20px}
+  #ads-charts-row{grid-template-columns:1fr !important}
 
   /* sidebar slides in on mobile */
   .sidebar{
@@ -780,14 +781,15 @@ table.t{
     <div class="public-nav-inner">
       <div class="brand">
         <div class="brand-mark"><img src="logo.png" alt="GA" onload="this.parentElement.classList.add('has-img')" onerror="this.parentElement.classList.remove('has-img');this.outerHTML='GA'" /></div>
-        <div class="brand-name"><strong>Portal CRM GA</strong><span>General Affairs · MRT Jakarta</span></div>
+        <div class="brand-name"><strong>GA Hotline Portal</strong><span>General Affairs · MRT Jakarta</span></div>
       </div>
       <div class="nav-links" id="landing-nav-links">
         <a href="#dashboard">Dashboard</a>
         <a href="#tracker">Cek Permintaan</a>
         <a href="#howto">Cara Pakai</a>
         <a href="#form">Buat Permintaan</a>
-        <span id="landing-auth-slot"><a href="#/login" class="btn btn-nav-admin btn-sm"><span class="material-symbols-rounded" style="font-size:18px">login</span>Login</a></span>
+        <a href="#/version" class="btn btn-ghost btn-sm" style="margin-left:6px"><span class="material-symbols-rounded" style="font-size:18px">history</span>Riwayat</a>
+        <span id="landing-auth-slot"><a href="#/login" class="btn btn-nav-admin btn-sm"><span class="material-symbols-rounded" style="font-size:18px">login</span>Admin</a></span>
       </div>
     </div>
   </nav>
@@ -795,7 +797,12 @@ table.t{
   <section class="hero">
     <div class="hero-shape"></div>
     <div class="hero-inner">
-      <h1>CRM Dashboard<br>General Affairs Department<br><span class="accent">PT MRT Jakarta</span></h1>
+      <div class="hero-eyebrow">
+        <span class="material-symbols-rounded" style="font-size:16px">verified</span>
+        Layanan resmi General Affairs
+      </div>
+      <h1>Satu pintu untuk seluruh<br>permintaan operasional <span class="accent">General Affairs</span></h1>
+      <p>Rangkum permintaan dari WhatsApp dan SmartOffice dalam satu portal — ajukan, pantau, dan nilai pelayanan dengan mudah.</p>
       <div class="hero-actions">
         <a href="#form" class="btn btn-primary"><span class="material-symbols-rounded">add_circle</span>Buat Permintaan</a>
         <a href="#tracker" class="btn btn-accent"><span class="material-symbols-rounded">search</span>Cek Status</a>
@@ -818,12 +825,12 @@ table.t{
 
       <div class="split-2 mt-6">
         <div class="card">
-          <div class="card-head"><h3>Permintaan per Kategori</h3></div>
+          <div class="card-head"><h3>Permintaan per Kategori</h3><span class="tag">Bar Chart</span></div>
           <div class="card-body"><canvas id="chart-category" height="180"></canvas></div>
         </div>
 
         <div class="card" id="tracker">
-          <div class="card-head"><h3>Cek Status Permintaan</h3></div>
+          <div class="card-head"><h3>Cek Status Permintaan</h3><span class="tag green">Tracking</span></div>
           <div class="card-body">
             <p class="muted text-sm" style="margin:0 0 12px">Masukkan kode permintaan Anda (contoh: <span class="code-pill" style="padding:2px 8px;font-size:12px">FB-120520260001</span>) untuk melihat status terkini.</p>
             <div class="tracker-input-row">
@@ -842,6 +849,7 @@ table.t{
       <div class="section-head">
         <div class="kicker">Formulir</div>
         <h2>Buat Permintaan Baru</h2>
+        <p>Lengkapi formulir berikut. Klik judul kartu untuk minimize/expand bila perlu.</p>
       </div>
 
       <div class="collapse-card">
@@ -943,6 +951,7 @@ table.t{
   <section class="section" id="howto" style="background:#fff;border-top:1px solid var(--border-2);border-bottom:1px solid var(--border-2)">
     <div class="section-inner">
       <div class="section-head center">
+        <div class="kicker">Mudah & Cepat</div>
         <h2>Cara Pakai Portal</h2>
         <p style="margin:6px auto 0">Empat langkah sederhana untuk mengajukan dan memantau permintaan Anda.</p>
       </div>
@@ -965,7 +974,7 @@ table.t{
 
   <footer class="public-footer">
     <div class="public-footer-inner">
-      <div>© 2026 General Affairs · PT MRT Jakarta.</div>
+      <div>© 2026 General Affairs · PT MRT Jakarta. All rights reserved.</div>
       <div><a href="#/version">Riwayat Versi</a> · <a href="#/login">Login Admin</a></div>
     </div>
   </footer>
@@ -980,12 +989,16 @@ table.t{
           <div class="brand-mark"><img src="logo.png" alt="GA" onload="this.parentElement.classList.add('has-img')" onerror="this.parentElement.classList.remove('has-img');this.outerHTML='GA'" /></div>
           <div class="brand-name"><strong style="color:#fff">GA Hotline Portal</strong><span style="color:#CFDCEE">Admin Dashboard</span></div>
         </div>
-        <h2>Selamat datang kembali!</h2>
+        <h2>Selamat datang kembali.<br>Kelola permintaan dengan tenang.</h2>
+        <p>Dasbor admin untuk memonitor, memproses, dan menilai kinerja layanan General Affairs MRT Jakarta dari satu tempat.</p>
+      </div>
+      <div class="quote">
+        "Layanan internal yang baik dimulai dari sistem yang rapi. Portal ini dibuat untuk membantu tim GA bekerja lebih cepat dan transparan."
       </div>
     </div>
     <div class="login-right">
       <div class="login-box">
-        <h3>Masuk ke CPanel</h3>
+        <h3>Masuk ke Admin</h3>
         <p class="sub">Gunakan akun admin GA Anda</p>
         <form id="login-form">
           <div class="field"><label>Username</label><input type="text" class="input" name="username" required autocomplete="username" /></div>
@@ -1016,6 +1029,7 @@ table.t{
         <a class="nav-item" data-route="ratings"><span class="material-symbols-rounded">star</span><span class="nav-label">Daftar Penilaian</span></a>
         <a class="nav-item" data-route="masterdata"><span class="material-symbols-rounded">tune</span><span class="nav-label">Master Data</span></a>
         <a class="nav-item" data-route="users"><span class="material-symbols-rounded">manage_accounts</span><span class="nav-label">Manajemen User</span></a>
+        <a class="nav-item nav-item-sa" data-route="slatargets" data-requires-role="superadmin"><span class="material-symbols-rounded">speed</span><span class="nav-label">SLA Target</span></a>
         <a class="nav-item" data-route="activity"><span class="material-symbols-rounded">receipt_long</span><span class="nav-label">Log Aktivitas</span></a>
         <a class="nav-item" data-route="version"><span class="material-symbols-rounded">history</span><span class="nav-label">Riwayat Versi</span></a>
       </nav>
@@ -1115,8 +1129,8 @@ table.t{
    ============================================================ */
 
 /* ---------- CONFIG (edit these two values) ---------- */
-const SUPABASE_URL = window.__SUPA_URL__ || 'https://ekgebayrtjdjxsegcmru.supabase.co';
-const SUPABASE_ANON_KEY = window.__SUPA_KEY__ || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVrZ2ViYXlydGpkanhzZWdjbXJ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1NzM3OTAsImV4cCI6MjA5NDE0OTc5MH0.JUwWYQiGIY4PkHei0XI1HgdchynMSkQzarpDiH-guyE';
+const SUPABASE_URL = window.__SUPA_URL__ || 'https://YOUR-PROJECT-REF.supabase.co';
+const SUPABASE_ANON_KEY = window.__SUPA_KEY__ || 'YOUR_ANON_KEY';
 
 /* If the user hasn't configured Supabase yet, run in DEMO mode with
    in-memory data so the UI still works for inspection. */
@@ -1225,6 +1239,14 @@ const demo = (() => {
     {id:'lk4',name:'JB Tower'}
   ];
   const activityLogs = [];
+  const slaTargets = [
+    {id:'sla1', kategori:'Food and Beverage',                       kategori_kode:'FB',  target_hours:4,   description:'Snack/makanan rapat — sangat time-sensitive.', updated_at:new Date().toISOString()},
+    {id:'sla2', kategori:'Direct Purchase',                         kategori_kode:'DP',  target_hours:24,  description:'Pembelian langsung yang umum.', updated_at:new Date().toISOString()},
+    {id:'sla3', kategori:'Fasilitas Kantor dan Identitas Karyawan', kategori_kode:'FAC', target_hours:72,  description:'Perbaikan fasilitas; tergantung skala.', updated_at:new Date().toISOString()},
+    {id:'sla4', kategori:'Seragam',                                 kategori_kode:'UFM', target_hours:168, description:'Seragam — vendor butuh waktu jahit/produksi.', updated_at:new Date().toISOString()},
+    {id:'sla5', kategori:'Office Supply',                           kategori_kode:'OS',  target_hours:24,  description:'ATK & supplies standar.', updated_at:new Date().toISOString()},
+    {id:'sla6', kategori:'Event Support',                           kategori_kode:'EV',  target_hours:120, description:'Event support — koordinasi multi-vendor.', updated_at:new Date().toISOString()},
+  ];
   const tujuan = [
     {id:'t1',name:'Rapat Internal'},{id:'t2',name:'Rapat dengan Vendor'},
     {id:'t3',name:'Rapat dengan Stakeholder Eksternal'},{id:'t4',name:'Training / Workshop'},
@@ -1252,7 +1274,7 @@ const demo = (() => {
     {id:'v5',version:'1.4.0',release_date:'2026-05-16',changes:'Master data Lokasi Kerja terpisah, halaman Log Aktivitas, download tanda terima PDF saat status Tersedia, QR Code penilaian di tanda terima.'}
   ];
 
-  return { requests, ratings, notifications, lokasi, lokasiKerja, tujuan, users, version, activityLogs, seq, todayKey, nextCode };
+  return { requests, ratings, notifications, lokasi, lokasiKerja, tujuan, users, version, activityLogs, slaTargets, seq, todayKey, nextCode };
 })();
 
 /* ============================================================
@@ -1302,8 +1324,13 @@ const db = {
     if(!SUPA_CONFIGURED){
       const i = demo.requests.findIndex(r=>r.id===id);
       const prev = demo.requests[i];
-      demo.requests[i] = { ...prev, ...patch };
-      // mirror SQL trigger: if pic changed, notify
+      // mirror SQL trigger trg_stamp_completed: stamp completed_at when status first → "Selesai"
+      const next = { ...prev, ...patch };
+      if(patch.status === 'Selesai' && prev.status !== 'Selesai' && !next.completed_at){
+        next.completed_at = new Date().toISOString();
+      }
+      demo.requests[i] = next;
+      // mirror SQL trigger trg_notify_pic: if pic changed, notify
       if(patch.pic_user_id && patch.pic_user_id !== prev.pic_user_id){
         const r = demo.requests[i];
         demo.notifications.unshift({
@@ -1439,6 +1466,64 @@ const db = {
       const { error } = await supa.from('activity_logs').insert(payload);
       if(error) console.warn('[activity_log]', error);
     }catch(e){ console.warn('[activity_log]', e); }
+  },
+
+  // -------- SLA Targets --------
+  async listSlaTargets(){
+    if(!SUPA_CONFIGURED) return [...demo.slaTargets];
+    const { data, error } = await supa.from('sla_targets').select('*').order('kategori');
+    if(error) throw error; return data || [];
+  },
+  async updateSlaTarget(id, patch){
+    const cur = session.get();
+    const meta = { ...patch, updated_at:new Date().toISOString(), updated_by: cur?.id || null };
+    if(!SUPA_CONFIGURED){
+      const i = demo.slaTargets.findIndex(s => s.id === id);
+      if(i >= 0) demo.slaTargets[i] = { ...demo.slaTargets[i], ...meta };
+      return demo.slaTargets[i];
+    }
+    const { data, error } = await supa.from('sla_targets').update(meta).eq('id',id).select().single();
+    if(error) throw error; return data;
+  },
+
+  // Upload a single evidence file (jpg/png/pdf) for a request.
+  // kind: 'foto' | 'tt'
+  async uploadEvidence(requestId, file, kind){
+    const ext = (file.name.split('.').pop() || 'bin').toLowerCase();
+    if(!['jpg','jpeg','png','pdf'].includes(ext)){
+      throw new Error('Format file harus JPG, PNG, atau PDF');
+    }
+    if(file.size > 5 * 1024 * 1024){
+      throw new Error('Ukuran file maksimal 5 MB');
+    }
+    if(!SUPA_CONFIGURED){
+      // In demo mode use a blob URL (works until page reload). Persisted into demo store anyway.
+      const url = URL.createObjectURL(file);
+      return { url, name:file.name };
+    }
+    const path = `evidence/${requestId}/${kind}-${Date.now()}.${ext}`;
+    const { error: uErr } = await supa.storage.from('ga-attachments').upload(path, file, { upsert:true });
+    if(uErr) throw uErr;
+    const { data } = supa.storage.from('ga-attachments').getPublicUrl(path);
+    return { url: data.publicUrl, name: file.name };
+  },
+
+  // Update completed_at with audit. Only superadmin should call (caller enforces).
+  async overrideCompletedAt(id, newDateIso, reason){
+    const cur = session.get();
+    const patch = {
+      completed_at: newDateIso,
+      completed_at_edited_by: cur?.id || null,
+      completed_at_edited_at: new Date().toISOString(),
+      completed_at_edit_reason: reason
+    };
+    if(!SUPA_CONFIGURED){
+      const i = demo.requests.findIndex(r => r.id === id);
+      if(i >= 0) demo.requests[i] = { ...demo.requests[i], ...patch };
+      return;
+    }
+    const { error } = await supa.from('requests').update(patch).eq('id',id);
+    if(error) throw error;
   },
 
   async listUsers(){
@@ -1605,6 +1690,48 @@ const fmtDateTime = (d) => {
   const dt = new Date(d);
   return dt.toLocaleString('id-ID',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
 };
+
+// ---------------- SLA helpers ----------------
+// Cached SLA targets so the table & dashboard don't re-fetch on every render.
+let _slaTargetsCache = null;
+async function getSlaTargets(forceReload){
+  if(forceReload || !_slaTargetsCache) _slaTargetsCache = await db.listSlaTargets();
+  return _slaTargetsCache;
+}
+function slaTargetFor(kategori, targets){
+  const t = targets.find(s => s.kategori === kategori);
+  return t ? t.target_hours : null;
+}
+// Format duration in hours → "Xh Ym" or "Xd Yh" cleanly
+function fmtDurationHours(h){
+  if(h == null || isNaN(h)) return '—';
+  if(h < 0) h = 0;
+  if(h < 1)  return Math.round(h*60) + 'm';
+  if(h < 48) return Math.floor(h) + 'j ' + Math.round((h - Math.floor(h)) * 60) + 'm';
+  const days = Math.floor(h / 24);
+  const rem  = Math.round(h - days*24);
+  return days + 'h ' + rem + 'j';
+}
+// Compute resolution time (hours) for a request; null if not completed
+function resolutionHours(r){
+  if(!r.completed_at) return null;
+  const start = new Date(r.created_at).getTime();
+  const end   = new Date(r.completed_at).getTime();
+  if(isNaN(start) || isNaN(end)) return null;
+  return (end - start) / 36e5;     // ms → hours
+}
+// Returns { status: 'ontime'|'late'|'na', hoursUsed, hoursTarget, deltaHours }
+function slaStatusFor(r, targets){
+  const target = slaTargetFor(r.kategori, targets || []);
+  const used   = resolutionHours(r);
+  if(target == null || used == null) return { status:'na', hoursUsed:used, hoursTarget:target, deltaHours:null };
+  return {
+    status: used <= target ? 'ontime' : 'late',
+    hoursUsed: used,
+    hoursTarget: target,
+    deltaHours: used - target
+  };
+}
 const todayKey = () => {
   const d = new Date();
   return `${String(d.getDate()).padStart(2,'0')}${String(d.getMonth()+1).padStart(2,'0')}${d.getFullYear()}`;
@@ -2015,6 +2142,12 @@ async function renderAdmin(page){
 
   // Sidebar nav
   $$('#admin-nav .nav-item').forEach(it => {
+    // Role gating: hide items that require a higher role
+    const reqRole = it.dataset.requiresRole;
+    if(reqRole && u.role !== reqRole){
+      it.style.display = 'none';
+      return;
+    }
     it.classList.toggle('active', it.dataset.route===page);
     it.addEventListener('click', e => { e.preventDefault(); navigate('/admin/'+it.dataset.route); });
   });
@@ -2051,6 +2184,7 @@ async function renderAdmin(page){
     ratings:'Daftar Penilaian',
     masterdata:'Master Data',
     users:'Manajemen User',
+    slatargets:'SLA Target',
     activity:'Log Aktivitas',
     version:'Riwayat Versi'
   };
@@ -2059,12 +2193,25 @@ async function renderAdmin(page){
 
   const c = $('#admin-content');
 
+  // Guard superadmin-only pages
+  if(page === 'slatargets' && u.role !== 'superadmin'){
+    c.innerHTML = `
+      <div class="card card-pad center" style="background:#FEF3C7;border-color:#FCD34D">
+        <span class="material-symbols-rounded" style="font-size:48px;color:#92400E">lock</span>
+        <h3 style="margin:8px 0;color:#92400E">Akses Ditolak</h3>
+        <p class="muted">Halaman <strong>SLA Target</strong> hanya dapat diakses oleh <strong>superadmin</strong>.</p>
+        <a class="btn btn-primary" href="#/admin/dashboard" style="margin-top:8px">Kembali ke Dashboard</a>
+      </div>`;
+    return;
+  }
+
   if(page==='dashboard')       await viewAdminDashboard(c);
   else if(page==='myticket')   await viewAdminMyTicket(c);
   else if(page==='requests')   await viewAdminRequests(c);
   else if(page==='ratings')    await viewAdminRatings(c);
   else if(page==='masterdata') await viewAdminMaster(c);
   else if(page==='users')      await viewAdminUsers(c);
+  else if(page==='slatargets') await viewAdminSlaTargets(c);
   else if(page==='activity')   await viewAdminActivity(c);
   else if(page==='version')    await viewAdminVersion(c);
   else { navigate('/admin/dashboard'); }
@@ -2165,9 +2312,26 @@ async function viewAdminDashboard(c){
         <div class="stat-body"><span class="stat-label">Selesai</span><span class="stat-value" id="ads-done">—</span></div></div>
     </div>
 
-    <div class="card mb-4">
-      <div class="card-head"><h3>Permintaan per Kategori</h3></div>
-      <div class="card-body"><canvas id="ads-chart" height="120"></canvas></div>
+    <div class="adm-stat-grid" style="margin-top:14px">
+      <div class="stat-card"><div class="stat-icon" style="background:#E0F2FE;color:#0369A1"><span class="material-symbols-rounded">speed</span></div>
+        <div class="stat-body"><span class="stat-label">Rata-rata Resolusi</span><span class="stat-value" id="ads-avg-sla">—</span></div></div>
+      <div class="stat-card"><div class="stat-icon green"><span class="material-symbols-rounded">verified</span></div>
+        <div class="stat-body"><span class="stat-label">On-time</span><span class="stat-value" id="ads-ontime">—</span></div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:#FEE2E2;color:#DC2626"><span class="material-symbols-rounded">running_with_errors</span></div>
+        <div class="stat-body"><span class="stat-label">Terlambat</span><span class="stat-value" id="ads-late">—</span></div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:#EDE9FE;color:#6D28D9"><span class="material-symbols-rounded">percent</span></div>
+        <div class="stat-body"><span class="stat-label">SLA Compliance</span><span class="stat-value" id="ads-compliance">—</span></div></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:14px 0" id="ads-charts-row">
+      <div class="card" style="margin:0">
+        <div class="card-head"><h3>Permintaan per Kategori</h3></div>
+        <div class="card-body"><canvas id="ads-chart" height="160"></canvas></div>
+      </div>
+      <div class="card" style="margin:0">
+        <div class="card-head"><h3>SLA Compliance per Kategori</h3></div>
+        <div class="card-body"><canvas id="ads-chart-sla" height="160"></canvas></div>
+      </div>
     </div>
 
     <div class="card">
@@ -2194,10 +2358,26 @@ async function viewAdminDashboard(c){
       </div>`;
     return;
   }
+  const targets = await getSlaTargets(true);   // refresh SLA cache
   $('#ads-total').textContent   = reqs.length;
   $('#ads-pending').textContent = reqs.filter(r=>r.status==='Belum Dikonfirmasi').length;
   $('#ads-ongoing').textContent = reqs.filter(r=>['Mencari Penyedia','Sedang Disiapkan','Tersedia'].includes(r.status)).length;
   $('#ads-done').textContent    = reqs.filter(r=>r.status==='Selesai').length;
+
+  // SLA metrics — only over completed tickets
+  const completed = reqs.filter(r => r.status === 'Selesai' && r.completed_at);
+  const slas = completed.map(r => slaStatusFor(r, targets));
+  const onTimeCount = slas.filter(s => s.status === 'ontime').length;
+  const lateCount   = slas.filter(s => s.status === 'late').length;
+  const evaluated = onTimeCount + lateCount;
+  const avgHours = evaluated > 0
+    ? slas.reduce((sum, s) => sum + (s.hoursUsed || 0), 0) / evaluated
+    : null;
+  const compliance = evaluated > 0 ? Math.round(onTimeCount / evaluated * 100) : null;
+  $('#ads-avg-sla').textContent    = avgHours !== null ? fmtDurationHours(avgHours) : '—';
+  $('#ads-ontime').textContent     = onTimeCount;
+  $('#ads-late').textContent       = lateCount;
+  $('#ads-compliance').textContent = compliance !== null ? compliance + '%' : '—';
 
   if(typeof Chart !== 'undefined'){
     const cats = Object.keys(KATEGORI_KODE);
@@ -2209,7 +2389,27 @@ async function viewAdminDashboard(c){
         borderRadius:8, maxBarThickness:40 }]},
       options:{ responsive:true, maintainAspectRatio:false,
         plugins:{legend:{display:false}},
-        scales:{ y:{beginAtZero:true,ticks:{precision:0}}, x:{ticks:{font:{size:11}}} } }
+        scales:{ y:{beginAtZero:true,ticks:{precision:0}}, x:{ticks:{font:{size:10}}} } }
+    });
+
+    // SLA chart: stacked bar of On-time vs Terlambat per category
+    const onTimeByCat = cats.map(c => completed.filter(r => r.kategori === c && slaStatusFor(r, targets).status === 'ontime').length);
+    const lateByCat   = cats.map(c => completed.filter(r => r.kategori === c && slaStatusFor(r, targets).status === 'late').length);
+    new Chart($('#ads-chart-sla').getContext('2d'), {
+      type:'bar',
+      data:{
+        labels: cats.map(c => KATEGORI_KODE[c] || c.slice(0,8)),
+        datasets:[
+          { label:'On-time',   data:onTimeByCat, backgroundColor:'#00A859', borderRadius:6, maxBarThickness:32 },
+          { label:'Terlambat', data:lateByCat,   backgroundColor:'#DC2626', borderRadius:6, maxBarThickness:32 }
+        ]
+      },
+      options:{ responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{ position:'bottom', labels:{ font:{size:11} } } },
+        scales:{
+          x:{ stacked:true, ticks:{font:{size:10}} },
+          y:{ stacked:true, beginAtZero:true, ticks:{precision:0} }
+        } }
     });
   }
 
@@ -2221,7 +2421,7 @@ async function viewAdminDashboard(c){
 let _adminReqsCache = [];
 let _adminReqsState = {
   sort:'created_at', dir:'desc', page:1, pageSize:10, search:'',
-  filterStatus:'', filterKategori:'', filterSumber:'', filterPic:''
+  filterStatus:'', filterKategori:'', filterSumber:'', filterPic:'', filterSla:''
 };
 
 async function viewAdminRequests(c){
@@ -2255,12 +2455,19 @@ async function viewAdminRequests(c){
           <select class="select" id="req-filter-pic" style="max-width:200px">
             <option value="">Semua PIC</option>
           </select>
+          <select class="select" id="req-filter-sla" style="max-width:180px">
+            <option value="">Semua SLA</option>
+            <option value="ontime">On-time</option>
+            <option value="late">Terlambat</option>
+            <option value="na">Belum Selesai</option>
+          </select>
         </div>
         <div id="req-table-host"></div>
       </div>
     </div>
   `;
   _adminReqsCache = await db.listRequests();
+  await getSlaTargets();   // ensure SLA target cache is loaded for the SLA column
   // populate PIC filter from actual data + active staff
   const picSet = new Set();
   _adminReqsCache.forEach(r => { if(r.nama_pic_ga) picSet.add(r.nama_pic_ga); });
@@ -2293,27 +2500,44 @@ async function viewAdminRequests(c){
     _adminReqsState.filterPic = e.target.value; _adminReqsState.page = 1;
     renderRequestsTable($('#req-table-host'), _adminReqsCache, { compact:false });
   });
-  $('#csv-req').addEventListener('click', () => {
-    const rows = _adminReqsCache.map(r => ({
-      Kode_Permintaan: r.kode_permintaan,
-      Kode_SmartOffice: r.kode_smartoffice||'',
-      Kategori: r.kategori,
-      Sumber: r.sumber_pemesanan,
-      Nama_Pemesan: r.nama_pemesan,
-      Nama_Kegiatan: r.nama_kegiatan||'',
-      Lokasi: r.lokasi_kebutuhan||'',
-      Tujuan: r.tujuan_kebutuhan||'',
-      Tanggal_Kebutuhan: r.tanggal_kebutuhan,
-      Detail: r.detail_kebutuhan,
-      Estimasi_Harga: r.estimasi_harga||0,
-      Status: r.status,
-      Keterangan: r.keterangan||'',
-      Total_Anggaran: r.total_anggaran||0,
-      Vendor: r.nama_vendor||'',
-      PIC_GA: r.nama_pic_ga||'',
-      Estimasi_Selesai: r.estimasi_penyelesaian||'',
-      Tgl_Dibuat: r.created_at
-    }));
+  $('#req-filter-sla').addEventListener('change', e => {
+    _adminReqsState.filterSla = e.target.value; _adminReqsState.page = 1;
+    renderRequestsTable($('#req-table-host'), _adminReqsCache, { compact:false });
+  });
+  $('#csv-req').addEventListener('click', async () => {
+    const targets = await getSlaTargets();
+    const rows = _adminReqsCache.map(r => {
+      const sla = slaStatusFor(r, targets);
+      const slaLabel = sla.status === 'ontime' ? 'On-time'
+                     : sla.status === 'late'   ? 'Terlambat'
+                     : 'Belum Selesai';
+      return {
+        Kode_Permintaan: r.kode_permintaan,
+        Kode_SmartOffice: r.kode_smartoffice||'',
+        Kategori: r.kategori,
+        Sumber: r.sumber_pemesanan,
+        Nama_Pemesan: r.nama_pemesan,
+        Nama_Kegiatan: r.nama_kegiatan||'',
+        Lokasi: r.lokasi_kebutuhan||'',
+        Tujuan: r.tujuan_kebutuhan||'',
+        Tanggal_Kebutuhan: r.tanggal_kebutuhan,
+        Detail: r.detail_kebutuhan,
+        Estimasi_Harga: r.estimasi_harga||0,
+        Status: r.status,
+        Keterangan: r.keterangan||'',
+        Total_Anggaran: r.total_anggaran||0,
+        Vendor: r.nama_vendor||'',
+        PIC_GA: r.nama_pic_ga||'',
+        Estimasi_Selesai: r.estimasi_penyelesaian||'',
+        Tgl_Dibuat: r.created_at,
+        Tgl_Selesai: r.completed_at||'',
+        SLA_Target_Jam: sla.hoursTarget != null ? sla.hoursTarget : '',
+        Resolusi_Jam: sla.hoursUsed != null ? sla.hoursUsed.toFixed(2) : '',
+        SLA_Status: slaLabel,
+        Bukti_Foto: r.bukti_foto_url||'',
+        Bukti_TandaTerima: r.bukti_tt_url||''
+      };
+    });
     csvDownload('daftar-permintaan-'+new Date().toISOString().slice(0,10)+'.csv', rows);
   });
   $('#mass-upload-btn').addEventListener('click', () => openMassUploadModal());
@@ -2322,6 +2546,7 @@ async function viewAdminRequests(c){
 function renderRequestsTable(host, data, opts){
   const compact = opts && opts.compact;
   const s = _adminReqsState;
+  const targets = _slaTargetsCache || [];
 
   // Filter
   let rows = data.slice();
@@ -2337,6 +2562,12 @@ function renderRequestsTable(host, data, opts){
   if(s.filterKategori) rows = rows.filter(r => r.kategori===s.filterKategori);
   if(s.filterSumber)   rows = rows.filter(r => r.sumber_pemesanan===s.filterSumber);
   if(s.filterPic)      rows = rows.filter(r => (r.nama_pic_ga||'')===s.filterPic);
+  if(s.filterSla){
+    rows = rows.filter(r => {
+      const slaSt = slaStatusFor(r, targets).status;
+      return slaSt === s.filterSla;
+    });
+  }
 
   // Sort
   rows.sort((a,b) => {
@@ -2375,11 +2606,27 @@ function renderRequestsTable(host, data, opts){
             <th>Detail</th>
             <th class="sortable ${sortClass('estimasi_harga')}" data-col="estimasi_harga">Estimasi${sortIcon('estimasi_harga')}</th>
             <th class="sortable ${sortClass('status')}" data-col="status">Status${sortIcon('status')}</th>
+            ${!compact ? '<th>SLA</th>' : ''}
             <th style="text-align:right">Aksi</th>
           </tr>
         </thead>
         <tbody>
-          ${pageRows.length ? pageRows.map((r,i)=>`
+          ${pageRows.length ? pageRows.map((r,i)=>{
+            // Compute SLA cell
+            let slaCell = '';
+            if(!compact){
+              const sla = slaStatusFor(r, targets);
+              if(sla.status === 'ontime'){
+                slaCell = `<td><span class="badge status-selesai" title="Selesai dalam ${fmtDurationHours(sla.hoursUsed)} (target ${fmtDurationHours(sla.hoursTarget)})">On-time</span><div class="text-sm muted" style="margin-top:2px">${fmtDurationHours(sla.hoursUsed)}</div></td>`;
+              } else if(sla.status === 'late'){
+                slaCell = `<td><span class="badge status-ditolak" title="Selesai dalam ${fmtDurationHours(sla.hoursUsed)} (target ${fmtDurationHours(sla.hoursTarget)})">Terlambat</span><div class="text-sm" style="color:var(--danger);margin-top:2px">+${fmtDurationHours(sla.deltaHours)}</div></td>`;
+              } else if(sla.hoursTarget != null){
+                slaCell = `<td><span class="text-sm muted">target ${fmtDurationHours(sla.hoursTarget)}</span></td>`;
+              } else {
+                slaCell = `<td><span class="text-sm muted">—</span></td>`;
+              }
+            }
+            return `
             <tr>
               <td>${start+i+1}</td>
               <td><span class="code-pill">${escapeHtml(r.kode_permintaan)}</span></td>
@@ -2389,6 +2636,7 @@ function renderRequestsTable(host, data, opts){
               <td style="max-width:240px"><div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${escapeHtml(r.detail_kebutuhan||'')}">${escapeHtml(r.detail_kebutuhan||'')}</div></td>
               <td class="mono">${fmtRupiah(r.estimasi_harga)}</td>
               <td><span class="badge ${STATUS_CLASS[r.status]||''}">${escapeHtml(r.status)}</span></td>
+              ${slaCell}
               <td style="white-space:nowrap">
                 <div class="actions-compact">
                   <button class="btn-icon" data-act="view" data-id="${r.id}" title="Detail"><span class="material-symbols-rounded">visibility</span></button>
@@ -2401,7 +2649,7 @@ function renderRequestsTable(host, data, opts){
                 </div>
               </td>
             </tr>
-          `).join('') : `<tr><td colspan="9" class="empty-row">Belum ada permintaan</td></tr>`}
+          `;}).join('') : `<tr><td colspan="${compact?9:10}" class="empty-row">Belum ada permintaan</td></tr>`}
         </tbody>
       </table>
     </div>
@@ -2475,6 +2723,43 @@ async function openRequestDetail(id){
   const r = await db.getRequest(id);
   if(!r) return;
   const rating = await db.getRatingByRequest(id);
+  const targets = await getSlaTargets();
+  const sla = slaStatusFor(r, targets);
+
+  // Build SLA badge for the detail view
+  const slaTarget = slaTargetFor(r.kategori, targets);
+  let slaInfoHtml;
+  if(r.completed_at){
+    const badge = sla.status === 'ontime'
+      ? `<span class="badge status-selesai" style="margin-left:6px">On-time</span>`
+      : `<span class="badge status-ditolak" style="margin-left:6px">Terlambat ${fmtDurationHours(sla.deltaHours)}</span>`;
+    slaInfoHtml = `${fmtDurationHours(sla.hoursUsed)} / target ${fmtDurationHours(slaTarget)} ${badge}`;
+  } else if(slaTarget) {
+    slaInfoHtml = `<span class="muted">Target ${fmtDurationHours(slaTarget)} — belum selesai</span>`;
+  } else {
+    slaInfoHtml = '<span class="muted">SLA target belum di-set untuk kategori ini.</span>';
+  }
+
+  // Evidence files block
+  const buktiBlock = (r.bukti_foto_url || r.bukti_tt_url) ? `
+    <div style="grid-column:1/-1;margin-top:6px;padding:10px 12px;background:var(--mrt-green-soft);border-radius:8px;border-left:3px solid var(--mrt-green)">
+      <div style="font-weight:700;color:var(--mrt-green);font-size:13px;margin-bottom:6px">
+        <span class="material-symbols-rounded" style="vertical-align:-4px;font-size:18px">verified</span> Bukti Penyelesaian
+      </div>
+      <div style="display:flex;gap:14px;flex-wrap:wrap;font-size:13px">
+        ${r.bukti_foto_url
+          ? `<a href="${escapeHtml(r.bukti_foto_url)}" target="_blank" style="color:var(--mrt-green);font-weight:600;text-decoration:none">
+              <span class="material-symbols-rounded" style="font-size:16px;vertical-align:-3px">photo_camera</span> Bukti Foto
+             </a>`
+          : `<span class="muted">📷 Foto belum diupload</span>`}
+        ${r.bukti_tt_url
+          ? `<a href="${escapeHtml(r.bukti_tt_url)}" target="_blank" style="color:var(--mrt-green);font-weight:600;text-decoration:none">
+              <span class="material-symbols-rounded" style="font-size:16px;vertical-align:-3px">description</span> Bukti Tanda Terima
+             </a>`
+          : `<span class="muted">📝 Tanda terima belum diupload</span>`}
+      </div>
+    </div>` : '';
+
   openModal(`
     <div class="modal-head">
       <h3><span class="material-symbols-rounded" style="vertical-align:-6px;color:var(--mrt-blue)">assignment</span> Detail Permintaan</h3>
@@ -2501,7 +2786,10 @@ async function openRequestDetail(id){
         <div class="k">Estimasi Selesai</div><div class="v">${fmtDate(r.estimasi_penyelesaian)}</div>
         <div class="k">Lampiran</div><div class="v">${r.lampiran_url?`<a href="${escapeHtml(r.lampiran_url)}" target="_blank">Lihat file</a>`:'—'}</div>
         <div class="k">Dibuat</div><div class="v">${fmtDateTime(r.created_at)}</div>
+        ${r.completed_at?`<div class="k">Selesai pada</div><div class="v">${fmtDateTime(r.completed_at)}${r.completed_at_edited_by?`<br><span class="hint" style="color:#92400E"><span class="material-symbols-rounded" style="font-size:14px;vertical-align:-2px">edit</span> Diubah oleh superadmin · ${escapeHtml(r.completed_at_edit_reason||'')}</span>`:''}</div>`:''}
+        <div class="k">SLA</div><div class="v">${slaInfoHtml}</div>
         ${rating?`<div class="k">Penilaian</div><div class="v">${rating.rating}★ — ${escapeHtml(rating.kritik_saran||'')}</div>`:''}
+        ${buktiBlock}
       </div>
     </div>
     <div class="modal-foot">
@@ -2515,7 +2803,15 @@ async function openRequestDetail(id){
 async function openRequestEdit(id){
   const r = await db.getRequest(id);
   if(!r) return;
+  const me = session.get();
+  const isSuperadmin = me?.role === 'superadmin';
   const [lok, tuj, picUsers] = await Promise.all([db.listLokasi(), db.listTujuan(), db.listPicUsers()]);
+
+  // Pre-format the existing completed_at for display in the optional override input
+  const completedLocal = r.completed_at
+    ? new Date(r.completed_at).toISOString().slice(0,16)  // for datetime-local input
+    : '';
+
   openModal(`
     <div class="modal-head">
       <h3><span class="material-symbols-rounded" style="vertical-align:-6px;color:var(--mrt-blue)">edit_note</span> Edit Permintaan</h3>
@@ -2527,7 +2823,7 @@ async function openRequestEdit(id){
         <div class="form-grid">
           <div class="field"><label>Kode SmartOffice</label><input class="input" name="kode_smartoffice" value="${escapeHtml(r.kode_smartoffice||'')}" placeholder="Isi untuk FB/EV/OS/DP"/></div>
           <div class="field field-required"><label>Status</label>
-            <select class="select" name="status" required>${STATUSES.map(s=>`<option ${s===r.status?'selected':''}>${s}</option>`).join('')}</select>
+            <select class="select" name="status" id="ed-status" required>${STATUSES.map(s=>`<option ${s===r.status?'selected':''}>${s}</option>`).join('')}</select>
           </div>
           <div class="field full field-required"><label>Keterangan</label>
             <textarea class="textarea" name="keterangan" required>${escapeHtml(r.keterangan||'')}</textarea>
@@ -2556,6 +2852,63 @@ async function openRequestEdit(id){
           <div class="field full"><label>Detail Kebutuhan</label>
             <textarea class="textarea" name="detail_kebutuhan">${escapeHtml(r.detail_kebutuhan||'')}</textarea></div>
         </div>
+
+        <!-- Evidence upload section (shows reminder when status = Selesai) -->
+        <div id="ed-evidence-block" style="margin-top:14px;padding:14px;border-radius:10px;background:var(--mrt-green-soft);border:1px solid #BBF7D0;display:none">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <span class="material-symbols-rounded" style="color:var(--mrt-green)">verified</span>
+            <strong style="color:var(--mrt-green)">Bukti Penyelesaian</strong>
+            <span class="badge gray" style="font-size:11px;font-weight:600">Opsional</span>
+          </div>
+          <p class="muted text-sm" style="margin:0 0 10px">
+            Upload bukti penyerahan untuk verifikasi & audit. Format: JPG, PNG, atau PDF. Maks 5 MB per file.
+          </p>
+          <div class="form-grid">
+            <div class="field">
+              <label>📷 Bukti Foto Kegiatan</label>
+              ${r.bukti_foto_url
+                ? `<div class="text-sm" style="margin:2px 0 4px"><a href="${escapeHtml(r.bukti_foto_url)}" target="_blank" style="color:var(--mrt-green);font-weight:600"><span class="material-symbols-rounded" style="font-size:14px;vertical-align:-2px">check_circle</span> File terupload</a></div>`
+                : ''}
+              <input type="file" class="input" name="bukti_foto_file" accept=".jpg,.jpeg,.png,.pdf" />
+              <span class="hint">Foto saat barang/jasa diserahkan ke pemohon.</span>
+            </div>
+            <div class="field">
+              <label>📝 Bukti Tanda Terima</label>
+              ${r.bukti_tt_url
+                ? `<div class="text-sm" style="margin:2px 0 4px"><a href="${escapeHtml(r.bukti_tt_url)}" target="_blank" style="color:var(--mrt-green);font-weight:600"><span class="material-symbols-rounded" style="font-size:14px;vertical-align:-2px">check_circle</span> File terupload</a></div>`
+                : ''}
+              <input type="file" class="input" name="bukti_tt_file" accept=".jpg,.jpeg,.png,.pdf" />
+              <span class="hint">Scan/foto dokumen tanda terima yang sudah ditandatangani.</span>
+            </div>
+          </div>
+        </div>
+
+        ${isSuperadmin && r.completed_at ? `
+        <!-- Superadmin-only: completed_at override -->
+        <div style="margin-top:14px;padding:14px;border-radius:10px;background:#FEF3C7;border:1px solid #FCD34D">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <span class="material-symbols-rounded" style="color:#92400E">history_edu</span>
+            <strong style="color:#92400E">Override Tanggal Selesai (Superadmin)</strong>
+          </div>
+          <p class="muted text-sm" style="margin:0 0 10px">
+            Gunakan ini hanya bila tanggal sistem berbeda dari aktual (mis. status di-update terlambat).
+            Ini akan memengaruhi perhitungan SLA tiket ini.
+          </p>
+          <div class="form-grid">
+            <div class="field">
+              <label>Saat ini tercatat</label>
+              <input class="input" disabled value="${fmtDateTime(r.completed_at)}"/>
+              ${r.completed_at_edited_by ? `<span class="hint">Pernah diedit oleh superadmin pada ${fmtDateTime(r.completed_at_edited_at)}</span>` : ''}
+            </div>
+            <div class="field">
+              <label>Tanggal/Jam Aktual Selesai</label>
+              <input class="input" type="datetime-local" name="completed_at_override" id="ed-completed" value="${completedLocal}"/>
+            </div>
+            <div class="field full"><label>Alasan Perubahan <span class="hint" style="color:var(--danger)">(wajib bila tanggal diubah)</span></label>
+              <textarea class="textarea" name="completed_at_reason" id="ed-completed-reason" placeholder="Mis. status di-update terlambat karena PIC libur Jumat–Senin"></textarea>
+            </div>
+          </div>
+        </div>` : ''}
       </form>
     </div>
     <div class="modal-foot">
@@ -2571,15 +2924,26 @@ async function openRequestEdit(id){
     e.target.value = d ? 'Rp '+Number(d).toLocaleString('id-ID') : '';
   });
 
+  // Toggle evidence block visibility based on status
+  const statusSel = $('#ed-status');
+  const evidenceBlock = $('#ed-evidence-block');
+  const toggleEvidence = () => {
+    evidenceBlock.style.display = (statusSel.value === 'Selesai') ? 'block' : 'none';
+  };
+  statusSel.addEventListener('change', toggleEvidence);
+  toggleEvidence();
+
   $('#ed-save').addEventListener('click', async () => {
     const fd = new FormData($('#edit-form'));
     if(!fd.get('keterangan')){ toast('Keterangan wajib diisi','warn'); return; }
     const adjusted = (fd.get('total_anggaran')||'').toString().replace(/\D/g,'');
     const pic_user_id = fd.get('pic_user_id') || null;
     const picUser = picUsers.find(u => u.id === pic_user_id);
+    const newStatus = fd.get('status');
+
     const patch = {
       kode_smartoffice: fd.get('kode_smartoffice') || null,
-      status: fd.get('status'),
+      status: newStatus,
       keterangan: fd.get('keterangan'),
       total_anggaran: adjusted ? Number(adjusted) : 0,
       nama_vendor: fd.get('nama_vendor') || null,
@@ -2590,10 +2954,41 @@ async function openRequestEdit(id){
       tujuan_kebutuhan: fd.get('tujuan_kebutuhan') || null,
       detail_kebutuhan: fd.get('detail_kebutuhan') || null
     };
+
+    // Friendly reminder if user is closing the ticket without evidence (status = Selesai)
+    const fotoFile = $('input[name="bukti_foto_file"]')?.files?.[0];
+    const ttFile   = $('input[name="bukti_tt_file"]')?.files?.[0];
+    if(newStatus === 'Selesai' && !fotoFile && !ttFile && !r.bukti_foto_url && !r.bukti_tt_url){
+      const ok = confirm('Anda menyelesaikan tiket tanpa upload bukti (foto atau tanda terima).\n\n'
+        + 'Walaupun opsional, bukti sangat membantu audit. Lanjutkan tanpa bukti?');
+      if(!ok) return;
+    }
+
+    // Disable save button to prevent double-submit during upload
+    const btn = $('#ed-save');
+    btn.disabled = true; btn.innerHTML = '<span class="material-symbols-rounded">hourglass_top</span>Menyimpan...';
+
     try{
+      // Upload evidence files first (if any)
+      if(fotoFile){
+        try{
+          const { url } = await db.uploadEvidence(id, fotoFile, 'foto');
+          patch.bukti_foto_url = url;
+        }catch(e){ toast('Gagal upload bukti foto: '+(e.message||''),'error'); btn.disabled = false; btn.innerHTML = '<span class="material-symbols-rounded">save</span>Simpan'; return; }
+      }
+      if(ttFile){
+        try{
+          const { url } = await db.uploadEvidence(id, ttFile, 'tt');
+          patch.bukti_tt_url = url;
+        }catch(e){ toast('Gagal upload bukti tanda terima: '+(e.message||''),'error'); btn.disabled = false; btn.innerHTML = '<span class="material-symbols-rounded">save</span>Simpan'; return; }
+      }
+
       const changes = [];
       if(r.status !== patch.status) changes.push(`status: ${r.status} → ${patch.status}`);
       if((r.nama_pic_ga||'') !== (patch.nama_pic_ga||'')) changes.push(`PIC: ${r.nama_pic_ga||'—'} → ${patch.nama_pic_ga||'—'}`);
+      if(patch.bukti_foto_url && patch.bukti_foto_url !== r.bukti_foto_url) changes.push('bukti foto diupload');
+      if(patch.bukti_tt_url && patch.bukti_tt_url !== r.bukti_tt_url) changes.push('bukti tanda terima diupload');
+
       await db.updateRequest(id, patch);
       db.logActivity({
         action: r.status !== patch.status ? 'request.status_change' : 'request.update',
@@ -2601,12 +2996,39 @@ async function openRequestEdit(id){
         detail: `${r.kode_permintaan}: ${changes.join(' · ') || 'detail diperbarui'}`,
         meta: { from_status:r.status, to_status:patch.status }
       });
+
+      // Handle completed_at override (superadmin only)
+      if(isSuperadmin && fd.has('completed_at_override')){
+        const newCompleted = fd.get('completed_at_override');
+        const newIso = newCompleted ? new Date(newCompleted).toISOString() : null;
+        const prevIso = r.completed_at;
+        // only act if the value actually changed
+        if(newIso && newIso !== prevIso){
+          const reason = (fd.get('completed_at_reason') || '').trim();
+          if(!reason){
+            toast('Alasan perubahan tanggal selesai wajib diisi','warn');
+            btn.disabled = false; btn.innerHTML = '<span class="material-symbols-rounded">save</span>Simpan';
+            return;
+          }
+          await db.overrideCompletedAt(id, newIso, reason);
+          db.logActivity({
+            action:'request.completed_at_override',
+            target_type:'request', target_id:id,
+            detail:`${r.kode_permintaan}: tanggal selesai ${fmtDateTime(prevIso)} → ${fmtDateTime(newIso)} · alasan: ${reason}`,
+            meta:{ from:prevIso, to:newIso, reason }
+          });
+        }
+      }
+
       _adminReqsCache = await db.listRequests();
       const host = $('#req-table-host'); if(host) renderRequestsTable(host, _adminReqsCache, {compact:false});
       const dh = $('#ads-table-host'); if(dh) renderRequestsTable(dh, _adminReqsCache, {compact:true});
       closeModal();
       toast('Permintaan diperbarui','success');
-    }catch(err){ console.error(err); toast('Gagal menyimpan: '+(err.message||''),'error'); }
+    }catch(err){
+      console.error(err); toast('Gagal menyimpan: '+(err.message||''),'error');
+      btn.disabled = false; btn.innerHTML = '<span class="material-symbols-rounded">save</span>Simpan';
+    }
   });
 }
 
@@ -3058,6 +3480,137 @@ function openPasswordModal(user){
       if(!ok) await db.updateUser(user.id, { password_hash: a });
       closeModal(); toast('Password diubah','success');
     }catch(err){ toast('Gagal mengubah password','error'); }
+  });
+}
+
+/* ============================================================
+   ADMIN: SLA TARGETS (superadmin only)
+   ============================================================ */
+async function viewAdminSlaTargets(c){
+  const targets = await getSlaTargets(true);
+  c.innerHTML = `
+    <div class="card">
+      <div class="card-head">
+        <h3>SLA Target per Kategori</h3>
+        <span class="muted text-sm" style="font-weight:500">
+          <span class="material-symbols-rounded" style="font-size:16px;vertical-align:-3px;color:var(--mrt-blue)">lock</span>
+          Hanya superadmin
+        </span>
+      </div>
+      <div class="card-body">
+        <div class="callout" style="margin-bottom:16px;background:var(--mrt-blue-soft);padding:12px 14px;border-radius:8px;border-left:3px solid var(--mrt-blue)">
+          <strong>Apa itu SLA Target?</strong> Waktu maksimum (dalam jam) yang ditargetkan untuk menyelesaikan
+          permintaan di kategori tersebut, terhitung dari saat permintaan dibuat hingga status berubah ke <em>Selesai</em>.
+          Nilai ini digunakan untuk menentukan apakah sebuah tiket <span class="badge status-selesai" style="margin:0 2px">On-time</span>
+          atau <span class="badge status-ditolak" style="margin:0 2px">Terlambat</span> di Daftar Permintaan dan Dashboard.
+        </div>
+        <div id="sla-table-host"></div>
+      </div>
+    </div>
+  `;
+  renderSlaTable();
+
+  async function renderSlaTable(){
+    const ts = await getSlaTargets(true);
+    $('#sla-table-host').innerHTML = `
+      <div class="table-wrap">
+        <table class="t">
+          <thead><tr>
+            <th style="width:48px">#</th>
+            <th>Kategori</th>
+            <th style="width:90px">Kode</th>
+            <th style="width:170px">Target (jam)</th>
+            <th>Deskripsi</th>
+            <th style="width:170px">Terakhir Diubah</th>
+            <th style="width:80px;text-align:right">Aksi</th>
+          </tr></thead>
+          <tbody>
+            ${ts.map((t,i) => `
+              <tr>
+                <td>${i+1}</td>
+                <td><strong>${escapeHtml(t.kategori)}</strong></td>
+                <td><span class="tag">${escapeHtml(t.kategori_kode)}</span></td>
+                <td><strong style="color:var(--mrt-blue)">${t.target_hours}</strong>
+                  <span class="text-sm muted">(≈ ${fmtDurationHours(t.target_hours)})</span></td>
+                <td><span class="text-sm">${escapeHtml(t.description || '—')}</span></td>
+                <td><span class="text-sm muted">${t.updated_at ? fmtDateTime(t.updated_at) : '—'}</span></td>
+                <td style="text-align:right">
+                  <button class="btn-icon" data-edit="${t.id}" title="Edit"><span class="material-symbols-rounded">edit</span></button>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    `;
+    $$('button[data-edit]', $('#sla-table-host')).forEach(b => b.addEventListener('click', () => {
+      const t = ts.find(x => x.id === b.dataset.edit);
+      openSlaEditModal(t, renderSlaTable);
+    }));
+  }
+}
+
+function openSlaEditModal(t, onDone){
+  openModal(`
+    <div class="modal-head">
+      <h3><span class="material-symbols-rounded" style="vertical-align:-6px;color:var(--mrt-blue)">speed</span> Edit SLA Target</h3>
+      <button class="btn-icon" onclick="closeModal()"><span class="material-symbols-rounded">close</span></button>
+    </div>
+    <div class="modal-body">
+      <div class="callout" style="background:#FEF3C7;padding:12px;border-radius:8px;border-left:3px solid #F59E0B;margin-bottom:14px">
+        <span class="material-symbols-rounded" style="vertical-align:-4px;color:#92400E">warning</span>
+        <strong>Perubahan SLA akan memengaruhi semua tiket di kategori ini</strong> — tiket lama yang sudah Selesai
+        akan otomatis dihitung ulang status On-time/Terlambat-nya.
+      </div>
+      <form id="sla-form">
+        <div class="field"><label>Kategori</label>
+          <input class="input" value="${escapeHtml(t.kategori)} (${escapeHtml(t.kategori_kode)})" disabled></div>
+        <div class="form-grid">
+          <div class="field field-required"><label>Target Resolusi (jam)</label>
+            <input class="input" type="number" min="1" max="9999" name="target_hours" required value="${t.target_hours}"/>
+            <span class="hint">Contoh: <strong>4</strong> = 4 jam, <strong>24</strong> = 1 hari, <strong>168</strong> = 1 minggu.</span>
+          </div>
+          <div class="field"><label>Preview</label>
+            <input class="input" id="sla-preview" disabled value="${fmtDurationHours(t.target_hours)}"/>
+          </div>
+          <div class="field full"><label>Deskripsi (opsional)</label>
+            <input class="input" name="description" value="${escapeHtml(t.description || '')}" placeholder="Mis. Snack/makanan rapat — sangat time-sensitive."/>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal()">Batal</button>
+      <button class="btn btn-primary" id="sla-save"><span class="material-symbols-rounded">save</span>Simpan</button>
+    </div>
+  `, 'md');
+
+  // Live preview
+  $('input[name="target_hours"]').addEventListener('input', e => {
+    const v = Number(e.target.value || 0);
+    $('#sla-preview').value = fmtDurationHours(v);
+  });
+
+  $('#sla-save').addEventListener('click', async () => {
+    const fd = new FormData($('#sla-form'));
+    const newHours = Number(fd.get('target_hours'));
+    const newDesc  = (fd.get('description') || '').trim() || null;
+    if(!newHours || newHours < 1){ toast('Target jam harus lebih dari 0','warn'); return; }
+    try{
+      await db.updateSlaTarget(t.id, {
+        target_hours: newHours,
+        description: newDesc
+      });
+      db.logActivity({
+        action:'sla.update', target_type:'sla', target_id:t.id,
+        detail:`SLA ${t.kategori_kode}: ${t.target_hours}j → ${newHours}j` + (newDesc !== t.description ? ' · deskripsi diperbarui' : ''),
+        meta:{ from_hours:t.target_hours, to_hours:newHours }
+      });
+      _slaTargetsCache = null;   // invalidate cache so all pages re-fetch
+      closeModal();
+      toast('SLA target diperbarui','success');
+      onDone && onDone();
+    }catch(err){ console.error(err); toast('Gagal menyimpan: '+(err.message||''),'error'); }
   });
 }
 
@@ -3842,24 +4395,22 @@ async function downloadTandaTerima(req){
     columnStyles: { 0:{ cellWidth:60, fontStyle:'bold', textColor:[80,90,110], fillColor:[249,250,252] }, 1:{ cellWidth:'auto' } }
   });
 
-  let afterTableY = doc.lastAutoTable.finalY + 2;
+  let afterTableY = doc.lastAutoTable.finalY + 8;
 
   // ----- QR code (bottom-right of detail block) -----
   const ratingUrl = location.origin + location.pathname + '#/rate/' + req.id;
   const qrData = generateQRDataURL(ratingUrl, 220);
 
- // Move to next page only if there's literally no room for the QR
-  const needed = 55; // signature block + qr area (tighter)
-  if(afterTableY + needed > H - 12){
+  // If page space tight, add a new page
+  const needed = 70; // signature block + qr area
+  if(afterTableY + needed > H - 16){
     doc.addPage();
-    afterTableY = M + 6;
+    afterTableY = M;
   }
 
   const qrSize = 32;
   const qrX = W - M - qrSize;
   const qrY = afterTableY;
-  const qrBottomY = qrY + qrSize + 10;  // QR + caption + sedikit napas
-   
   if(qrData){
     try{ doc.addImage(qrData, 'PNG', qrX, qrY, qrSize, qrSize); }catch{}
   }
@@ -3885,17 +4436,8 @@ async function downloadTandaTerima(req){
   doc.text(keteranganLines, M, afterTableY + 10);
 
   // ----- Signature block at the bottom -----
-  // Pastikan signature mulai DI BAWAH QR (bukan di sampingnya)
-  // dan juga di bawah teks keterangan
-  const keteranganBottomY = afterTableY + 10 + (keteranganLines.length * 4.5);
-  let sigY = Math.max(qrBottomY, keteranganBottomY) + 6;
-  
-   // Kalau ruang vertikal tidak cukup untuk signature block di halaman ini,
-  // pindahkan ke halaman baru (lebih baik dari pada nabrak QR di atas).
-  if(sigY + 50 > H - 14){
-    doc.addPage();
-    sigY = M + 8;
-  }
+  let sigY = Math.max(afterTableY + qrSize + 16, H - 60);
+  if(sigY + 50 > H - 14) sigY = H - 60;
 
   doc.setDrawColor(0, 168, 89);
   doc.setLineWidth(0.5);
