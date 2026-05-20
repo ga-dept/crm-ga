@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>CRM Portal — General Affairs</title>
+<title>GA Hotline Portal — General Affairs MRT</title>
 <link rel="icon" type="image/png" href="logo.png" />
 <link rel="apple-touch-icon" href="logo.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -783,7 +783,7 @@ table.t{
     <div class="public-nav-inner">
       <div class="brand">
         <div class="brand-mark"><img src="logo.png" alt="GA" onload="this.parentElement.classList.add('has-img')" onerror="this.parentElement.classList.remove('has-img');this.outerHTML='GA'" /></div>
-        <div class="brand-name"><strong>CRM Portal</strong><span>General Affairs · MRT Jakarta</span></div>
+        <div class="brand-name"><strong>GA CRM Portal</strong><span>General Affairs · MRT Jakarta</span></div>
       </div>
       <div class="nav-links" id="landing-nav-links">
         <a href="#dashboard">Dashboard</a>
@@ -798,7 +798,7 @@ table.t{
   <section class="hero">
     <div class="hero-shape"></div>
     <div class="hero-inner">
-      <h1>CRM Dashboard <br>General Affairs <br> <span class="accent">MRT Jakarta</span></h1>
+      <h1>CRM Portal<br>General Affairs<br><span class="accent">MRT Jakarta</span></h1>
       <div class="hero-actions">
         <a href="#form" class="btn btn-primary"><span class="material-symbols-rounded">add_circle</span>Buat Permintaan</a>
         <a href="#tracker" class="btn btn-accent"><span class="material-symbols-rounded">search</span>Cek Status</a>
@@ -845,7 +845,6 @@ table.t{
       <div class="section-head">
         <div class="kicker">Formulir</div>
         <h2>Buat Permintaan Baru</h2>
-        <p>Lengkapi formulir berikut. Klik judul kartu untuk minimize/expand bila perlu.</p>
       </div>
 
       <div class="collapse-card">
@@ -894,11 +893,12 @@ table.t{
                 <label>Nama Pemesan</label>
                 <input type="text" class="input" name="nama_pemesan" required placeholder="Nama lengkap" />
               </div>
-              <div class="field field-required">
+               <div class="field field-required">
                 <label>Divisi</label>
                 <select class="select" name="divisi" id="select-divisi">
                   <option value="">-- Memuat --</option>
                 </select>
+                <span class="hint">Pilih Divisi dulu, daftar Departemen akan menyesuaikan.</span>
               </div>
               <div class="field field-required">
                 <label>Departemen</label>
@@ -906,7 +906,7 @@ table.t{
                   <option value="">— Pilih Divisi terlebih dahulu —</option>
                 </select>
               </div>
-              <div class="field field-required">
+              <div class="field">
                 <label>Nama Kegiatan</label>
                 <input type="text" class="input" name="nama_kegiatan" placeholder="Mis. Rapat Bulanan Divisi" />
               </div>
@@ -924,12 +924,6 @@ table.t{
                 </select>
               </div>
 
-              <div class="field">
-                <label>Mata Anggaran</label>
-                <select class="select" name="mata_anggaran" id="select-mata-anggaran">
-                  <option value="">-- Memuat --</option>
-                </select>
-              </div>
               <div class="field field-required">
                 <label>Tanggal Kebutuhan</label>
                 <input type="date" class="input" name="tanggal_kebutuhan" required />
@@ -984,8 +978,7 @@ table.t{
 
   <footer class="public-footer">
     <div class="public-footer-inner">
-      <div>© 2026 General Affairs · PT MRT Jakarta (Perseroda)</div>
-      <div><a href="#/version">Riwayat Versi</a> · <a href="#/login">Login Admin</a></div>
+      <div>© 2026 General Affairs · PT MRT Jakarta. All rights reserved.</div>
     </div>
   </footer>
 </template>
@@ -999,13 +992,13 @@ table.t{
           <div class="brand-mark"><img src="logo.png" alt="GA" onload="this.parentElement.classList.add('has-img')" onerror="this.parentElement.classList.remove('has-img');this.outerHTML='GA'" /></div>
           <div class="brand-name"><strong style="color:#fff">GA Hotline Portal</strong><span style="color:#CFDCEE">Admin Dashboard</span></div>
         </div>
-        <h2>Selamat datang kembali!</h2>
+        <h2>Selamat datang kembali!<br>Silakan masuk untuk melanjutkan</h2>
       </div>
     </div>
     <div class="login-right">
       <div class="login-box">
         <h3>Masuk ke CPanel</h3>
-        <p class="sub">Gunakan akun yang telah diberikan</p>
+        <p class="sub">Gunakan akun Anda</p>
         <form id="login-form">
           <div class="field"><label>Username</label><input type="text" class="input" name="username" required autocomplete="username" /></div>
           <div class="field"><label>Password</label><input type="password" class="input" name="password" required autocomplete="current-password" /></div>
@@ -1033,8 +1026,8 @@ table.t{
         <a class="nav-item" data-route="myticket"><span class="material-symbols-rounded">assignment_ind</span><span class="nav-label">Tiket Saya</span></a>
         <a class="nav-item" data-route="requests"><span class="material-symbols-rounded">list_alt</span><span class="nav-label">Daftar Permintaan</span></a>
         <a class="nav-item" data-route="ratings"><span class="material-symbols-rounded">star</span><span class="nav-label">Daftar Penilaian</span></a>
-        <a class="nav-item" data-route="masterdata"><span class="material-symbols-rounded">tune</span><span class="nav-label">Master Data</span></a>
-        <a class="nav-item" data-route="users"><span class="material-symbols-rounded">manage_accounts</span><span class="nav-label">Manajemen User</span></a>
+        <a class="nav-item" data-route="masterdata" data-allowed-roles="superadmin,admin"><span class="material-symbols-rounded">tune</span><span class="nav-label">Master Data</span></a>
+        <a class="nav-item" data-route="users" data-allowed-roles="superadmin"><span class="material-symbols-rounded">manage_accounts</span><span class="nav-label">Manajemen User</span></a>
         <a class="nav-item nav-item-sa" data-route="slatargets" data-requires-role="superadmin"><span class="material-symbols-rounded">speed</span><span class="nav-label">SLA Target</span></a>
         <a class="nav-item" data-route="activity"><span class="material-symbols-rounded">receipt_long</span><span class="nav-label">Log Aktivitas</span></a>
         <a class="nav-item" data-route="version"><span class="material-symbols-rounded">history</span><span class="nav-label">Riwayat Versi</span></a>
@@ -1938,14 +1931,36 @@ async function captureDashboardJpg(){
   const btn = document.querySelector('#dash-screenshot');
   const original = btn ? btn.innerHTML : '';
   if(btn){ btn.disabled = true; btn.innerHTML = '<span class="material-symbols-rounded">hourglass_top</span>Mengambil...'; }
+
+  // Save scroll, then make sure no transient state (sticky bars, scroll position) affects capture
+  const savedScroll = window.scrollY;
+  window.scrollTo(0, 0);
+  // Give the layout 2 frames to settle, then a tiny delay so Chart.js animations finish
+  await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+  await new Promise(r => setTimeout(r, 200));
+
   try{
+    // The dashboard may have content wider than offsetWidth on flex/grid layouts,
+    // so use the larger of scrollWidth / offsetWidth and add an 8px right buffer
+    // to absorb anti-aliasing or sub-pixel issues on the far edge of charts.
+    const rawW = Math.max(host.scrollWidth, host.offsetWidth);
+    const rawH = Math.max(host.scrollHeight, host.offsetHeight);
+    const w = Math.ceil(rawW) + 8;
+    const h = Math.ceil(rawH) + 8;
+
     const canvas = await html2canvas(host, {
       backgroundColor: '#FFFFFF',
-      scale: 2,                       // hi-DPI for crisp output
+      scale: 2,                // hi-DPI for crisp output
       useCORS: true,
       logging: false,
-      windowWidth: host.scrollWidth,
-      windowHeight: host.scrollHeight,
+      width:  w,
+      height: h,
+      windowWidth:  Math.max(w, document.documentElement.clientWidth),
+      windowHeight: Math.max(h, document.documentElement.clientHeight),
+      x: 0,
+      y: 0,
+      scrollX: -window.scrollX,
+      scrollY: -window.scrollY
     });
     const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
     const a = document.createElement('a');
@@ -1960,6 +1975,7 @@ async function captureDashboardJpg(){
     console.error('[screenshot]', err);
     toast('Gagal mengambil screenshot: '+(err.message||''),'error');
   }finally{
+    window.scrollTo(0, savedScroll);
     if(btn){ btn.disabled = false; btn.innerHTML = original; }
   }
 }
@@ -2227,9 +2243,8 @@ async function renderLanding(){
 
   // --- Load dropdowns ---
   try{
-    const [lok, tuj, ma, divs, deps] = await Promise.all([
+    const [lok, tuj, divs, deps] = await Promise.all([
       db.listLokasi(), db.listTujuan(),
-      db.listMataAnggaran().catch(()=>[]),
       db.listDivisi().catch(()=>[]),
       db.listDepartemen().catch(()=>[])
     ]);
@@ -2237,11 +2252,6 @@ async function renderLanding(){
     if(selL) selL.innerHTML = '<option value="">-- Pilih Lokasi --</option>' + lok.map(x=>`<option>${escapeHtml(x.name)}</option>`).join('');
     const selT = $('#select-tujuan');
     if(selT) selT.innerHTML = '<option value="">-- Pilih Tujuan --</option>' + tuj.map(x=>`<option>${escapeHtml(x.name)}</option>`).join('');
-
-    // Mata Anggaran
-    const selMA = $('#select-mata-anggaran');
-    if(selMA) selMA.innerHTML = '<option value="">-- Pilih Mata Anggaran --</option>' +
-      ma.map(m => `<option>${escapeHtml(m.name)}${m.kode?' — '+escapeHtml(m.kode):''}</option>`).join('');
 
     // Divisi → Departemen (cascading)
     const selDiv = $('#select-divisi');
@@ -2399,7 +2409,6 @@ function setupRequestForm(){
         tujuan_kebutuhan: fd.get('tujuan_kebutuhan') || null,
         divisi:        divObj ? divObj.name : null,
         departemen:    fd.get('departemen') || null,
-        mata_anggaran: fd.get('mata_anggaran') || null,
         tanggal_kebutuhan: fd.get('tanggal_kebutuhan'),
         detail_kebutuhan: fd.get('detail_kebutuhan'),
         estimasi_harga: hargaDigits ? Number(hargaDigits) : 0,
@@ -2500,9 +2509,16 @@ async function renderAdmin(page){
 
   // Sidebar nav
   $$('#admin-nav .nav-item').forEach(it => {
-    // Role gating: hide items that require a higher role
+    // Role gating: hide items the user isn't allowed to access
+    // - data-requires-role="superadmin" → only that role
+    // - data-allowed-roles="superadmin,admin" → comma-separated list
     const reqRole = it.dataset.requiresRole;
+    const allowed = it.dataset.allowedRoles ? it.dataset.allowedRoles.split(',').map(s => s.trim()) : null;
     if(reqRole && u.role !== reqRole){
+      it.style.display = 'none';
+      return;
+    }
+    if(allowed && !allowed.includes(u.role)){
       it.style.display = 'none';
       return;
     }
@@ -2551,13 +2567,22 @@ async function renderAdmin(page){
 
   const c = $('#admin-content');
 
-  // Guard superadmin-only pages
-  if(page === 'slatargets' && u.role !== 'superadmin'){
+  // Role-based access control for direct URL navigation
+  // Roles: superadmin (all), admin (all except users), pic (all except users & masterdata)
+  const access = {
+    slatargets: ['superadmin'],
+    users:      ['superadmin'],
+    masterdata: ['superadmin','admin']
+  };
+  const allowed = access[page];
+  if(allowed && !allowed.includes(u.role)){
+    const labelMap = { slatargets:'SLA Target', users:'Manajemen User', masterdata:'Master Data' };
+    const roleStr  = allowed.join(' / ');
     c.innerHTML = `
       <div class="card card-pad center" style="background:#FEF3C7;border-color:#FCD34D">
         <span class="material-symbols-rounded" style="font-size:48px;color:#92400E">lock</span>
         <h3 style="margin:8px 0;color:#92400E">Akses Ditolak</h3>
-        <p class="muted">Halaman <strong>SLA Target</strong> hanya dapat diakses oleh <strong>superadmin</strong>.</p>
+        <p class="muted">Halaman <strong>${labelMap[page]||page}</strong> hanya dapat diakses oleh <strong>${roleStr}</strong>.</p>
         <a class="btn btn-primary" href="#/admin/dashboard" style="margin-top:8px">Kembali ke Dashboard</a>
       </div>`;
     return;
@@ -2663,9 +2688,6 @@ async function viewAdminDashboard(c){
       <button class="btn btn-ghost btn-sm" id="dash-screenshot" title="Download tampilan Dashboard sebagai JPG">
         <span class="material-symbols-rounded" style="font-size:18px">photo_camera</span>Screenshot JPG
       </button>
-      <button class="btn btn-accent btn-sm" id="dash-backup" title="Download backup seluruh data ke XLSX">
-        <span class="material-symbols-rounded" style="font-size:18px">cloud_download</span>Backup Data
-      </button>
     </div>
 
     <div id="dash-capture-host">
@@ -2716,7 +2738,6 @@ async function viewAdminDashboard(c){
 
   // Wire dashboard action buttons
   $('#dash-screenshot')?.addEventListener('click', () => captureDashboardJpg());
-  $('#dash-backup')?.addEventListener('click', () => downloadBackupXlsx());
 
   let reqs;
   try{
@@ -3637,6 +3658,15 @@ async function viewAdminRatings(c){
 /* ----------- ADMIN: MASTER DATA ----------- */
 async function viewAdminMaster(c){
   c.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px">
+      <p class="muted text-sm" style="margin:0;max-width:600px">
+        Kelola seluruh master data yang dipakai oleh sistem: lokasi, divisi, mata anggaran, dan lain-lain.
+        Tombol di kanan untuk backup seluruh data sistem ke file XLSX.
+      </p>
+      <button class="btn btn-accent btn-sm" id="md-backup" title="Download backup seluruh data ke XLSX">
+        <span class="material-symbols-rounded" style="font-size:18px">cloud_download</span>Backup Data
+      </button>
+    </div>
     <div class="split-3">
       <div class="card">
         <div class="card-head"><h3>Lokasi Kebutuhan</h3></div>
@@ -3843,6 +3873,7 @@ async function viewAdminMaster(c){
   await refresh();
 
   // ---- Add handlers ----
+  $('#md-backup').addEventListener('click', () => downloadBackupXlsx());
   $('#add-lok').addEventListener('click', async () => {
     const v = $('#new-lok').value.trim(); if(!v) return;
     try{
