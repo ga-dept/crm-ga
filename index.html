@@ -924,13 +924,16 @@ table.t{
                 <select class="select" name="divisi" id="select-divisi">
                   <option value="">-- Memuat --</option>
                 </select>
-                <span class="hint">Pilih Divisi dulu, daftar Departemen akan menyesuaikan.</span>
+                <input type="text" class="input" id="input-divisi-new" placeholder="Ketik nama Divisi baru" style="display:none;margin-top:8px" />
+                <span class="hint">Pilih Divisi, atau pilih "+ Tambah Divisi baru" untuk membuat yang belum ada.</span>
               </div>
               <div class="field">
                 <label>Departemen</label>
                 <select class="select" name="departemen" id="select-departemen">
                   <option value="">— Pilih Divisi terlebih dahulu —</option>
                 </select>
+                <input type="text" class="input" id="input-departemen-new" placeholder="Ketik nama Departemen baru" style="display:none;margin-top:8px" />
+                <span class="hint">Departemen baru akan otomatis terdaftar di bawah Divisi terpilih.</span>
               </div>
 
               <div class="field field-required">
@@ -2509,23 +2512,43 @@ async function renderLanding(){
     const selT = $('#select-tujuan');
     if(selT) selT.innerHTML = '<option value="">-- Pilih Tujuan --</option>' + tuj.map(x=>`<option>${escapeHtml(x.name)}</option>`).join('');
 
-    // Divisi → Departemen (cascading)
+    // Divisi → Departemen (cascading), with inline "+ Tambah baru" option
     const selDiv = $('#select-divisi');
     const selDep = $('#select-departemen');
+    const divNewInput = $('#input-divisi-new');
+    const depNewInput = $('#input-departemen-new');
+    const DEP_NEW_OPT = '<option value="__new__">+ Tambah Departemen baru…</option>';
     if(selDiv){
       selDiv.innerHTML = '<option value="">-- Pilih Divisi --</option>' +
-        divs.map(d => `<option value="${escapeHtml(d.id)}">${escapeHtml(d.name)}</option>`).join('');
+        divs.map(d => `<option value="${escapeHtml(d.id)}">${escapeHtml(d.name)}</option>`).join('') +
+        '<option value="__new__">+ Tambah Divisi baru…</option>';
     }
     if(selDiv && selDep){
       selDiv.addEventListener('change', () => {
-        const divId = selDiv.value;
-        if(!divId){
+        const v = selDiv.value;
+        if(v === '__new__'){
+          // Brand-new divisi → it has no departemen yet, so force "new" mode
+          if(divNewInput) divNewInput.style.display = '';
+          selDep.innerHTML = DEP_NEW_OPT;
+          selDep.value = '__new__';
+          if(depNewInput) depNewInput.style.display = '';
+          return;
+        }
+        if(divNewInput){ divNewInput.style.display = 'none'; divNewInput.value = ''; }
+        if(depNewInput){ depNewInput.style.display = 'none'; depNewInput.value = ''; }
+        if(!v){
           selDep.innerHTML = '<option value="">— Pilih Divisi terlebih dahulu —</option>';
           return;
         }
-        const opts = deps.filter(d => d.divisi_id === divId);
+        const opts = deps.filter(d => d.divisi_id === v);
         selDep.innerHTML = '<option value="">-- Pilih Departemen --</option>' +
-          opts.map(d => `<option>${escapeHtml(d.name)}</option>`).join('');
+          opts.map(d => `<option>${escapeHtml(d.name)}</option>`).join('') + DEP_NEW_OPT;
+      });
+      selDep.addEventListener('change', () => {
+        if(!depNewInput) return;
+        const show = selDep.value === '__new__';
+        depNewInput.style.display = show ? '' : 'none';
+        if(!show) depNewInput.value = '';
       });
     }
   }catch(err){ console.error('[dropdowns]', err); }
@@ -2648,10 +2671,53 @@ function setupRequestForm(){
 
       const hargaDigits = (fd.get('estimasi_harga')||'').toString().replace(/\D/g,'');
 
-      // Divisi field stores the divisi UUID; resolve to name for storage
-      const divisiId = fd.get('divisi') || '';
-      const divList = await db.listDivisi().catch(() => []);
-      const divObj = divList.find(d => d.id === divisiId);
+      // Resolve Divisi & Departemen — the user may pick an existing one
+      // OR type a brand-new name, which gets auto-added to the master.
+      const lcEq = (a,b) => (a||'').trim().toLowerCase() === (b||'').trim().toLowerCase();
+      let divList = await db.listDivisi().catch(() => []);
+      let divisiName = null, resolvedDivisiId = '';
+      const divSelVal = fd.get('divisi') || '';
+      if(divSelVal === '__new__'){
+        const typed = ($('#input-divisi-new')?.value || '').trim();
+        if(typed){
+          let d = divList.find(x => lcEq(x.name, typed));
+          if(!d){
+            try{ d = await db.addDivisi({ name: typed }); }
+            catch(divErr){
+              console.warn('addDivisi gagal:', divErr);
+              divList = await db.listDivisi().catch(() => divList);
+              d = divList.find(x => lcEq(x.name, typed));
+            }
+          }
+          if(d){ divisiName = d.name; resolvedDivisiId = d.id; }
+        }
+      } else if(divSelVal){
+        const d = divList.find(x => x.id === divSelVal);
+        if(d){ divisiName = d.name; resolvedDivisiId = d.id; }
+      }
+
+      let departemenName = null;
+      const depSelVal = fd.get('departemen') || '';
+      if(depSelVal === '__new__'){
+        const typedDep = ($('#input-departemen-new')?.value || '').trim();
+        if(typedDep){
+          if(!resolvedDivisiId)
+            throw new Error('Pilih atau isi Divisi terlebih dahulu sebelum menambah Departemen');
+          let depList = await db.listDepartemen().catch(() => []);
+          let dep = depList.find(x => x.divisi_id === resolvedDivisiId && lcEq(x.name, typedDep));
+          if(!dep){
+            try{ dep = await db.addDepartemen({ name: typedDep, divisi_id: resolvedDivisiId }); }
+            catch(depErr){
+              console.warn('addDepartemen gagal:', depErr);
+              depList = await db.listDepartemen().catch(() => depList);
+              dep = depList.find(x => x.divisi_id === resolvedDivisiId && lcEq(x.name, typedDep));
+            }
+          }
+          departemenName = dep ? dep.name : typedDep;
+        }
+      } else if(depSelVal){
+        departemenName = depSelVal;
+      }
 
       const payload = {
         kode_permintaan: kode,
@@ -2663,8 +2729,8 @@ function setupRequestForm(){
         nama_kegiatan: fd.get('nama_kegiatan') || null,
         lokasi_kebutuhan: fd.get('lokasi_kebutuhan') || null,
         tujuan_kebutuhan: fd.get('tujuan_kebutuhan') || null,
-        divisi:        divObj ? divObj.name : null,
-        departemen:    fd.get('departemen') || null,
+        divisi:        divisiName,
+        departemen:    departemenName,
         tanggal_kebutuhan: fd.get('tanggal_kebutuhan'),
         detail_kebutuhan: fd.get('detail_kebutuhan'),
         estimasi_harga: hargaDigits ? Number(hargaDigits) : 0,
@@ -5266,7 +5332,7 @@ function openMassUploadModal(){
             <li>Klik <em>Download Template</em> di kanan, isi sesuai contoh.</li>
             <li>Kolom <strong>wajib</strong>: ${COLS.filter(c=>c.required).map(c=>c.label).join(', ')}.</li>
             <li><strong>Kategori</strong> harus sama persis dengan salah satu: <em>Food and Beverage, Direct Purchase, Fasilitas Kantor dan Identitas Karyawan, Seragam, Office Supply, Event Support</em>.</li>
-            <li><strong>Tanggal Kebutuhan</strong> format <code>YYYY-MM-DD</code> (mis. <code>2026-05-20</code>).</li>
+            <li><strong>Tanggal Kebutuhan</strong> format <code>YYYY-MM-DD</code> <em>atau</em> <code>DD/MM/YYYY</code> — Excel sering mengubahnya otomatis, dan keduanya kini diterima.</li>
             <li><strong>Estimasi Harga</strong> berupa angka tanpa titik/koma (mis. <code>1500000</code>).</li>
             <li><strong>Divisi</strong> & <strong>Departemen</strong> opsional. Jika belum terdaftar, sistem <strong>otomatis menambahkannya ke master</strong> dan langsung muncul di dropdown. Bila mengisi Departemen, kolom Divisi wajib diisi juga.</li>
             <li>Kode permintaan akan <strong>otomatis</strong> dibuat berdasarkan kategori; jangan diisi.</li>
@@ -5414,6 +5480,34 @@ function openMassUploadModal(){
     reader.readAsText(file, 'UTF-8');
   }
 
+  // Excel almost always rewrites an ISO date (2026-06-02) into the
+  // locale display format (e.g. 02/06/2026) when the file is opened and
+  // re-saved. Accept the common variants and normalize back to ISO
+  // YYYY-MM-DD. Returns null if the value can't be understood.
+  function normalizeDate(s){
+    s = (s||'').trim();
+    if(!s) return null;
+    const pad = n => String(n).padStart(2,'0');
+    const build = (y,mo,d) => {
+      if(mo<1||mo>12||d<1||d>31) return null;
+      const dt = new Date(Date.UTC(y,mo-1,d));
+      if(dt.getUTCFullYear()!==y || dt.getUTCMonth()!==mo-1 || dt.getUTCDate()!==d) return null;
+      return `${y}-${pad(mo)}-${pad(d)}`;
+    };
+    let m;
+    // ISO-like: 2026-06-02  (also tolerate / or . as separator)
+    if((m = s.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})$/)))
+      return build(+m[1], +m[2], +m[3]);
+    // Day/Month/Year: 02/06/2026, 6-2-2026 — default to D/M/Y (locale ID),
+    // but auto-correct to M/D/Y if the numbers only make sense that way.
+    if((m = s.match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{4})$/))){
+      let d = +m[1], mo = +m[2];
+      if(d <= 12 && mo > 12){ const t = d; d = mo; mo = t; }  // it was M/D/Y
+      return build(+m[3], mo, d);
+    }
+    return null;
+  }
+
   function validateRow(obj, lineNum){
     const errors = [];
     const get = (label) => (obj[label] || '').trim();
@@ -5427,10 +5521,10 @@ function openMassUploadModal(){
     const nama = get('Nama Pemesan');
     if(!nama) errors.push('Nama Pemesan kosong');
 
-    const tgl = get('Tanggal Kebutuhan');
-    if(!tgl) errors.push('Tanggal Kebutuhan kosong');
-    else if(!/^\d{4}-\d{2}-\d{2}$/.test(tgl) || isNaN(Date.parse(tgl)))
-      errors.push('Tanggal harus format YYYY-MM-DD');
+    const tglRaw = get('Tanggal Kebutuhan');
+    const tgl = normalizeDate(tglRaw);
+    if(!tglRaw) errors.push('Tanggal Kebutuhan kosong');
+    else if(!tgl) errors.push('Format tanggal tidak dikenali (gunakan YYYY-MM-DD atau DD/MM/YYYY)');
 
     const detail = get('Detail Kebutuhan');
     if(!detail) errors.push('Detail Kebutuhan kosong');
@@ -5499,7 +5593,7 @@ function openMassUploadModal(){
                 <td>${escapeHtml(p.raw['Nama Pemesan']||'')}</td>
                 <td>${escapeHtml(p.raw['Divisi']||'')||'<span class="muted">—</span>'}</td>
                 <td>${escapeHtml(p.raw['Departemen']||'')||'<span class="muted">—</span>'}</td>
-                <td>${escapeHtml(p.raw['Tanggal Kebutuhan']||'')}</td>
+                <td>${escapeHtml((p.payload && p.payload.tanggal_kebutuhan) || p.raw['Tanggal Kebutuhan'] || '')}</td>
                 <td style="max-width:240px"><div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${escapeHtml(p.raw['Detail Kebutuhan']||'')}">${escapeHtml(p.raw['Detail Kebutuhan']||'')}</div></td>
                 <td>${p.errors.length ? `<span class="err">${escapeHtml(p.errors.join(' · '))}</span>` : '<span class="muted text-sm">—</span>'}</td>
               </tr>
