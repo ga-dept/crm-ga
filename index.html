@@ -1455,7 +1455,8 @@ const demo = (() => {
     {id:'v6',version:'1.5.0',release_date:'2026-05-17',changes:'Upload bukti foto & tanda terima saat Selesai, modul SLA Target per kategori (superadmin only), kolom & badge SLA di Daftar Permintaan, statistik SLA di Dashboard, edit completed_at oleh superadmin dengan audit trail.'},
     {id:'v7',version:'1.6.0',release_date:'2026-05-18',changes:'Tracking by SmartOffice code, dashboard screenshot JPG, kolom Mata Anggaran (+master), kolom Divisi & Departemen (+master dengan cascading dropdown), tombol Backup Data XLSX multi-sheet.'},
     {id:'v8',version:'1.7.0',release_date:'2026-05-20',changes:'Kategori Pemesanan custom (CRUD master + kode prefix + SLA default), workflow approval Kepala Departemen untuk Direct Purchase, menu Divisi & Departemen dipisah di sidebar, hanya superadmin/admin yang boleh assign PIC.'},
-    {id:'v9',version:'1.8.0',release_date:'2026-06-07',changes:'Modul Payment baru (semua permintaan masuk untuk update pembayaran: Proforma/PR/PO/GR/Invoice, Cost Type, Grand Total, dll — dapat diupdate semua user), statistik Payment di Dashboard, Detail Permintaan kini mempertahankan baris baru & lebih mudah dibaca, tabel Daftar Permintaan dirampingkan agar muat di desktop tanpa scroll, perbaikan auto-add Divisi/Departemen, dukungan PWA (installable + offline).'}
+    {id:'v9',version:'1.8.0',release_date:'2026-06-07',changes:'Modul Payment baru (semua permintaan masuk untuk update pembayaran: Proforma/PR/PO/GR/Invoice, Cost Type, Grand Total, dll — dapat diupdate semua user), statistik Payment di Dashboard, Detail Permintaan kini mempertahankan baris baru & lebih mudah dibaca, tabel Daftar Permintaan dirampingkan agar muat di desktop tanpa scroll, perbaikan auto-add Divisi/Departemen, dukungan PWA (installable + offline).'},
+    {id:'v10',version:'1.8.1',release_date:'2026-06-08',changes:'CRUD penuh untuk Divisi & Departemen: tombol Edit untuk mengubah nama Divisi, serta mengubah nama, memindah Divisi induk, dan menunjuk Kepala Departemen dalam satu dialog. Penjagaan nama ganda saat menambah/mengubah. Auto-add dari formulir publik tetap berfungsi seperti sebelumnya.'}
   ];
 
   // Mata Anggaran options
@@ -1852,6 +1853,15 @@ const db = {
     const { error } = await supa.from('divisi_options').delete().eq('id',id);
     if(error) throw error;
   },
+  async updateDivisi(id, {name}){
+    if(!SUPA_CONFIGURED){
+      const i = demo.divisi.findIndex(o => o.id === id);
+      if(i >= 0) demo.divisi[i] = { ...demo.divisi[i], name };
+      return demo.divisi[i];
+    }
+    const { data, error } = await supa.from('divisi_options').update({name}).eq('id',id).select().single();
+    if(error) throw error; return data;
+  },
 
   // ---- Departemen (master, FK ke divisi) ----
   async listDepartemen(divisiId){
@@ -1888,6 +1898,21 @@ const db = {
       return demo.departemen[i];
     }
     const { data, error } = await supa.from('departemen_options').update(patch).eq('id',id).select().single();
+    if(error) throw error; return data;
+  },
+
+  // v1.8.1: General update for Departemen (rename / move divisi / set kepala)
+  async updateDepartemen(id, patch){
+    const clean = {};
+    if('name' in patch) clean.name = patch.name;
+    if('divisi_id' in patch) clean.divisi_id = patch.divisi_id;
+    if('kepala_departemen_user_id' in patch) clean.kepala_departemen_user_id = patch.kepala_departemen_user_id || null;
+    if(!SUPA_CONFIGURED){
+      const i = demo.departemen.findIndex(d => d.id === id);
+      if(i >= 0) demo.departemen[i] = { ...demo.departemen[i], ...clean };
+      return demo.departemen[i];
+    }
+    const { data, error } = await supa.from('departemen_options').update(clean).eq('id',id).select().single();
     if(error) throw error; return data;
   },
 
@@ -5057,7 +5082,7 @@ async function viewAdminDivisi(c){
           <th style="width:44px">#</th>
           <th>Nama Divisi</th>
           <th style="width:160px">Jumlah Departemen</th>
-          <th style="width:80px;text-align:right">Aksi</th>
+          <th style="width:110px;text-align:right">Aksi</th>
         </tr></thead>
         <tbody>
         ${filtered.map((d, i) => {
@@ -5066,7 +5091,8 @@ async function viewAdminDivisi(c){
             <td>${i+1}</td>
             <td><strong>${escapeHtml(d.name)}</strong></td>
             <td>${cnt} departemen</td>
-            <td style="text-align:right">
+            <td style="text-align:right;white-space:nowrap">
+              <button class="btn-icon" data-div-edit="${d.id}" title="Edit / Ubah Nama"><span class="material-symbols-rounded">edit</span></button>
               <button class="btn-icon" data-div-del="${d.id}" title="Hapus"><span class="material-symbols-rounded">delete</span></button>
             </td>
           </tr>`;
@@ -5085,6 +5111,42 @@ async function viewAdminDivisi(c){
         db.logActivity({ action:'masterdata.delete', target_type:'divisi', target_id:id, detail:`Hapus divisi: ${item?.name||id}${cnt>0?` (+${cnt} departemen)`:''}` });
         toast('Divisi dihapus','success'); refresh();
       }catch(err){ toast('Gagal menghapus: '+(err.message||''),'error'); }
+    }));
+
+    // Edit / rename divisi
+    $$('button[data-div-edit]', host).forEach(b => b.addEventListener('click', () => {
+      const id = b.dataset.divEdit;
+      const item = divs.find(x => x.id === id);
+      if(!item) return;
+      openModal(`
+        <div class="modal-head">
+          <h3><span class="material-symbols-rounded" style="vertical-align:-6px;color:var(--mrt-blue)">edit</span> Edit Divisi</h3>
+          <button class="btn-icon" onclick="closeModal()"><span class="material-symbols-rounded">close</span></button>
+        </div>
+        <div class="modal-body">
+          <div class="field field-required">
+            <label>Nama Divisi</label>
+            <input class="input" id="div-edit-name" value="${escapeHtml(item.name)}"/>
+          </div>
+          <span class="hint">Mengubah nama divisi tidak mengubah data permintaan yang sudah tercatat sebelumnya.</span>
+        </div>
+        <div class="modal-foot">
+          <button class="btn btn-ghost" onclick="closeModal()">Batal</button>
+          <button class="btn btn-primary" id="div-edit-save"><span class="material-symbols-rounded">save</span>Simpan</button>
+        </div>
+      `, 'sm');
+      $('#div-edit-name').focus();
+      $('#div-edit-save').addEventListener('click', async () => {
+        const v = $('#div-edit-name').value.trim();
+        if(!v){ toast('Nama wajib diisi','warn'); return; }
+        if(v.toLowerCase() === item.name.toLowerCase()){ closeModal(); return; }
+        if(divs.some(x => x.id !== id && (x.name||'').toLowerCase() === v.toLowerCase())){ toast('Nama divisi sudah dipakai','warn'); return; }
+        try{
+          await db.updateDivisi(id, { name:v });
+          db.logActivity({ action:'masterdata.update', target_type:'divisi', target_id:id, detail:`Ubah nama divisi: ${item.name} → ${v}` });
+          closeModal(); toast('Divisi diperbarui','success'); refresh();
+        }catch(err){ toast('Gagal: '+(err.message||''),'error'); }
+      });
     }));
   }
   $('#div-search').addEventListener('input', refresh);
@@ -5110,6 +5172,8 @@ async function viewAdminDivisi(c){
     $('#div-new-save').addEventListener('click', async () => {
       const v = $('#div-new-name').value.trim();
       if(!v){ toast('Nama wajib','warn'); return; }
+      const list = await db.listDivisi().catch(()=>[]);
+      if(list.some(x => (x.name||'').toLowerCase() === v.toLowerCase())){ toast('Nama divisi sudah ada','warn'); return; }
       try{
         await db.addDivisi({ name:v });
         db.logActivity({ action:'masterdata.create', target_type:'divisi', detail:'Tambah divisi: '+v });
@@ -5170,7 +5234,7 @@ async function viewAdminDepartemen(c){
           <th>Nama Departemen</th>
           <th>Divisi</th>
           <th>Kepala Departemen</th>
-          <th style="width:80px;text-align:right">Aksi</th>
+          <th style="width:110px;text-align:right">Aksi</th>
         </tr></thead>
         <tbody>
         ${filtered.map((d, i) => {
@@ -5184,50 +5248,74 @@ async function viewAdminDepartemen(c){
               ? `<strong>${escapeHtml(kep.full_name)}</strong> <span class="text-sm muted">· ${escapeHtml(kep.jabatan||kep.role)}</span>`
               : '<span class="muted text-sm">— belum ditunjuk —</span>'}</td>
             <td style="text-align:right;white-space:nowrap">
-              <button class="btn-icon" data-set-kep="${d.id}" title="Atur Kepala Departemen"><span class="material-symbols-rounded">person_add</span></button>
+              <button class="btn-icon" data-dep-edit="${d.id}" title="Edit Departemen"><span class="material-symbols-rounded">edit</span></button>
               <button class="btn-icon" data-dep-del="${d.id}" title="Hapus"><span class="material-symbols-rounded">delete</span></button>
             </td>
           </tr>`;
         }).join('')}
         </tbody></table></div>`;
 
-    // Wire Kepala set
-    $$('button[data-set-kep]', host).forEach(b => b.addEventListener('click', () => {
-      const id = b.dataset.setKep;
+    // Wire full edit (name + divisi + kepala departemen)
+    $$('button[data-dep-edit]', host).forEach(b => b.addEventListener('click', () => {
+      const id = b.dataset.depEdit;
       const dep = deps.find(d => d.id === id);
+      if(!dep) return;
       openModal(`
         <div class="modal-head">
-          <h3><span class="material-symbols-rounded" style="vertical-align:-6px;color:var(--mrt-blue)">person_add</span> Atur Kepala Departemen</h3>
+          <h3><span class="material-symbols-rounded" style="vertical-align:-6px;color:var(--mrt-blue)">edit</span> Edit Departemen</h3>
           <button class="btn-icon" onclick="closeModal()"><span class="material-symbols-rounded">close</span></button>
         </div>
         <div class="modal-body">
-          <div class="field"><label>Departemen</label><input class="input" disabled value="${escapeHtml(dep.name)}"/></div>
+          <div class="field field-required">
+            <label>Divisi</label>
+            <select class="select" id="dep-edit-div">
+              ${divs.map(d => `<option value="${escapeHtml(d.id)}" ${d.id===dep.divisi_id?'selected':''}>${escapeHtml(d.name)}</option>`).join('')}
+            </select>
+          </div>
+          <div class="field field-required">
+            <label>Nama Departemen</label>
+            <input class="input" id="dep-edit-name" value="${escapeHtml(dep.name)}"/>
+          </div>
           <div class="field">
             <label>Kepala Departemen</label>
-            <select class="select" id="kep-user">
+            <select class="select" id="dep-edit-kep">
               <option value="">— belum ditunjuk —</option>
               ${users.filter(u => u.active !== false).map(u => `<option value="${u.id}" ${u.id===dep.kepala_departemen_user_id?'selected':''}>${escapeHtml(u.full_name)} · ${escapeHtml(u.jabatan||u.role)}</option>`).join('')}
             </select>
-            <span class="hint">Kepala Departemen akan menerima notifikasi & otoritas approval untuk Direct Purchase di departemen ini.</span>
+            <span class="hint">Kepala Departemen menerima notifikasi & otoritas approval Direct Purchase di departemen ini.</span>
           </div>
+          <span class="hint">Mengubah data master tidak mengubah permintaan yang sudah tercatat sebelumnya.</span>
         </div>
         <div class="modal-foot">
           <button class="btn btn-ghost" onclick="closeModal()">Batal</button>
-          <button class="btn btn-primary" id="kep-save"><span class="material-symbols-rounded">save</span>Simpan</button>
+          <button class="btn btn-primary" id="dep-edit-save"><span class="material-symbols-rounded">save</span>Simpan</button>
         </div>
       `, 'md');
-      $('#kep-save').addEventListener('click', async () => {
-        const newId = $('#kep-user').value || null;
+      $('#dep-edit-name').focus();
+      $('#dep-edit-save').addEventListener('click', async () => {
+        const divId = $('#dep-edit-div').value;
+        const v = $('#dep-edit-name').value.trim();
+        const kep = $('#dep-edit-kep').value || null;
+        if(!divId){ toast('Pilih Divisi','warn'); return; }
+        if(!v){ toast('Nama wajib diisi','warn'); return; }
+        if(deps.some(x => x.id !== id && x.divisi_id === divId && (x.name||'').toLowerCase() === v.toLowerCase())){
+          toast('Departemen dengan nama itu sudah ada di divisi tersebut','warn'); return;
+        }
         try{
-          await db.updateDepartemenKepala(id, newId);
-          const newUser = newId ? users.find(u => u.id === newId) : null;
+          await db.updateDepartemen(id, { name:v, divisi_id:divId, kepala_departemen_user_id:kep });
+          const dvNew = divs.find(x => x.id === divId);
+          const detailParts = [];
+          if(v !== dep.name) detailParts.push(`nama: ${dep.name} → ${v}`);
+          if(divId !== dep.divisi_id) detailParts.push(`divisi → ${dvNew ? dvNew.name : divId}`);
+          if((kep||null) !== (dep.kepala_departemen_user_id||null)){
+            const ku = kep ? users.find(u => u.id === kep) : null;
+            detailParts.push(`kepala → ${ku ? ku.full_name : '(kosong)'}`);
+          }
           db.logActivity({
-            action:'departemen.set_kepala', target_type:'departemen', target_id:id,
-            detail:`Set Kepala Departemen "${dep.name}" → ${newUser ? newUser.full_name : '(kosong)'}`
+            action:'masterdata.update', target_type:'departemen', target_id:id,
+            detail:`Edit departemen "${dep.name}"${detailParts.length?': '+detailParts.join(', '):''}`
           });
-          closeModal();
-          toast('Kepala Departemen di-update','success');
-          refresh();
+          closeModal(); toast('Departemen diperbarui','success'); refresh();
         }catch(err){ toast('Gagal: '+(err.message||''),'error'); }
       });
     }));
@@ -5279,6 +5367,8 @@ async function viewAdminDepartemen(c){
         const v = $('#dep-new-name').value.trim();
         if(!divId){ toast('Pilih Divisi dulu','warn'); return; }
         if(!v){ toast('Nama wajib','warn'); return; }
+        const list = await db.listDepartemen(divId).catch(()=>[]);
+        if(list.some(x => (x.name||'').toLowerCase() === v.toLowerCase())){ toast('Departemen dengan nama itu sudah ada di divisi ini','warn'); return; }
         try{
           await db.addDepartemen({ name:v, divisi_id:divId });
           db.logActivity({ action:'masterdata.create', target_type:'departemen', detail:'Tambah departemen: '+v });
