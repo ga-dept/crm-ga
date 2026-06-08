@@ -5,7 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>GA Hotline Portal — General Affairs MRT</title>
 <link rel="icon" type="image/png" href="logo.png" />
-<link rel="apple-touch-icon" href="logo.png" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<!-- PWA -->
+<link rel="manifest" href="manifest.json" />
+<meta name="theme-color" content="#003D7E" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="GA Hotline" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -474,6 +481,67 @@ table.t{
 .t .actions-compact .btn-icon{padding:5px;border-radius:7px}
 .t .actions-compact .btn-icon .material-symbols-rounded{font-size:18px}
 .t .mono{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12.5px}
+.t .kat-name{font-size:12px;color:var(--text-mut);display:block;line-height:1.25;margin-top:2px}
+
+/* ---- Dense variant: smaller font + tighter padding so Daftar Permintaan
+        fits on desktop without horizontal scroll (requested fix #1) ---- */
+.t.t-dense{font-size:11.5px;min-width:0}
+.t.t-dense thead th{padding:8px 9px;font-size:10.5px;letter-spacing:.2px}
+.t.t-dense tbody td{padding:8px 9px}
+.t.t-dense .mono{font-size:10.8px}
+.t.t-dense .code-pill{padding:2px 7px;font-size:10.5px}
+.t.t-dense .badge{padding:3px 8px;font-size:10px}
+.t.t-dense .tag{padding:1px 6px;font-size:9.5px}
+.t.t-dense .kat-name{font-size:10.5px;color:var(--text-mut);display:block;line-height:1.25;margin-top:1px}
+.t.t-dense .actions-compact .btn-icon{padding:4px;border-radius:6px}
+.t.t-dense .actions-compact .btn-icon .material-symbols-rounded{font-size:16px}
+
+/* ---- Detail Permintaan block in detail popup (requested fix #3):
+        preserve line-breaks, wrap nicely, never cut off ---- */
+.detail-block{
+  grid-column:1/-1;margin-top:4px;
+  background:var(--surface-2);border:1px solid var(--border-2);
+  border-left:3px solid var(--mrt-blue);border-radius:10px;
+  padding:12px 14px;
+}
+.detail-block .detail-label{
+  font-size:12px;font-weight:700;color:var(--mrt-blue);
+  text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;
+  display:flex;align-items:center;gap:6px;
+}
+.detail-block .detail-text{
+  white-space:pre-wrap;word-break:break-word;overflow-wrap:anywhere;
+  font-size:13.5px;line-height:1.6;color:var(--text);font-weight:400;
+}
+
+/* ---- Payment module wide grid (requested fix #4) ---- */
+.pay-table{font-size:11px;min-width:2600px}
+.pay-table thead th{padding:8px 10px;font-size:10px;white-space:nowrap;background:var(--surface-2)}
+.pay-table tbody td{padding:7px 10px;white-space:nowrap}
+.pay-table .code-pill{padding:2px 7px;font-size:10px}
+.pay-table .badge{padding:3px 8px;font-size:9.5px}
+.pay-table td.num{font-family:'JetBrains Mono',ui-monospace,monospace;text-align:right}
+.pay-table th.sticky-col,.pay-table td.sticky-col{
+  position:sticky;left:0;z-index:2;background:#fff;box-shadow:1px 0 0 var(--border-2)
+}
+.pay-table thead th.sticky-col{background:var(--surface-2);z-index:3}
+.pay-table tbody tr:hover td.sticky-col{background:var(--surface-2)}
+.badge.pay-belum{background:#FEF3C7;color:#92400E}
+.badge.pay-proses{background:#DBEAFE;color:#1E40AF}
+.badge.pay-menunggu{background:#E0E7FF;color:#3730A3}
+.badge.pay-lunas{background:var(--mrt-green-soft);color:#065F46}
+.badge.pay-batal{background:#FEE2E2;color:#991B1B}
+/* payment edit modal: 2-column responsive grid of fields */
+.pay-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 16px}
+.pay-form-grid .field{margin-bottom:12px}
+.pay-form-grid .field.full{grid-column:1/-1}
+.pay-form-grid .field input.input,.pay-form-grid .field select.select{padding:8px 10px;font-size:13px}
+.pay-section-title{grid-column:1/-1;font-size:12px;font-weight:700;color:var(--mrt-blue);
+  text-transform:uppercase;letter-spacing:.4px;margin:6px 0 4px;padding-top:8px;border-top:1px dashed var(--border-2)}
+.pay-section-title:first-child{border-top:none;padding-top:0}
+.field .synced-tag{font-size:10px;font-weight:600;color:var(--mrt-green);background:var(--mrt-green-soft);
+  padding:1px 6px;border-radius:6px;margin-left:6px}
+.modal.xl{max-width:920px}
 
 .empty-row{text-align:center;color:var(--text-mut);padding:32px!important}
 
@@ -1042,6 +1110,7 @@ table.t{
         <a class="nav-item" data-route="approvals"><span class="material-symbols-rounded">approval</span><span class="nav-label">Persetujuan <span id="approval-badge" class="nav-badge" style="display:none">0</span></span></a>
         <a class="nav-item" data-route="requests"><span class="material-symbols-rounded">list_alt</span><span class="nav-label">Daftar Permintaan</span></a>
         <a class="nav-item" data-route="ratings"><span class="material-symbols-rounded">star</span><span class="nav-label">Daftar Penilaian</span></a>
+        <a class="nav-item" data-route="payments"><span class="material-symbols-rounded">payments</span><span class="nav-label">Payment</span></a>
         <div class="sidebar-section-label" data-allowed-roles="superadmin,admin">MASTER DATA</div>
         <a class="nav-item" data-route="masterdata"  data-allowed-roles="superadmin,admin"><span class="material-symbols-rounded">tune</span><span class="nav-label">Lokasi, Tujuan, Anggaran</span></a>
         <a class="nav-item" data-route="kategori"    data-allowed-roles="superadmin,admin"><span class="material-symbols-rounded">category</span><span class="nav-label">Kategori Pemesanan</span></a>
@@ -1199,6 +1268,77 @@ const STATUS_CLASS = {
   'Ditolak':'status-ditolak'
 };
 
+/* ---------- PAYMENT MODULE (v1.8) ---------- */
+const PAYMENT_STATUSES = ['Belum Diproses','Diproses','Menunggu Pembayaran','Lunas','Dibatalkan'];
+const PAYMENT_STATUS_CLASS = {
+  'Belum Diproses':'pay-belum',
+  'Diproses':'pay-proses',
+  'Menunggu Pembayaran':'pay-menunggu',
+  'Lunas':'pay-lunas',
+  'Dibatalkan':'pay-batal'
+};
+const COST_TYPES = ['CAPEX','OPEX'];
+const JENIS_PEMBAYARAN = ['Transfer','Cash','Petty Cash','Reimbursement','Corporate Card','Lainnya'];
+// All payment columns. `synced` = default value pulled from the parent request
+// (still editable & overridable by any user). type drives the input widget.
+const PAYMENT_FIELDS = [
+  {key:'fund_owner',        label:'Fund Owner',         type:'text'},
+  {key:'vendor_name',       label:'Vendor Name',        type:'text',   synced:'nama_vendor'},
+  {key:'pic_user_name',     label:'PIC User Name',      type:'text',   synced:'nama_pic_ga'},
+  {key:'tanggal_permintaan',label:'Tanggal Permintaan', type:'date',   syncedDate:'created_at'},
+  {key:'tanggal_kebutuhan', label:'Tanggal Kebutuhan',  type:'date',   synced:'tanggal_kebutuhan'},
+  {key:'location',          label:'Location',           type:'text',   synced:'lokasi_kebutuhan'},
+  {key:'sub_location',      label:'Sub-Location',       type:'text'},
+  {key:'directorate',       label:'Directorate',        type:'text',   synced:'divisi'},
+  {key:'division',          label:'Division',           type:'text',   synced:'divisi'},
+  {key:'department',        label:'Department',         type:'text',   synced:'departemen'},
+  {key:'category',          label:'Category',           type:'text',   synced:'kategori'},
+  {key:'sub_category',      label:'Sub-Category',       type:'text'},
+  {key:'administrator',     label:'Administrator',      type:'text'},
+  {key:'user_sap',          label:'User SAP',           type:'text'},
+  {key:'proforma_number',   label:'Proforma Number',    type:'text'},
+  {key:'proforma_date',     label:'Proforma Date',      type:'date'},
+  {key:'pr_number',         label:'PR Number',          type:'text'},
+  {key:'pr_date',           label:'PR Date',            type:'date'},
+  {key:'po_number',         label:'PO Number',          type:'text'},
+  {key:'po_date',           label:'PO Date',            type:'date'},
+  {key:'gr_number',         label:'GR Number',          type:'text'},
+  {key:'gr_date',           label:'GR Date',            type:'date'},
+  {key:'invoice_number',    label:'Invoice Number',     type:'text'},
+  {key:'invoice_date',      label:'Invoice Date',       type:'date'},
+  {key:'submit_date',       label:'Submit Date',        type:'date'},
+  {key:'cost_type',         label:'Cost Type',          type:'select', options:COST_TYPES},
+  {key:'cost_purpose',      label:'Cost Purpose',       type:'text'},
+  {key:'jenis_pembayaran',  label:'Jenis Pembayaran',   type:'select', options:JENIS_PEMBAYARAN},
+  {key:'quantity',          label:'Quantity',           type:'number'},
+  {key:'price',             label:'Price',              type:'money',  syncedPrice:true},
+  {key:'grand_total',       label:'Grand Total',        type:'money'},
+  {key:'status',            label:'Status',             type:'select', options:PAYMENT_STATUSES},
+  {key:'note',              label:'Note',               type:'textarea'}
+];
+// Default value for a synced field, read from the parent request.
+function paymentSyncedValue(field, req){
+  if(!req) return '';
+  if(field.syncedDate) return (req[field.syncedDate]||'').toString().slice(0,10);
+  if(field.syncedPrice) return req.total_anggaran || req.estimasi_harga || 0;
+  if(field.synced) return req[field.synced] != null ? req[field.synced] : '';
+  return '';
+}
+// Merge a payment row with its request: synced columns fall back to the request
+// value when the payment record hasn't overridden them yet.
+function mergePayment(req, pay){
+  const out = { request_id:req.id, status:'Belum Diproses' };
+  PAYMENT_FIELDS.forEach(f => {
+    const stored = pay ? pay[f.key] : undefined;
+    if(stored !== undefined && stored !== null && stored !== ''){ out[f.key] = stored; }
+    else { out[f.key] = paymentSyncedValue(f, req); }
+  });
+  if(pay){ out.id = pay.id; out._exists = true; } else { out._exists = false; }
+  if(!out.status) out.status = 'Belum Diproses';
+  out._req = req;
+  return out;
+}
+
 /* ---------- DEMO IN-MEMORY STORE (fallback) ---------- */
 const demo = (() => {
   const today = new Date();
@@ -1314,7 +1454,8 @@ const demo = (() => {
     {id:'v5',version:'1.4.0',release_date:'2026-05-16',changes:'Master data Lokasi Kerja terpisah, halaman Log Aktivitas, download tanda terima PDF saat status Tersedia, QR Code penilaian di tanda terima.'},
     {id:'v6',version:'1.5.0',release_date:'2026-05-17',changes:'Upload bukti foto & tanda terima saat Selesai, modul SLA Target per kategori (superadmin only), kolom & badge SLA di Daftar Permintaan, statistik SLA di Dashboard, edit completed_at oleh superadmin dengan audit trail.'},
     {id:'v7',version:'1.6.0',release_date:'2026-05-18',changes:'Tracking by SmartOffice code, dashboard screenshot JPG, kolom Mata Anggaran (+master), kolom Divisi & Departemen (+master dengan cascading dropdown), tombol Backup Data XLSX multi-sheet.'},
-    {id:'v8',version:'1.7.0',release_date:'2026-05-20',changes:'Kategori Pemesanan custom (CRUD master + kode prefix + SLA default), workflow approval Kepala Departemen untuk Direct Purchase, menu Divisi & Departemen dipisah di sidebar, hanya superadmin/admin yang boleh assign PIC.'}
+    {id:'v8',version:'1.7.0',release_date:'2026-05-20',changes:'Kategori Pemesanan custom (CRUD master + kode prefix + SLA default), workflow approval Kepala Departemen untuk Direct Purchase, menu Divisi & Departemen dipisah di sidebar, hanya superadmin/admin yang boleh assign PIC.'},
+    {id:'v9',version:'1.8.0',release_date:'2026-06-07',changes:'Modul Payment baru (semua permintaan masuk untuk update pembayaran: Proforma/PR/PO/GR/Invoice, Cost Type, Grand Total, dll — dapat diupdate semua user), statistik Payment di Dashboard, Detail Permintaan kini mempertahankan baris baru & lebih mudah dibaca, tabel Daftar Permintaan dirampingkan agar muat di desktop tanpa scroll, perbaikan auto-add Divisi/Departemen, dukungan PWA (installable + offline).'}
   ];
 
   // Mata Anggaran options
@@ -1368,7 +1509,10 @@ const demo = (() => {
   // v1.7: Approvals
   const approvals = [];
 
-  return { requests, ratings, notifications, lokasi, lokasiKerja, tujuan, users, version, activityLogs, slaTargets, mataAnggaran, divisi, departemen, kategori, approvals, seq, todayKey, nextCode };
+  // v1.8: Payment records — one per request (created lazily on first edit).
+  const payments = [];
+
+  return { requests, ratings, notifications, lokasi, lokasiKerja, tujuan, users, version, activityLogs, slaTargets, mataAnggaran, divisi, departemen, kategori, approvals, payments, seq, todayKey, nextCode };
 })();
 
 /* ============================================================
@@ -1466,6 +1610,36 @@ const db = {
     if(!SUPA_CONFIGURED){ demo.requests = demo.requests.filter(r=>r.id!==id); return; }
     const { error } = await supa.from('requests').delete().eq('id',id);
     if(error) throw error;
+  },
+
+  /* ---- Payments (v1.8) ---- */
+  async listPayments(){
+    if(!SUPA_CONFIGURED) return [...demo.payments];
+    const { data, error } = await supa.from('payments').select('*');
+    if(error) throw error; return data || [];
+  },
+  async getPaymentByRequest(requestId){
+    if(!SUPA_CONFIGURED) return demo.payments.find(p => p.request_id === requestId) || null;
+    const { data, error } = await supa.from('payments').select('*').eq('request_id', requestId).maybeSingle();
+    if(error) throw error; return data || null;
+  },
+  // Upsert a payment row keyed by request_id. Returns the saved row.
+  async upsertPayment(requestId, patch){
+    const clean = { ...patch }; delete clean._exists; delete clean._req; delete clean.id;
+    if(!SUPA_CONFIGURED){
+      const i = demo.payments.findIndex(p => p.request_id === requestId);
+      if(i >= 0){
+        demo.payments[i] = { ...demo.payments[i], ...clean, request_id:requestId, updated_at:new Date().toISOString() };
+        return demo.payments[i];
+      }
+      const row = { id:'pay'+(demo.payments.length+1)+Date.now(), request_id:requestId, ...clean,
+                    created_at:new Date().toISOString(), updated_at:new Date().toISOString() };
+      demo.payments.push(row); return row;
+    }
+    const { data, error } = await supa.from('payments')
+      .upsert({ request_id:requestId, ...clean, updated_at:new Date().toISOString() }, { onConflict:'request_id' })
+      .select().single();
+    if(error) throw error; return data;
   },
 
   async listRatings(){
@@ -2512,45 +2686,8 @@ async function renderLanding(){
     const selT = $('#select-tujuan');
     if(selT) selT.innerHTML = '<option value="">-- Pilih Tujuan --</option>' + tuj.map(x=>`<option>${escapeHtml(x.name)}</option>`).join('');
 
-    // Divisi → Departemen (cascading), with inline "+ Tambah baru" option
-    const selDiv = $('#select-divisi');
-    const selDep = $('#select-departemen');
-    const divNewInput = $('#input-divisi-new');
-    const depNewInput = $('#input-departemen-new');
-    const DEP_NEW_OPT = '<option value="__new__">+ Tambah Departemen baru…</option>';
-    if(selDiv){
-      selDiv.innerHTML = '<option value="">-- Pilih Divisi --</option>' +
-        divs.map(d => `<option value="${escapeHtml(d.id)}">${escapeHtml(d.name)}</option>`).join('') +
-        '<option value="__new__">+ Tambah Divisi baru…</option>';
-    }
-    if(selDiv && selDep){
-      selDiv.addEventListener('change', () => {
-        const v = selDiv.value;
-        if(v === '__new__'){
-          // Brand-new divisi → it has no departemen yet, so force "new" mode
-          if(divNewInput) divNewInput.style.display = '';
-          selDep.innerHTML = DEP_NEW_OPT;
-          selDep.value = '__new__';
-          if(depNewInput) depNewInput.style.display = '';
-          return;
-        }
-        if(divNewInput){ divNewInput.style.display = 'none'; divNewInput.value = ''; }
-        if(depNewInput){ depNewInput.style.display = 'none'; depNewInput.value = ''; }
-        if(!v){
-          selDep.innerHTML = '<option value="">— Pilih Divisi terlebih dahulu —</option>';
-          return;
-        }
-        const opts = deps.filter(d => d.divisi_id === v);
-        selDep.innerHTML = '<option value="">-- Pilih Departemen --</option>' +
-          opts.map(d => `<option>${escapeHtml(d.name)}</option>`).join('') + DEP_NEW_OPT;
-      });
-      selDep.addEventListener('change', () => {
-        if(!depNewInput) return;
-        const show = selDep.value === '__new__';
-        depNewInput.style.display = show ? '' : 'none';
-        if(!show) depNewInput.value = '';
-      });
-    }
+    // Divisi → Departemen (cascading) with robust auto-add — fix #2
+    _divDepCtl = setupDivisiDepartemenFields({ divs, deps });
   }catch(err){ console.error('[dropdowns]', err); }
 
   // --- Tracker (wrapped so failure doesn't break the form below) ---
@@ -2602,6 +2739,94 @@ async function renderLanding(){
 
   // --- Form collapse + handlers (wrapped, defensive) ---
   setupRequestForm();
+}
+
+/* ============================================================
+   DIVISI ↔ DEPARTEMEN FIELDS (cascading + auto-add) — fix #2
+   ------------------------------------------------------------
+   Bugs fixed vs. the old inline version:
+   • After a successful submit the dropdowns + "new" text inputs are now
+     reset cleanly (state desync no longer lingers).
+   • Newly auto-added Divisi/Departemen are reloaded so they appear on the
+     next submission without a full page reload.
+   • Master lists (divs/deps) are kept inside the controller and reloaded by
+     refresh(), so the change-handler never reads a stale closure array.
+   • Choosing "+ Tambah Divisi baru" no longer hard-locks Departemen into
+     "new" mode — the user may still leave Departemen empty.
+   ============================================================ */
+let _divDepCtl = null;
+function setupDivisiDepartemenFields(initial){
+  const selDiv = $('#select-divisi');
+  const selDep = $('#select-departemen');
+  const divNewInput = $('#input-divisi-new');
+  const depNewInput = $('#input-departemen-new');
+  if(!selDiv || !selDep) return null;
+
+  const DEP_NEW_OPT = '<option value="__new__">+ Tambah Departemen baru…</option>';
+  const DIV_NEW_OPT = '<option value="__new__">+ Tambah Divisi baru…</option>';
+  let divs = (initial && initial.divs) || [];
+  let deps = (initial && initial.deps) || [];
+
+  function buildDivisiOptions(){
+    selDiv.innerHTML = '<option value="">-- Pilih Divisi --</option>' +
+      divs.map(d => `<option value="${escapeHtml(d.id)}">${escapeHtml(d.name)}</option>`).join('') +
+      DIV_NEW_OPT;
+  }
+  function buildDepartemenOptions(divisiId){
+    const opts = deps.filter(d => d.divisi_id === divisiId);
+    selDep.innerHTML = '<option value="">-- Pilih Departemen --</option>' +
+      opts.map(d => `<option>${escapeHtml(d.name)}</option>`).join('') + DEP_NEW_OPT;
+  }
+  function showDivNew(show){ if(divNewInput){ divNewInput.style.display = show?'':'none'; if(!show) divNewInput.value=''; } }
+  function showDepNew(show){ if(depNewInput){ depNewInput.style.display = show?'':'none'; if(!show) depNewInput.value=''; } }
+
+  function onDivChange(){
+    const v = selDiv.value;
+    if(v === '__new__'){
+      // brand-new divisi: no existing departemen, but allow optional new dept
+      showDivNew(true);
+      selDep.innerHTML = '<option value="">— (opsional) —</option>' + DEP_NEW_OPT;
+      selDep.value = '';
+      showDepNew(false);
+      return;
+    }
+    showDivNew(false);
+    showDepNew(false);
+    if(!v){
+      selDep.innerHTML = '<option value="">— Pilih Divisi terlebih dahulu —</option>';
+      return;
+    }
+    buildDepartemenOptions(v);
+  }
+  function onDepChange(){
+    showDepNew(selDep.value === '__new__');
+  }
+
+  // wire once
+  selDiv.addEventListener('change', onDivChange);
+  selDep.addEventListener('change', onDepChange);
+
+  function reset(){
+    buildDivisiOptions();
+    selDiv.value = '';
+    selDep.innerHTML = '<option value="">— Pilih Divisi terlebih dahulu —</option>';
+    showDivNew(false);
+    showDepNew(false);
+  }
+
+  async function refresh(){
+    try{
+      divs = await db.listDivisi().catch(()=>divs);
+      deps = await db.listDepartemen().catch(()=>deps);
+    }catch(e){ console.warn('[divdep refresh]', e); }
+    reset();
+  }
+
+  // initial paint
+  buildDivisiOptions();
+  selDep.innerHTML = '<option value="">— Pilih Divisi terlebih dahulu —</option>';
+
+  return { refresh, reset, getDivs:()=>divs, getDeps:()=>deps };
 }
 
 function setupRequestForm(){
@@ -2673,6 +2898,9 @@ function setupRequestForm(){
 
       // Resolve Divisi & Departemen — the user may pick an existing one
       // OR type a brand-new name, which gets auto-added to the master.
+      // Fix #2: best-effort auto-add. Even if the master insert is blocked
+      // (RLS / race / duplicate), the request still records the typed names
+      // and never throws, so the form can't get stuck "sometimes".
       const lcEq = (a,b) => (a||'').trim().toLowerCase() === (b||'').trim().toLowerCase();
       let divList = await db.listDivisi().catch(() => []);
       let divisiName = null, resolvedDivisiId = '';
@@ -2690,6 +2918,7 @@ function setupRequestForm(){
             }
           }
           if(d){ divisiName = d.name; resolvedDivisiId = d.id; }
+          else { divisiName = typed; }   // record what the user typed even if master insert failed
         }
       } else if(divSelVal){
         const d = divList.find(x => x.id === divSelVal);
@@ -2701,19 +2930,24 @@ function setupRequestForm(){
       if(depSelVal === '__new__'){
         const typedDep = ($('#input-departemen-new')?.value || '').trim();
         if(typedDep){
-          if(!resolvedDivisiId)
-            throw new Error('Pilih atau isi Divisi terlebih dahulu sebelum menambah Departemen');
-          let depList = await db.listDepartemen().catch(() => []);
-          let dep = depList.find(x => x.divisi_id === resolvedDivisiId && lcEq(x.name, typedDep));
-          if(!dep){
-            try{ dep = await db.addDepartemen({ name: typedDep, divisi_id: resolvedDivisiId }); }
-            catch(depErr){
-              console.warn('addDepartemen gagal:', depErr);
-              depList = await db.listDepartemen().catch(() => depList);
-              dep = depList.find(x => x.divisi_id === resolvedDivisiId && lcEq(x.name, typedDep));
+          // Only insert into the master when we have a real parent Divisi id.
+          // Without one we still record the typed departemen name on the request
+          // instead of throwing (previous behaviour blocked the whole submit).
+          if(resolvedDivisiId){
+            let depList = await db.listDepartemen().catch(() => []);
+            let dep = depList.find(x => x.divisi_id === resolvedDivisiId && lcEq(x.name, typedDep));
+            if(!dep){
+              try{ dep = await db.addDepartemen({ name: typedDep, divisi_id: resolvedDivisiId }); }
+              catch(depErr){
+                console.warn('addDepartemen gagal:', depErr);
+                depList = await db.listDepartemen().catch(() => depList);
+                dep = depList.find(x => x.divisi_id === resolvedDivisiId && lcEq(x.name, typedDep));
+              }
             }
+            departemenName = dep ? dep.name : typedDep;
+          } else {
+            departemenName = typedDep;
           }
-          departemenName = dep ? dep.name : typedDep;
         }
       } else if(depSelVal){
         departemenName = depSelVal;
@@ -2767,6 +3001,9 @@ function setupRequestForm(){
       form.reset();
       if(kodePreview) kodePreview.value = '';
       if(smartoffField) smartoffField.style.display='none';
+      // Fix #2: reload masters + reset the Divisi/Departemen fields so any
+      // freshly auto-added entry shows next time and no stale "new" input lingers.
+      if(_divDepCtl){ try{ await _divDepCtl.refresh(); }catch{} }
       toast('Permintaan tersimpan','success');
       // refresh stats lightly
       try{
@@ -2887,6 +3124,7 @@ async function renderAdmin(page){
     approvals:'Persetujuan',
     requests:'Daftar Permintaan',
     ratings:'Daftar Penilaian',
+    payments:'Payment',
     masterdata:'Master Data',
     kategori:'Kategori Pemesanan',
     divisi:'Divisi',
@@ -2933,6 +3171,7 @@ async function renderAdmin(page){
   else if(page==='approvals')  await viewAdminApprovals(c);
   else if(page==='requests')   await viewAdminRequests(c);
   else if(page==='ratings')    await viewAdminRatings(c);
+  else if(page==='payments')   await viewAdminPayments(c);
   else if(page==='masterdata') await viewAdminMaster(c);
   else if(page==='kategori')   await viewAdminKategori(c);
   else if(page==='divisi')     await viewAdminDivisi(c);
@@ -3068,6 +3307,31 @@ async function viewAdminDashboard(c){
       </div>
     </div>
 
+    <!-- v1.8: Payment statistics -->
+    <h3 style="margin:18px 0 10px;font-size:15px;display:flex;align-items:center;gap:8px;color:var(--mrt-blue)">
+      <span class="material-symbols-rounded">payments</span> Statistik Payment
+    </h3>
+    <div class="adm-stat-grid">
+      <div class="stat-card"><div class="stat-icon" style="background:#E0F2FE;color:#0369A1"><span class="material-symbols-rounded">receipt_long</span></div>
+        <div class="stat-body"><span class="stat-label">Total Tagihan</span><span class="stat-value" id="adp-total">—</span></div></div>
+      <div class="stat-card"><div class="stat-icon green"><span class="material-symbols-rounded">paid</span></div>
+        <div class="stat-body"><span class="stat-label">Lunas</span><span class="stat-value" id="adp-lunas">—</span></div></div>
+      <div class="stat-card"><div class="stat-icon warn"><span class="material-symbols-rounded">hourglass_top</span></div>
+        <div class="stat-body"><span class="stat-label">Belum Diproses</span><span class="stat-value" id="adp-belum">—</span></div></div>
+      <div class="stat-card"><div class="stat-icon purple"><span class="material-symbols-rounded">account_balance_wallet</span></div>
+        <div class="stat-body"><span class="stat-label">Total Grand Total</span><span class="stat-value" id="adp-grand" style="font-size:18px">—</span></div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:14px 0" id="adp-charts-row">
+      <div class="card" style="margin:0">
+        <div class="card-head"><h3>Status Pembayaran</h3></div>
+        <div class="card-body"><canvas id="adp-chart-status" height="160"></canvas></div>
+      </div>
+      <div class="card" style="margin:0">
+        <div class="card-head"><h3>Nilai Pembayaran (Lunas vs Outstanding)</h3></div>
+        <div class="card-body"><canvas id="adp-chart-value" height="160"></canvas></div>
+      </div>
+    </div>
+
     <div class="card">
       <div class="card-head">
         <h3>Daftar Permintaan Terbaru</h3>
@@ -3151,6 +3415,51 @@ async function viewAdminDashboard(c){
         } }
     });
   }
+
+  // v1.8: Payment statistics ------------------------------------------------
+  try{
+    const pays = await db.listPayments().catch(()=>[]);
+    const byReq = {}; (pays||[]).forEach(p => { byReq[p.request_id] = p; });
+    const merged = reqs.map(r => mergePayment(r, byReq[r.id]));
+    const total = merged.length;
+    const counts = {}; PAYMENT_STATUSES.forEach(s => counts[s] = 0);
+    let grandTotal = 0, lunasValue = 0;
+    merged.forEach(m => {
+      const st = m.status || 'Belum Diproses';
+      counts[st] = (counts[st]||0) + 1;
+      const gt = Number(m.grand_total)|| (Number(m.quantity)>0 && Number(m.price)>0 ? Number(m.quantity)*Number(m.price) : Number(m.price)||0);
+      grandTotal += gt;
+      if(st === 'Lunas') lunasValue += gt;
+    });
+    const outstanding = Math.max(0, grandTotal - lunasValue);
+    const setTxt = (id,v)=>{ const el=$(id); if(el) el.textContent=v; };
+    setTxt('#adp-total', total);
+    setTxt('#adp-lunas', counts['Lunas']||0);
+    setTxt('#adp-belum', counts['Belum Diproses']||0);
+    setTxt('#adp-grand', fmtRupiah(grandTotal));
+
+    if(typeof Chart !== 'undefined'){
+      const labels = PAYMENT_STATUSES;
+      const data = labels.map(l => counts[l]||0);
+      const colors = ['#F59E0B','#1976D2','#6D28D9','#00A859','#DC2626'];
+      const sc = $('#adp-chart-status');
+      if(sc) new Chart(sc.getContext('2d'), {
+        type:'doughnut',
+        data:{ labels, datasets:[{ data, backgroundColor:colors, borderWidth:2, borderColor:'#fff' }] },
+        options:{ responsive:true, maintainAspectRatio:false,
+          plugins:{ legend:{ position:'right', labels:{ font:{size:11}, boxWidth:12 } } }, cutout:'58%' }
+      });
+      const vc = $('#adp-chart-value');
+      if(vc) new Chart(vc.getContext('2d'), {
+        type:'bar',
+        data:{ labels:['Lunas','Outstanding'], datasets:[{ data:[lunasValue, outstanding],
+          backgroundColor:['#00A859','#F59E0B'], borderRadius:8, maxBarThickness:80 }] },
+        options:{ responsive:true, maintainAspectRatio:false,
+          plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:(ctx)=>fmtRupiah(ctx.parsed.y) } } },
+          scales:{ y:{ beginAtZero:true, ticks:{ callback:(v)=>'Rp '+Number(v).toLocaleString('id-ID'), font:{size:9} } } } }
+      });
+    }
+  }catch(perr){ console.warn('[dashboard payments]', perr); }
 
   // Mini table — reuse the requests table renderer in compact mode
   renderRequestsTable($('#ads-table-host'), reqs, { compact:true });
@@ -3337,10 +3646,10 @@ function renderRequestsTable(host, data, opts){
 
   host.innerHTML = `
     <div class="table-wrap">
-      <table class="t">
+      <table class="t${compact?'':' t-dense'}">
         <thead>
           <tr>
-            <th style="width:48px">#</th>
+            <th style="width:40px">#</th>
             <th class="sortable ${sortClass('kode_permintaan')}" data-col="kode_permintaan">Kode${sortIcon('kode_permintaan')}</th>
             <th class="sortable ${sortClass('kategori')}" data-col="kategori">Kategori${sortIcon('kategori')}</th>
             <th class="sortable ${sortClass('nama_pemesan')}" data-col="nama_pemesan">Pemesan${sortIcon('nama_pemesan')}</th>
@@ -3372,10 +3681,10 @@ function renderRequestsTable(host, data, opts){
             <tr>
               <td>${start+i+1}</td>
               <td><span class="code-pill">${escapeHtml(r.kode_permintaan)}</span></td>
-              <td><span class="tag">${escapeHtml(r.kategori_kode||'')}</span> <span class="text-sm">${escapeHtml(r.kategori)}</span></td>
+              <td><span class="tag">${escapeHtml(r.kategori_kode||'')}</span><span class="kat-name">${escapeHtml(r.kategori)}</span></td>
               <td><div class="fw-700">${escapeHtml(r.nama_pemesan)}</div><div class="text-sm muted">${escapeHtml(r.sumber_pemesanan||'')}</div></td>
               <td>${fmtDate(r.tanggal_kebutuhan)}</td>
-              <td style="max-width:240px"><div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${escapeHtml(r.detail_kebutuhan||'')}">${escapeHtml(r.detail_kebutuhan||'')}</div></td>
+              <td style="max-width:190px"><div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${escapeHtml(r.detail_kebutuhan||'')}">${escapeHtml(r.detail_kebutuhan||'')}</div></td>
               <td class="mono">${fmtRupiah(r.estimasi_harga)}</td>
               <td><span class="badge ${STATUS_CLASS[r.status]||''}">${escapeHtml(r.status)}</span></td>
               ${slaCell}
@@ -3521,10 +3830,13 @@ async function openRequestDetail(id){
         <div class="k">Departemen</div><div class="v">${escapeHtml(r.departemen||'—')}</div>
         <div class="k">Mata Anggaran</div><div class="v">${escapeHtml(r.mata_anggaran||'—')}</div>
         <div class="k">Tanggal Kebutuhan</div><div class="v">${fmtDate(r.tanggal_kebutuhan)}</div>
-        <div class="k">Detail</div><div class="v">${escapeHtml(r.detail_kebutuhan)}</div>
+        <div class="detail-block">
+          <div class="detail-label"><span class="material-symbols-rounded" style="font-size:16px">description</span> Detail Kebutuhan</div>
+          <div class="detail-text">${escapeHtml(r.detail_kebutuhan||'—')}</div>
+        </div>
         <div class="k">Estimasi Harga</div><div class="v">${fmtRupiah(r.estimasi_harga)}</div>
         <div class="k">Status</div><div class="v"><span class="badge ${STATUS_CLASS[r.status]||''}">${escapeHtml(r.status)}</span></div>
-        <div class="k">Keterangan</div><div class="v">${escapeHtml(r.keterangan||'—')}</div>
+        <div class="k">Keterangan</div><div class="v" style="white-space:pre-wrap;word-break:break-word">${escapeHtml(r.keterangan||'—')}</div>
         <div class="k">Total Anggaran</div><div class="v">${fmtRupiah(r.total_anggaran)}</div>
         <div class="k">Vendor</div><div class="v">${escapeHtml(r.nama_vendor||'—')}</div>
         <div class="k">PIC GA</div><div class="v">${escapeHtml(r.nama_pic_ga||'—')}</div>
@@ -4134,6 +4446,289 @@ async function viewAdminRatings(c){
       Tanggal: x.created_at
     }));
     csvDownload('daftar-penilaian-'+new Date().toISOString().slice(0,10)+'.csv', csvRows);
+  });
+}
+
+/* ----------- ADMIN: PAYMENT (v1.8) -----------
+   Every request automatically appears here. Payment-specific fields are stored
+   in the `payments` table (1:1 with requests) and can be edited by ANY user.
+   Fields tagged "sinkron" default to the value from the request detail but
+   remain overridable. */
+let _payMerged = [];
+let _payState = { page:1, pageSize:15, search:'', filterStatus:'', filterCategory:'', sort:'created_at', dir:'desc' };
+
+function payCellHtml(m, f){
+  const v = m[f.key];
+  if(f.key === 'status'){
+    const sv = v || 'Belum Diproses';
+    return `<span class="badge ${PAYMENT_STATUS_CLASS[sv]||'pay-belum'}">${escapeHtml(sv)}</span>`;
+  }
+  if(f.type === 'date')  return v ? fmtDate(v) : '—';
+  if(f.type === 'money') return (v!=null && v!=='' && Number(v)>0) ? fmtRupiah(v) : '—';
+  if(f.type === 'number')return (v!=null && v!=='') ? escapeHtml(v) : '—';
+  const s = String(v==null ? '' : v);
+  if(!s) return '—';
+  if(f.type === 'textarea' || s.length > 40){
+    const short = s.length > 40 ? s.slice(0,40)+'…' : s;
+    return `<span title="${escapeHtml(s)}">${escapeHtml(short)}</span>`;
+  }
+  return escapeHtml(s);
+}
+
+async function viewAdminPayments(c){
+  c.innerHTML = `
+    <div class="card">
+      <div class="card-head">
+        <h3>Payment</h3>
+        <div class="flex gap-2">
+          <button class="btn btn-ghost btn-sm" id="pay-refresh"><span class="material-symbols-rounded" style="font-size:18px">refresh</span>Muat Ulang</button>
+          <button class="btn btn-ghost btn-sm" id="pay-csv"><span class="material-symbols-rounded" style="font-size:18px">download</span>Download CSV</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <p class="muted text-sm" style="margin:-6px 0 12px">
+          Seluruh permintaan masuk ke modul ini untuk proses pembayaran. Klik <strong>Edit</strong> pada baris untuk mengisi/memperbarui data pembayaran — dapat diupdate oleh semua user.
+          Geser tabel ke kanan untuk melihat seluruh kolom.
+        </p>
+        <div class="toolbar" style="flex-wrap:wrap">
+          <div class="search">
+            <span class="material-symbols-rounded">search</span>
+            <input type="text" class="input" id="pay-search" placeholder="Cari kode, pemesan, vendor..." />
+          </div>
+          <select class="select" id="pay-filter-status" style="max-width:220px">
+            <option value="">Semua Status Pembayaran</option>
+            ${PAYMENT_STATUSES.map(s=>`<option>${s}</option>`).join('')}
+          </select>
+          <select class="select" id="pay-filter-category" style="max-width:220px">
+            <option value="">Semua Kategori</option>
+            ${Object.keys(KATEGORI_KODE).map(k=>`<option>${escapeHtml(k)}</option>`).join('')}
+          </select>
+        </div>
+        <div id="pay-table-host"></div>
+      </div>
+    </div>
+  `;
+
+  const host = $('#pay-table-host');
+  host.innerHTML = '<div class="card-pad muted">Memuat data pembayaran…</div>';
+
+  async function load(){
+    try{
+      const [reqs, pays] = await Promise.all([
+        db.listRequests(),
+        db.listPayments().catch(()=>[])
+      ]);
+      const byReq = {}; (pays||[]).forEach(p => { byReq[p.request_id] = p; });
+      _payMerged = reqs.map(r => mergePayment(r, byReq[r.id]));
+      renderPaymentsTable(host);
+    }catch(err){
+      console.error('[payments]', err);
+      const msg = /Failed to fetch/i.test(err.message||'')
+        ? 'Tidak dapat terhubung ke Supabase. Periksa URL & ANON_KEY atau koneksi internet.'
+        : ('Gagal memuat data: '+(err.message||''));
+      host.innerHTML = `<div class="card-pad" style="background:#FEF2F2;border:1px solid #FECACA;border-radius:10px;color:#991B1B"><strong>Gagal memuat data.</strong><br><span class="text-sm">${escapeHtml(msg)}</span></div>`;
+    }
+  }
+
+  $('#pay-search').addEventListener('input', e => { _payState.search = e.target.value.toLowerCase(); _payState.page = 1; renderPaymentsTable(host); });
+  $('#pay-filter-status').addEventListener('change', e => { _payState.filterStatus = e.target.value; _payState.page = 1; renderPaymentsTable(host); });
+  $('#pay-filter-category').addEventListener('change', e => { _payState.filterCategory = e.target.value; _payState.page = 1; renderPaymentsTable(host); });
+  $('#pay-refresh').addEventListener('click', () => load());
+  $('#pay-csv').addEventListener('click', () => {
+    const rows = filterPayments().map(m => {
+      const row = { Kode_Permintaan: m._req.kode_permintaan, Pemesan: m._req.nama_pemesan, Status_Permintaan: m._req.status };
+      PAYMENT_FIELDS.forEach(f => {
+        let v = m[f.key];
+        if(f.type === 'date' && v) v = String(v).slice(0,10);
+        row[f.label.replace(/\s+/g,'_')] = (v==null ? '' : v);
+      });
+      return row;
+    });
+    csvDownload('payment-'+new Date().toISOString().slice(0,10)+'.csv', rows);
+  });
+
+  await load();
+}
+
+function filterPayments(){
+  const s = _payState;
+  let rows = _payMerged.slice();
+  if(s.search){
+    rows = rows.filter(m =>
+      (m._req.kode_permintaan||'').toLowerCase().includes(s.search) ||
+      (m._req.nama_pemesan||'').toLowerCase().includes(s.search) ||
+      (m.vendor_name||'').toLowerCase().includes(s.search) ||
+      (m._req.kode_smartoffice||'').toLowerCase().includes(s.search)
+    );
+  }
+  if(s.filterStatus)   rows = rows.filter(m => (m.status||'Belum Diproses') === s.filterStatus);
+  if(s.filterCategory) rows = rows.filter(m => m._req.kategori === s.filterCategory);
+  // newest request first
+  rows.sort((a,b) => new Date(b._req.created_at) - new Date(a._req.created_at));
+  return rows;
+}
+
+function renderPaymentsTable(host){
+  const s = _payState;
+  const rows = filterPayments();
+  const total = rows.length;
+  const totalPages = Math.max(1, Math.ceil(total / s.pageSize));
+  if(s.page > totalPages) s.page = totalPages;
+  const start = (s.page-1)*s.pageSize;
+  const pageRows = rows.slice(start, start + s.pageSize);
+
+  const cols = PAYMENT_FIELDS; // ordered exactly as requested
+  const headCells = cols.map(f => `<th${(f.type==='money'||f.type==='number')?' style="text-align:right"':''}>${escapeHtml(f.label)}${f.synced||f.syncedDate||f.syncedPrice?' <span style="color:var(--mrt-green);font-size:9px">●</span>':''}</th>`).join('');
+
+  host.innerHTML = `
+    <div class="table-wrap">
+      <table class="t pay-table">
+        <thead>
+          <tr>
+            <th class="sticky-col" style="min-width:170px">Permintaan</th>
+            <th>Pemesan</th>
+            ${headCells}
+          </tr>
+        </thead>
+        <tbody>
+          ${pageRows.length ? pageRows.map(m => `
+            <tr>
+              <td class="sticky-col">
+                <div style="display:flex;align-items:center;gap:6px">
+                  <button class="btn-icon" data-edit="${m.request_id}" title="Edit pembayaran" style="color:var(--mrt-blue)"><span class="material-symbols-rounded" style="font-size:18px">edit</span></button>
+                  <div>
+                    <span class="code-pill">${escapeHtml(m._req.kode_permintaan)}</span>
+                    <div style="margin-top:2px"><span class="tag">${escapeHtml(m._req.kategori_kode||'')}</span></div>
+                  </div>
+                </div>
+              </td>
+              <td>${escapeHtml(m._req.nama_pemesan||'—')}</td>
+              ${cols.map(f => `<td${(f.type==='money'||f.type==='number')?' class="num"':''}>${payCellHtml(m,f)}</td>`).join('')}
+            </tr>
+          `).join('') : `<tr><td colspan="${cols.length+2}" class="empty-row">Belum ada permintaan</td></tr>`}
+        </tbody>
+      </table>
+    </div>
+    <div class="pagination">
+      <div>Menampilkan <strong>${pageRows.length}</strong> dari <strong>${total}</strong> permintaan</div>
+      <div class="pages">
+        <button class="page-btn" id="pay-prev" ${s.page===1?'disabled':''}><span class="material-symbols-rounded" style="font-size:18px">chevron_left</span></button>
+        <span style="padding:0 10px;font-size:13px">Hal. ${s.page} / ${totalPages}</span>
+        <button class="page-btn" id="pay-next" ${s.page===totalPages?'disabled':''}><span class="material-symbols-rounded" style="font-size:18px">chevron_right</span></button>
+      </div>
+    </div>
+  `;
+
+  $('#pay-prev', host)?.addEventListener('click', () => { if(s.page>1){ s.page--; renderPaymentsTable(host); } });
+  $('#pay-next', host)?.addEventListener('click', () => { if(s.page<totalPages){ s.page++; renderPaymentsTable(host); } });
+  $$('button[data-edit]', host).forEach(b => b.addEventListener('click', () => openPaymentEdit(b.dataset.edit)));
+}
+
+function openPaymentEdit(requestId){
+  const m = _payMerged.find(x => x.request_id === requestId);
+  if(!m){ toast('Data tidak ditemukan','error'); return; }
+  const req = m._req;
+
+  const fieldHtml = (f) => {
+    const syncedTag = (f.synced||f.syncedDate||f.syncedPrice) ? '<span class="synced-tag">sinkron</span>' : '';
+    let val = m[f.key];
+    if(f.type === 'date' && val) val = String(val).slice(0,10);
+    const full = f.type === 'textarea' ? ' full' : '';
+    let control;
+    if(f.type === 'select'){
+      const opts = ['<option value=""></option>'].concat((f.options||[]).map(o => `<option ${String(val)===o?'selected':''}>${escapeHtml(o)}</option>`)).join('');
+      control = `<select class="select" data-pf="${f.key}">${opts}</select>`;
+    } else if(f.type === 'textarea'){
+      control = `<textarea class="textarea" data-pf="${f.key}" style="min-height:70px">${escapeHtml(val||'')}</textarea>`;
+    } else if(f.type === 'date'){
+      control = `<input type="date" class="input" data-pf="${f.key}" value="${escapeHtml(val||'')}" />`;
+    } else if(f.type === 'money'){
+      const disp = (val!=null && val!=='' && Number(val)>0) ? 'Rp ' + Number(val).toLocaleString('id-ID') : '';
+      control = `<input type="text" class="input pf-money" inputmode="numeric" data-pf="${f.key}" value="${escapeHtml(disp)}" placeholder="Rp 0" />`;
+    } else if(f.type === 'number'){
+      control = `<input type="number" class="input" data-pf="${f.key}" value="${escapeHtml(val??'')}" min="0" step="any" />`;
+    } else {
+      control = `<input type="text" class="input" data-pf="${f.key}" value="${escapeHtml(val||'')}" />`;
+    }
+    return `<div class="field${full}"><label>${escapeHtml(f.label)}${syncedTag}</label>${control}</div>`;
+  };
+
+  const group = (keys) => PAYMENT_FIELDS.filter(f => keys.includes(f.key)).map(fieldHtml).join('');
+
+  openModal(`
+    <div class="modal-head">
+      <h3><span class="material-symbols-rounded" style="vertical-align:-6px;color:var(--mrt-blue)">payments</span> Update Payment</h3>
+      <button class="btn-icon" onclick="closeModal()"><span class="material-symbols-rounded">close</span></button>
+    </div>
+    <div class="modal-body">
+      <div style="margin-bottom:14px;padding:10px 12px;background:var(--mrt-blue-soft);border-radius:10px;font-size:13px">
+        <strong>${escapeHtml(req.kode_permintaan)}</strong> · ${escapeHtml(req.kategori)} · Pemesan: ${escapeHtml(req.nama_pemesan)}
+        <div class="muted text-sm" style="margin-top:2px">Field bertanda <span class="synced-tag">sinkron</span> terisi otomatis dari Detail Permintaan dan tetap bisa diubah.</div>
+      </div>
+      <div class="pay-form-grid">
+        <div class="pay-section-title">Identitas & Organisasi</div>
+        ${group(['fund_owner','vendor_name','pic_user_name','tanggal_permintaan','tanggal_kebutuhan','location','sub_location','directorate','division','department','category','sub_category','administrator','user_sap'])}
+        <div class="pay-section-title">Dokumen Pengadaan</div>
+        ${group(['proforma_number','proforma_date','pr_number','pr_date','po_number','po_date','gr_number','gr_date','invoice_number','invoice_date','submit_date'])}
+        <div class="pay-section-title">Pembayaran</div>
+        ${group(['cost_type','cost_purpose','jenis_pembayaran','quantity','price','grand_total','status'])}
+        ${group(['note'])}
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal()">Batal</button>
+      <button class="btn btn-primary" id="pay-save"><span class="material-symbols-rounded">save</span>Simpan</button>
+    </div>
+  `, 'xl');
+
+  // Rupiah formatter for money inputs
+  $$('.pf-money').forEach(inp => inp.addEventListener('input', e => {
+    const digits = e.target.value.replace(/\D/g,'');
+    e.target.value = digits ? 'Rp ' + Number(digits).toLocaleString('id-ID') : '';
+    maybeSuggestGrandTotal();
+  }));
+  // Auto-suggest Grand Total = Quantity × Price when GT is still empty
+  function readMoney(key){ const el=$(`[data-pf="${key}"]`); if(!el) return 0; return Number((el.value||'').replace(/\D/g,''))||0; }
+  function maybeSuggestGrandTotal(){
+    const gtEl = $('[data-pf="grand_total"]');
+    if(!gtEl || gtEl.dataset.touched === '1') return;
+    const qty = Number(($('[data-pf="quantity"]')?.value)||0) || 0;
+    const price = readMoney('price');
+    if(qty > 0 && price > 0){ gtEl.value = 'Rp ' + (qty*price).toLocaleString('id-ID'); }
+  }
+  $('[data-pf="quantity"]')?.addEventListener('input', maybeSuggestGrandTotal);
+  $('[data-pf="grand_total"]')?.addEventListener('input', e => { e.target.dataset.touched = '1'; });
+
+  $('#pay-save').addEventListener('click', async () => {
+    const btn = $('#pay-save'); btn.disabled = true;
+    btn.innerHTML = '<span class="material-symbols-rounded">hourglass_top</span>Menyimpan…';
+    try{
+      const patch = {};
+      PAYMENT_FIELDS.forEach(f => {
+        const el = $(`[data-pf="${f.key}"]`);
+        if(!el) return;
+        let v = el.value;
+        if(f.type === 'money')  v = v ? Number(v.replace(/\D/g,'')) : 0;
+        else if(f.type === 'number') v = v==='' ? null : Number(v);
+        else v = (v||'').trim() || null;
+        patch[f.key] = v;
+      });
+      if(!patch.status) patch.status = 'Belum Diproses';
+      await db.upsertPayment(requestId, patch);
+      db.logActivity({ action:'payment.update', target_type:'payment', target_id:requestId,
+                       detail:`Update payment ${req.kode_permintaan} (status: ${patch.status})` });
+      // update local cache
+      const idx = _payMerged.findIndex(x => x.request_id === requestId);
+      if(idx >= 0) _payMerged[idx] = mergePayment(req, { request_id:requestId, ...patch });
+      closeModal();
+      const host = $('#pay-table-host'); if(host) renderPaymentsTable(host);
+      toast('Data pembayaran tersimpan','success');
+    }catch(err){
+      console.error(err);
+      toast('Gagal menyimpan: '+(err.message||''),'error');
+      btn.disabled = false;
+      btn.innerHTML = '<span class="material-symbols-rounded">save</span>Simpan';
+    }
   });
 }
 
@@ -6315,6 +6910,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   try{ await refreshKategoriKode(); }catch(err){ console.warn('[boot kategori]', err); }
   route();
 });
+
+/* v1.8: PWA — register the service worker (offline app-shell + installable). */
+if('serviceWorker' in navigator){
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js')
+      .then(reg => console.log('[pwa] service worker registered', reg.scope))
+      .catch(err => console.warn('[pwa] service worker registration failed', err));
+  });
+}
 
 </script>
 
