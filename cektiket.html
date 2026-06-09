@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Cek Status Tiket — GASS CRM General Affairs MRT Jakarta</title>
+<link rel="icon" type="image/png" href="logo.png" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<meta name="theme-color" content="#003D7E" />
+<meta name="description" content="Cek status permintaan General Affairs PT MRT Jakarta dengan kode permintaan atau kode SmartOffice." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  --mrt-blue:#003D7E; --mrt-blue-2:#0055B8; --mrt-blue-soft:#E8F0FB;
+  --mrt-green:#00A859; --mrt-green-soft:#E6F7EE;
+  --bg:#F4F7FB; --surface:#fff; --border:#E3E8F0; --text:#0F1B2D; --text-mut:#6B7891;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  font-family:'Plus Jakarta Sans',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+  color:var(--text); min-height:100vh; display:flex; flex-direction:column;
+  background:
+    radial-gradient(900px 460px at 12% -5%, var(--mrt-blue-soft), transparent 60%),
+    radial-gradient(900px 460px at 100% 105%, var(--mrt-green-soft), transparent 60%),
+    var(--bg);
+}
+.wrap{flex:1; width:100%; max-width:680px; margin:0 auto; padding:32px 18px 48px;}
+.brand{display:flex; align-items:center; gap:12px; justify-content:center; margin:14px 0 6px}
+.brand img{width:54px; height:54px; border-radius:12px; box-shadow:0 6px 18px rgba(0,61,126,.18)}
+.brand .bt{font-weight:800; font-size:22px; letter-spacing:.3px}
+.brand .bt span{color:var(--mrt-green)}
+.subtitle{text-align:center; color:var(--text-mut); font-size:14px; margin:2px 0 22px}
+.card{background:var(--surface); border:1px solid var(--border); border-radius:18px;
+  box-shadow:0 18px 40px rgba(2,32,71,.08); padding:22px;}
+.card h1{font-size:19px; margin:0 0 4px; display:flex; align-items:center; gap:8px}
+.card h1 .material-symbols-rounded{color:var(--mrt-blue-2)}
+.card .lead{color:var(--text-mut); font-size:13.5px; margin:0 0 16px}
+.searchbar{display:flex; gap:10px}
+.input{flex:1; border:1px solid var(--border); border-radius:12px; padding:13px 14px;
+  font-size:15px; font-family:inherit; color:var(--text); outline:none; transition:.15s; background:#fff}
+.input:focus{border-color:var(--mrt-blue-2); box-shadow:0 0 0 3px var(--mrt-blue-soft)}
+.btn{border:none; border-radius:12px; padding:0 18px; font-weight:700; font-size:15px; cursor:pointer;
+  font-family:inherit; display:inline-flex; align-items:center; gap:6px; background:var(--mrt-blue-2); color:#fff; transition:.15s}
+.btn:hover{background:var(--mrt-blue)}
+.btn:disabled{opacity:.6; cursor:default}
+.btn.accent{background:var(--mrt-green)}
+.btn.accent:hover{filter:brightness(.95)}
+.result{margin-top:18px; display:none}
+.result.show{display:block}
+.row{display:grid; grid-template-columns:150px 1fr; gap:6px 14px; padding:9px 0; border-bottom:1px dashed var(--border); font-size:14px}
+.row:last-child{border-bottom:none}
+.row .k{color:var(--text-mut); font-weight:500}
+.row .v{font-weight:600; word-break:break-word}
+.row .v.pre{white-space:pre-wrap}
+.code-pill{display:inline-block; background:var(--mrt-blue-soft); color:var(--mrt-blue); font-weight:700;
+  padding:3px 10px; border-radius:8px; letter-spacing:.4px; font-size:13px}
+.badge{display:inline-flex; align-items:center; padding:4px 11px; border-radius:999px; font-size:12px; font-weight:700; white-space:nowrap}
+.status-belum{background:#FEF3C7; color:#92400E}
+.status-mencari{background:#DBEAFE; color:#1E40AF}
+.status-disiapkan{background:#E0E7FF; color:#3730A3}
+.status-tersedia{background:#CFFAFE; color:#155E75}
+.status-selesai{background:var(--mrt-green-soft); color:#065F46}
+.status-ditolak{background:#FEE2E2; color:#991B1B}
+.notice{padding:14px 16px; border-radius:12px; font-size:14px}
+.notice.err{background:#FEF2F2; border:1px solid #FECACA; color:#991B1B}
+.notice.muted{background:#F8FAFC; border:1px solid var(--border); color:var(--text-mut)}
+.steps{display:flex; gap:6px; margin:4px 0 16px; flex-wrap:wrap}
+.step{flex:1; min-width:84px; text-align:center; font-size:10.5px; font-weight:600; color:var(--text-mut);
+  padding:7px 4px; border-radius:9px; background:#F1F5FB; border:1px solid var(--border)}
+.step.on{background:var(--mrt-blue-2); color:#fff; border-color:var(--mrt-blue-2)}
+.step.done{background:var(--mrt-green-soft); color:#065F46; border-color:#BBF7D0}
+.cta{margin-top:16px}
+footer{padding:22px 18px; text-align:center; color:var(--text-mut); font-size:12.5px;
+  border-top:1px solid var(--border); background:rgba(255,255,255,.6)}
+footer a{color:var(--mrt-blue-2); text-decoration:none; font-weight:600}
+@media(max-width:520px){
+  .row{grid-template-columns:1fr; gap:2px}
+  .row .k{margin-top:4px}
+  .searchbar{flex-direction:column}
+  .btn{padding:12px}
+}
+</style>
+</head>
+<body>
+  <main class="wrap">
+    <div class="brand">
+      <img src="logo.png" alt="GASS CRM" onerror="this.style.display='none'"/>
+      <div class="bt">GASS <span>CRM</span></div>
+    </div>
+    <p class="subtitle">Portal General Affairs · PT MRT Jakarta (Perseroda)</p>
+
+    <div class="card">
+      <h1><span class="material-symbols-rounded">search</span> Cek Status Permintaan</h1>
+      <p class="lead">Masukkan <strong>kode permintaan</strong> (mis. FB-120520260001) atau <strong>kode SmartOffice</strong> Anda untuk melihat progres terkini.</p>
+      <div class="searchbar">
+        <input class="input" id="q" placeholder="Kode permintaan atau kode SmartOffice…" autocomplete="off" />
+        <button class="btn" id="go"><span class="material-symbols-rounded">search</span>Cek</button>
+      </div>
+      <div class="result" id="result"></div>
+    </div>
+  </main>
+
+  <footer>
+    © <span id="yr"></span> General Affairs · PT MRT Jakarta (Perseroda). All rights reserved.
+    &nbsp;·&nbsp; <a href="/">Buka Portal Lengkap</a>
+  </footer>
+
+<script>
+const SUPABASE_URL = window.__SUPA_URL__ || 'https://ekgebayrtjdjxsegcmru.supabase.co';
+const SUPABASE_ANON_KEY = window.__SUPA_KEY__ || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVrZ2ViYXlydGpkanhzZWdjbXJ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1NzM3OTAsImV4cCI6MjA5NDE0OTc5MH0.JUwWYQiGIY4PkHei0XI1HgdchynMSkQzarpDiH-guyE';
+const SUPA_CONFIGURED = !SUPABASE_URL.includes('YOUR-PROJECT-REF');
+const supa = (SUPA_CONFIGURED && window.supabase) ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
+const STATUS_CLASS = {
+  'Belum Dikonfirmasi':'status-belum','Mencari Penyedia':'status-mencari',
+  'Sedang Disiapkan':'status-disiapkan','Tersedia':'status-tersedia',
+  'Selesai':'status-selesai','Ditolak':'status-ditolak'
+};
+const FLOW = ['Belum Dikonfirmasi','Mencari Penyedia','Sedang Disiapkan','Tersedia','Selesai'];
+const esc = (s)=> String(s==null?'':s).replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const fmtDate = (d)=>{ if(!d) return '—'; try{ return new Date(d).toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'});}catch{return '—';} };
+
+async function getByCode(code){
+  const needle = (code||'').trim();
+  if(!needle) return null;
+  if(!supa) throw new Error('not-configured');
+  const { data, error } = await supa.from('requests').select('*')
+    .or(`kode_permintaan.ilike.${needle},kode_smartoffice.ilike.${needle}`).limit(1);
+  if(error) throw error;
+  return (data && data[0]) || null;
+}
+async function getRating(reqId){
+  if(!supa) return null;
+  try{ const { data } = await supa.from('ratings').select('*').eq('request_id', reqId).maybeSingle(); return data; }
+  catch{ return null; }
+}
+
+function stepsHtml(status){
+  if(status === 'Ditolak'){
+    return `<div class="steps"><div class="step" style="flex:1;background:#FEE2E2;color:#991B1B;border-color:#FCA5A5">Permintaan Ditolak</div></div>`;
+  }
+  const idx = FLOW.indexOf(status);
+  return `<div class="steps">${FLOW.map((s,i)=>{
+    const cls = i < idx ? 'done' : (i === idx ? 'on' : '');
+    return `<div class="step ${cls}">${esc(s)}</div>`;
+  }).join('')}</div>`;
+}
+
+const resultEl = document.getElementById('result');
+const qEl = document.getElementById('q');
+const goBtn = document.getElementById('go');
+
+async function doTrack(){
+  const code = qEl.value.trim();
+  if(!code){ qEl.focus(); return; }
+  resultEl.className = 'result show';
+  resultEl.innerHTML = '<div class="notice muted">Mencari…</div>';
+  goBtn.disabled = true;
+  try{
+    const r = await getByCode(code);
+    if(!r){
+      resultEl.innerHTML = `<div class="notice err"><strong>Tidak ditemukan.</strong> Periksa kembali kode Anda — bisa berupa kode permintaan (mis. FB-120520260001) atau kode SmartOffice.</div>`;
+      return;
+    }
+    const cls = STATUS_CLASS[r.status] || '';
+    const rating = r.status === 'Selesai' ? await getRating(r.id) : null;
+    resultEl.innerHTML = `
+      ${stepsHtml(r.status)}
+      <div class="row"><span class="k">Kode Permintaan</span><span class="v"><span class="code-pill">${esc(r.kode_permintaan)}</span></span></div>
+      ${r.kode_smartoffice?`<div class="row"><span class="k">Kode SmartOffice</span><span class="v">${esc(r.kode_smartoffice)}</span></div>`:''}
+      <div class="row"><span class="k">Kategori</span><span class="v">${esc(r.kategori)}</span></div>
+      <div class="row"><span class="k">Pemesan</span><span class="v">${esc(r.nama_pemesan)}</span></div>
+      <div class="row"><span class="k">Tanggal Kebutuhan</span><span class="v">${fmtDate(r.tanggal_kebutuhan)}</span></div>
+      <div class="row"><span class="k">Status</span><span class="v"><span class="badge ${cls}">${esc(r.status)}</span></span></div>
+      <div class="row"><span class="k">Keterangan</span><span class="v pre">${esc(r.keterangan||'—')}</span></div>
+      <div class="row"><span class="k">PIC GA</span><span class="v">${esc(r.nama_pic_ga||'—')}</span></div>
+      <div class="row"><span class="k">Estimasi Selesai</span><span class="v">${fmtDate(r.estimasi_penyelesaian)}</span></div>
+      ${r.status==='Selesai' && !rating ? `<div class="cta"><a class="btn accent" href="/#/rate/${esc(r.id)}"><span class="material-symbols-rounded">star</span>Beri Penilaian</a></div>` : ''}
+      ${rating ? `<div class="cta"><span class="badge status-selesai">Sudah dinilai · ${esc(rating.rating)}★</span></div>` : ''}
+    `;
+  }catch(err){
+    console.error(err);
+    const msg = (err && err.message === 'not-configured')
+      ? 'Koneksi data belum dikonfigurasi. Hubungi tim General Affairs.'
+      : 'Gagal memuat data. Periksa koneksi internet Anda lalu coba lagi.';
+    resultEl.innerHTML = `<div class="notice err">${msg}</div>`;
+  }finally{
+    goBtn.disabled = false;
+  }
+}
+
+goBtn.addEventListener('click', doTrack);
+qEl.addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); doTrack(); } });
+document.getElementById('yr').textContent = new Date().getFullYear();
+
+// Allow deep-link: /cektiket?kode=FB-... or #FB-...
+(function(){
+  const p = new URLSearchParams(location.search);
+  const pre = p.get('kode') || p.get('code') || (location.hash ? decodeURIComponent(location.hash.slice(1)) : '');
+  if(pre){ qEl.value = pre; doTrack(); }
+})();
+</script>
+</body>
+</html>

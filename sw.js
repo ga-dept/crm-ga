@@ -7,10 +7,11 @@
    • Supabase API & all non-GET requests     → network only (never cached)
    Bump CACHE_VERSION on every deploy to invalidate old caches.
    ===================================================================== */
-const CACHE_VERSION = 'ga-hotline-v1.8.0';
+const CACHE_VERSION = 'ga-hotline-v1.9.0';
 const APP_SHELL = [
   './',
   './index.html',
+  './cektiket.html',
   './manifest.json',
   './logo.png',
   './icon-192.png',
@@ -26,7 +27,8 @@ const CDN_PRECACHE = [
   'https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js',
   'https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js',
   'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js',
-  'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js'
+  'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js',
+  'https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js'
 ];
 
 // ---------- INSTALL: precache app shell (+ best-effort CDN) ----------
@@ -63,17 +65,19 @@ self.addEventListener('fetch', (event) => {
   // Only handle GET; never touch Supabase API (auth + dynamic data).
   if (req.method !== 'GET' || isSupabase(url)) return;
 
-  // SPA navigations: network-first, fall back to cached index.html when offline.
+  // SPA navigations: network-first, fall back to the right cached page offline.
   if (req.mode === 'navigate') {
     event.respondWith((async () => {
+      const isCek = /cektiket/i.test(url.pathname);
+      const fallbackKey = isCek ? './cektiket.html' : './index.html';
       try {
         const fresh = await fetch(req);
         const cache = await caches.open(CACHE_VERSION);
-        cache.put('./index.html', fresh.clone()).catch(() => {});
+        cache.put(fallbackKey, fresh.clone()).catch(() => {});
         return fresh;
       } catch (e) {
         const cache = await caches.open(CACHE_VERSION);
-        return (await cache.match('./index.html')) || (await cache.match('./')) || Response.error();
+        return (await cache.match(fallbackKey)) || (await cache.match('./index.html')) || (await cache.match('./')) || Response.error();
       }
     })());
     return;

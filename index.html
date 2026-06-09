@@ -24,6 +24,7 @@
 <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 
 <style>
 /* ============================================================
@@ -140,6 +141,20 @@ button{font-family:inherit;cursor:pointer}
 .badge.status-tersedia{background:#CFFAFE;color:#155E75}
 .badge.status-selesai{background:var(--mrt-green-soft);color:#065F46}
 .badge.status-ditolak{background:#FEE2E2;color:#991B1B}
+
+/* type-search combobox (Divisi/Departemen) */
+.combo{position:relative}
+.combo input[disabled]{background:#F1F4F9;color:var(--text-mut);cursor:not-allowed}
+.combo-menu{position:absolute;z-index:60;left:0;right:0;top:calc(100% + 4px);
+  background:#fff;border:1px solid var(--border);border-radius:10px;
+  box-shadow:0 12px 30px rgba(2,32,71,.14);max-height:240px;overflow:auto;display:none}
+.combo-menu.show{display:block}
+.combo-item{padding:9px 12px;cursor:pointer;font-size:14px;display:flex;align-items:center;gap:8px;color:var(--text)}
+.combo-item:hover,.combo-item.active{background:var(--mrt-blue-soft)}
+.combo-item .material-symbols-rounded{font-size:18px;color:var(--text-mut)}
+.combo-item.add{color:var(--mrt-blue);font-weight:600}
+.combo-item.add .material-symbols-rounded{color:var(--mrt-blue)}
+.combo-empty{padding:10px 12px;color:var(--text-mut);font-size:13px}
 
 .toast-wrap{position:fixed;top:24px;right:24px;display:flex;flex-direction:column;gap:10px;z-index:9999}
 .toast{
@@ -989,19 +1004,23 @@ table.t{
 
               <div class="field">
                 <label>Divisi</label>
-                <select class="select" name="divisi" id="select-divisi">
-                  <option value="">-- Memuat --</option>
-                </select>
-                <input type="text" class="input" id="input-divisi-new" placeholder="Ketik nama Divisi baru" style="display:none;margin-top:8px" />
-                <span class="hint">Pilih Divisi, atau pilih "+ Tambah Divisi baru" untuk membuat yang belum ada.</span>
+                <div class="combo" id="combo-divisi">
+                  <input type="text" class="input" name="divisi" id="input-divisi" autocomplete="off"
+                         role="combobox" aria-autocomplete="list" aria-expanded="false"
+                         placeholder="Ketik untuk mencari Divisi..." />
+                  <div class="combo-menu" id="menu-divisi" role="listbox"></div>
+                </div>
+                <span class="hint">Ketik untuk mencari. Divisi baru otomatis terdaftar saat permintaan dikirim.</span>
               </div>
               <div class="field">
                 <label>Departemen</label>
-                <select class="select" name="departemen" id="select-departemen">
-                  <option value="">— Pilih Divisi terlebih dahulu —</option>
-                </select>
-                <input type="text" class="input" id="input-departemen-new" placeholder="Ketik nama Departemen baru" style="display:none;margin-top:8px" />
-                <span class="hint">Departemen baru akan otomatis terdaftar di bawah Divisi terpilih.</span>
+                <div class="combo" id="combo-departemen">
+                  <input type="text" class="input" name="departemen" id="input-departemen" autocomplete="off"
+                         role="combobox" aria-autocomplete="list" aria-expanded="false"
+                         placeholder="Pilih Divisi terlebih dahulu…" disabled />
+                  <div class="combo-menu" id="menu-departemen" role="listbox"></div>
+                </div>
+                <span class="hint">Daftar menyesuaikan Divisi terpilih. Departemen baru otomatis terdaftar di bawahnya.</span>
               </div>
 
               <div class="field field-required">
@@ -1022,6 +1041,49 @@ table.t{
               <div class="field full">
                 <label>Lampiran <span class="hint" style="font-weight:500">(PDF/PNG/JPG, maksimal 2 MB)</span></label>
                 <input type="file" class="input" name="lampiran" id="input-lampiran" accept=".pdf,.png,.jpg,.jpeg" />
+              </div>
+
+              <!-- v1.9: Kendaraan Operasional (form GA-08) — shown only when kategori = Kendaraan Operasional -->
+              <div class="field full" id="ko-section" style="display:none">
+                <div style="padding:14px;border-radius:12px;background:var(--mrt-blue-soft);border:1px solid #CBDDF2">
+                  <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+                    <span class="material-symbols-rounded" style="color:var(--mrt-blue)">directions_car</span>
+                    <strong style="color:var(--mrt-blue)">Detail Pemakaian Kendaraan Operasional</strong>
+                  </div>
+                  <div class="form-grid">
+                    <div class="field"><label>Area</label>
+                      <select class="select" id="ko-area">
+                        <option value="">— Pilih Area —</option>
+                        <option>Wisma Nusantara</option><option>Transport Hub</option>
+                        <option>Lebak Bulus</option><option>Lain-lain</option>
+                      </select></div>
+                    <div class="field"><label>Pengemudi / Kendaraan</label>
+                      <select class="select" id="ko-driver"><option value="">— Pilih armada —</option></select>
+                      <span class="hint">Daftar armada dikelola di menu <strong>Armada Kendaraan</strong>.</span></div>
+                    <div class="field"><label>Kontak Pemesan</label>
+                      <input type="text" class="input" id="ko-kontak" placeholder="No. HP pemesan" /></div>
+                    <div class="field"><label>Prioritas</label>
+                      <select class="select" id="ko-prioritas">
+                        <option value="">— Pilih Prioritas —</option>
+                        <option>Seluruh Karyawan</option><option>Konstruksi</option>
+                        <option>Direktur BD</option><option>Direksi</option>
+                        <option>Tamu/VIP</option><option>Lainnya</option>
+                      </select></div>
+                    <div class="field"><label>Drop — Jam</label>
+                      <input type="time" class="input" id="ko-drop-jam" /></div>
+                    <div class="field"><label>Drop — Lokasi</label>
+                      <input type="text" class="input" id="ko-drop-lokasi" placeholder="Lokasi tujuan" /></div>
+                    <div class="field"><label>Standby — Jam</label>
+                      <input type="time" class="input" id="ko-standby-jam" /></div>
+                    <div class="field"><label>Pick Up — Lokasi</label>
+                      <input type="text" class="input" id="ko-pickup-lokasi" placeholder="Lokasi penjemputan" /></div>
+                    <div class="field"><label>Jenis Kendaraan</label>
+                      <select class="select" id="ko-ev">
+                        <option value="">— Pilih —</option>
+                        <option>EV</option><option>NON EV</option>
+                      </select></div>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -1116,6 +1178,7 @@ table.t{
         <a class="nav-item" data-route="kategori"    data-allowed-roles="superadmin,admin"><span class="material-symbols-rounded">category</span><span class="nav-label">Kategori Pemesanan</span></a>
         <a class="nav-item" data-route="divisi"      data-allowed-roles="superadmin,admin"><span class="material-symbols-rounded">account_tree</span><span class="nav-label">Divisi</span></a>
         <a class="nav-item" data-route="departemen"  data-allowed-roles="superadmin,admin"><span class="material-symbols-rounded">groups</span><span class="nav-label">Departemen</span></a>
+        <a class="nav-item" data-route="kendaraan"    data-allowed-roles="superadmin,admin"><span class="material-symbols-rounded">directions_car</span><span class="nav-label">Armada Kendaraan</span></a>
         <div class="sidebar-section-label" data-allowed-roles="superadmin">ADMIN</div>
         <a class="nav-item" data-route="users" data-allowed-roles="superadmin"><span class="material-symbols-rounded">manage_accounts</span><span class="nav-label">Manajemen User</span></a>
         <a class="nav-item nav-item-sa" data-route="slatargets" data-requires-role="superadmin"><span class="material-symbols-rounded">speed</span><span class="nav-label">SLA Target</span></a>
@@ -1238,8 +1301,37 @@ let KATEGORI_KODE = {
   'Fasilitas Kantor dan Identitas Karyawan': 'FAC',
   'Seragam': 'UFM',
   'Office Supply': 'OS',
-  'Event Support': 'EV'
+  'Event Support': 'EV',
+  'Kendaraan Operasional': 'KO'
 };
+// v1.9: Kendaraan Operasional (GA-08) — booking + fleet master option sets
+const KO_KATEGORI = 'Kendaraan Operasional';
+const KO_AREAS      = ['Wisma Nusantara','Transport Hub','Lebak Bulus','Lain-lain'];
+const KO_PRIORITAS  = ['Seluruh Karyawan','Konstruksi','Direktur BD','Direksi','Tamu/VIP','Lainnya'];
+const KO_EV_STATUS  = ['EV','NON EV'];
+const KO_GA_GE      = ['Genap','Ganjil'];
+const KO_POSISI     = ['Driver Operasional','Driver Direksi','Transport Hub','Standby'];
+const KO_OWNERSHIP  = ['MRTJ','MRTI','OCG - Sewa','Sewa - Pusaka','Sewa - New Ratna','Sewa - Lainnya'];
+
+// v1.9: per-route role access (used by sidebar gating + direct-URL guard)
+const ROUTE_ROLES = {
+  dashboard:  ['superadmin','admin','pic','admin_payment'],
+  myticket:   ['superadmin','admin','pic'],
+  approvals:  ['superadmin','admin','pic'],
+  requests:   ['superadmin','admin','pic','admin_payment'],
+  ratings:    ['superadmin','admin','pic'],
+  payments:   ['superadmin','admin','pic','admin_payment'],
+  masterdata: ['superadmin','admin'],
+  kategori:   ['superadmin','admin'],
+  divisi:     ['superadmin','admin'],
+  departemen: ['superadmin','admin'],
+  kendaraan:  ['superadmin','admin'],
+  users:      ['superadmin'],
+  slatargets: ['superadmin'],
+  activity:   ['superadmin','admin','pic'],
+  version:    ['superadmin','admin','pic','admin_payment']
+};
+const ROLE_LABEL = { superadmin:'Super Admin', admin:'Admin', pic:'PIC GA', admin_payment:'Admin Payment' };
 
 // Cache of full kategori objects (with active, default_sla_hours, description, etc.)
 let _kategoriCache = null;
@@ -1277,14 +1369,27 @@ const PAYMENT_STATUS_CLASS = {
   'Lunas':'pay-lunas',
   'Dibatalkan':'pay-batal'
 };
+// v1.9: GA-budget payment workflow status (CRUD oleh Admin Payment / Superadmin saja)
+const GA_PAYMENT_STATUSES = ['Not Complete Yet','Submitted','Verified','Revision','Paid'];
+const GA_PAYMENT_STATUS_CLASS = {
+  'Not Complete Yet':'pay-belum',
+  'Submitted':'pay-proses',
+  'Verified':'pay-menunggu',
+  'Revision':'pay-batal',
+  'Paid':'pay-lunas'
+};
+const FUND_OPTIONS = ['General Affairs','Non General Affairs'];
 const COST_TYPES = ['CAPEX','OPEX'];
 const JENIS_PEMBAYARAN = ['Transfer','Cash','Petty Cash','Reimbursement','Corporate Card','Lainnya'];
 // All payment columns. `synced` = default value pulled from the parent request
 // (still editable & overridable by any user). type drives the input widget.
+// Field order follows the Report Payment phases (Identifikasi → Proforma/PR → PO/GR → Invoice/Fund).
 const PAYMENT_FIELDS = [
-  {key:'fund_owner',        label:'Fund Owner',         type:'text'},
+  {key:'activity_name',     label:'Nama Kegiatan / Deskripsi', type:'text', syncedActivity:true},
   {key:'vendor_name',       label:'Vendor Name',        type:'text',   synced:'nama_vendor'},
+  {key:'fund',              label:'Fund',               type:'select', options:FUND_OPTIONS, syncedFund:true},
   {key:'pic_user_name',     label:'PIC User Name',      type:'text',   synced:'nama_pic_ga'},
+  {key:'fund_owner',        label:'Fund Owner',         type:'text'},
   {key:'tanggal_permintaan',label:'Tanggal Permintaan', type:'date',   syncedDate:'created_at'},
   {key:'tanggal_kebutuhan', label:'Tanggal Kebutuhan',  type:'date',   synced:'tanggal_kebutuhan'},
   {key:'location',          label:'Location',           type:'text',   synced:'lokasi_kebutuhan'},
@@ -1306,6 +1411,7 @@ const PAYMENT_FIELDS = [
   {key:'gr_date',           label:'GR Date',            type:'date'},
   {key:'invoice_number',    label:'Invoice Number',     type:'text'},
   {key:'invoice_date',      label:'Invoice Date',       type:'date'},
+  {key:'description_fund',  label:'Description Fund',    type:'textarea'},
   {key:'submit_date',       label:'Submit Date',        type:'date'},
   {key:'cost_type',         label:'Cost Type',          type:'select', options:COST_TYPES},
   {key:'cost_purpose',      label:'Cost Purpose',       type:'text'},
@@ -1313,17 +1419,23 @@ const PAYMENT_FIELDS = [
   {key:'quantity',          label:'Quantity',           type:'number'},
   {key:'price',             label:'Price',              type:'money',  syncedPrice:true},
   {key:'grand_total',       label:'Grand Total',        type:'money'},
-  {key:'status',            label:'Status',             type:'select', options:PAYMENT_STATUSES},
+  {key:'status',            label:'Status (umum)',      type:'select', options:PAYMENT_STATUSES},
+  // GA-budget workflow status — only Admin Payment / Superadmin may edit
+  {key:'ga_payment_status', label:'Status Pembayaran GA', type:'select', options:GA_PAYMENT_STATUSES, adminPaymentOnly:true},
   {key:'note',              label:'Note',               type:'textarea'}
 ];
 // Default value for a synced field, read from the parent request.
 function paymentSyncedValue(field, req){
   if(!req) return '';
+  if(field.syncedFund) return req.pakai_anggaran_ga === false ? 'Non General Affairs' : 'General Affairs';
+  if(field.syncedActivity) return req.nama_kegiatan || req.detail_kebutuhan || '';
   if(field.syncedDate) return (req[field.syncedDate]||'').toString().slice(0,10);
   if(field.syncedPrice) return req.total_anggaran || req.estimasi_harga || 0;
   if(field.synced) return req[field.synced] != null ? req[field.synced] : '';
   return '';
 }
+// Whether a request flows into the Payment module (only GA-budget requests do).
+function reqUsesGABudget(req){ return req && req.pakai_anggaran_ga !== false; }
 // Merge a payment row with its request: synced columns fall back to the request
 // value when the payment record hasn't overridden them yet.
 function mergePayment(req, pay){
@@ -1335,7 +1447,9 @@ function mergePayment(req, pay){
   });
   if(pay){ out.id = pay.id; out._exists = true; } else { out._exists = false; }
   if(!out.status) out.status = 'Belum Diproses';
+  if(!out.ga_payment_status) out.ga_payment_status = 'Not Complete Yet';
   out._req = req;
+  out._isGA = reqUsesGABudget(req);
   return out;
 }
 
@@ -1443,7 +1557,9 @@ const demo = (() => {
     {id:'u4',username:'ga.rian',password:'rian123',full_name:'Rian Pratama',role:'pic',
        jabatan:'GA Officer',lokasi_kerja:'Transport Hub',active:true},
     {id:'u5',username:'ga.dewi',password:'dewi123',full_name:'Dewi Anggraini',role:'pic',
-       jabatan:'GA Officer',lokasi_kerja:'JB Tower',active:true}
+       jabatan:'GA Officer',lokasi_kerja:'JB Tower',active:true},
+    {id:'u6',username:'pay.admin',password:'pay123',full_name:'Bagus Payment',role:'admin_payment',
+       jabatan:'Admin Payment',lokasi_kerja:'Wisma Nusantara',active:true}
   ];
   const notifications = [];
   const version = [
@@ -1456,7 +1572,8 @@ const demo = (() => {
     {id:'v7',version:'1.6.0',release_date:'2026-05-18',changes:'Tracking by SmartOffice code, dashboard screenshot JPG, kolom Mata Anggaran (+master), kolom Divisi & Departemen (+master dengan cascading dropdown), tombol Backup Data XLSX multi-sheet.'},
     {id:'v8',version:'1.7.0',release_date:'2026-05-20',changes:'Kategori Pemesanan custom (CRUD master + kode prefix + SLA default), workflow approval Kepala Departemen untuk Direct Purchase, menu Divisi & Departemen dipisah di sidebar, hanya superadmin/admin yang boleh assign PIC.'},
     {id:'v9',version:'1.8.0',release_date:'2026-06-07',changes:'Modul Payment baru (semua permintaan masuk untuk update pembayaran: Proforma/PR/PO/GR/Invoice, Cost Type, Grand Total, dll — dapat diupdate semua user), statistik Payment di Dashboard, Detail Permintaan kini mempertahankan baris baru & lebih mudah dibaca, tabel Daftar Permintaan dirampingkan agar muat di desktop tanpa scroll, perbaikan auto-add Divisi/Departemen, dukungan PWA (installable + offline).'},
-    {id:'v10',version:'1.8.1',release_date:'2026-06-08',changes:'CRUD penuh untuk Divisi & Departemen: tombol Edit untuk mengubah nama Divisi, serta mengubah nama, memindah Divisi induk, dan menunjuk Kepala Departemen dalam satu dialog. Penjagaan nama ganda saat menambah/mengubah. Auto-add dari formulir publik tetap berfungsi seperti sebelumnya.'}
+    {id:'v10',version:'1.8.1',release_date:'2026-06-08',changes:'CRUD penuh untuk Divisi & Departemen: tombol Edit untuk mengubah nama Divisi, serta mengubah nama, memindah Divisi induk, dan menunjuk Kepala Departemen dalam satu dialog. Penjagaan nama ganda saat menambah/mengubah. Auto-add dari formulir publik tetap berfungsi seperti sebelumnya.'},
+    {id:'v11',version:'1.9.0',release_date:'2026-06-08',changes:'Kolom Divisi & Departemen di formulir kini berupa type-search (cari sambil mengetik). Kategori "Kendaraan Operasional" (form GA-08) dengan master Armada Kendaraan yang dapat di-CRUD. Dropdown "Menggunakan/Bukan Anggaran GA" di Edit Permintaan — hanya yang ber-anggaran GA yang masuk Payment. Status pembayaran GA (Not Complete Yet/Submitted/Verified/Revision/Paid) yang hanya bisa diubah Admin Payment. Role baru "Admin Payment". Dashboard menampilkan daftar Payment anggaran GA. Modul Payment diselaraskan dengan Report Payment (Fund, Nama Kegiatan, Description Fund). Halaman publik /cektiket. Riwayat Versi kini menampilkan estimasi penyimpanan & Download Backup CSV format Supabase (per tabel).'}
   ];
 
   // Mata Anggaran options
@@ -1505,6 +1622,18 @@ const demo = (() => {
     {id:'k4', name:'Seragam',                                 kode:'UFM', default_sla_hours:168, active:true, description:'Seragam karyawan.'},
     {id:'k5', name:'Office Supply',                           kode:'OS',  default_sla_hours:24,  active:true, description:'ATK & supplies standar.'},
     {id:'k6', name:'Event Support',                           kode:'EV',  default_sla_hours:120, active:true, description:'Event support — koordinasi multi-vendor.'},
+    {id:'k7', name:'Kendaraan Operasional',                   kode:'KO',  default_sla_hours:8,   active:true, description:'Pemesanan pemakaian kendaraan operasional (form GA-08).'},
+  ];
+
+  // v1.9: Kendaraan Operasional — fleet/driver master (the "Keterangan" table on form GA-08)
+  const kendaraan = [
+    {id:'ko1', nama_driver:'Zamal Ardika',      no_hp:'081284987008', nomor_polisi:'B 1514 DZV', posisi:'Driver Operasional', ownership:'Sewa - Pusaka',    ev_status:'NON EV', ga_ge:'Genap',  keterangan:'Toyota - Zenix',  active:true},
+    {id:'ko2', nama_driver:'Firdaus Rahmansyah',no_hp:'085711624066', nomor_polisi:'B 1954 DZT', posisi:'Driver Operasional', ownership:'Sewa - Pusaka',    ev_status:'NON EV', ga_ge:'Genap',  keterangan:'Toyota - Avanza', active:true},
+    {id:'ko3', nama_driver:'Muhammad Ferdiansyah',no_hp:'087882753893',nomor_polisi:'B 2843 UIL',posisi:'Driver Operasional', ownership:'Sewa - New Ratna', ev_status:'NON EV', ga_ge:'Ganjil', keterangan:'Toyota - Innova', active:true},
+    {id:'ko4', nama_driver:'Muhammad Malik',    no_hp:'082120349347', nomor_polisi:'B 111 MRT',  posisi:'Driver Operasional', ownership:'MRTJ',            ev_status:'NON EV', ga_ge:'Ganjil', keterangan:'Toyota - Zenix',  active:true},
+    {id:'ko5', nama_driver:'Slamet',            no_hp:'08121944637',  nomor_polisi:'B 1844 RZV', posisi:'Driver Operasional', ownership:'OCG - Sewa',      ev_status:'NON EV', ga_ge:'Genap',  keterangan:'Toyota - Zenix',  active:true},
+    {id:'ko6', nama_driver:'Kamal',             no_hp:'089532800000', nomor_polisi:'B 1309 RYA', posisi:'Driver Operasional', ownership:'OCG - Sewa',      ev_status:'NON EV', ga_ge:'Ganjil', keterangan:'Toyota - Zenix',  active:true},
+    {id:'ko7', nama_driver:'Dede Suparmono',    no_hp:'089540329157', nomor_polisi:'B 1930 SDU', posisi:'Driver Direksi',     ownership:'Sewa - Pusaka',   ev_status:'EV',     ga_ge:'Genap',  keterangan:'Chery - J6',      active:true},
   ];
 
   // v1.7: Approvals
@@ -1513,7 +1642,7 @@ const demo = (() => {
   // v1.8: Payment records — one per request (created lazily on first edit).
   const payments = [];
 
-  return { requests, ratings, notifications, lokasi, lokasiKerja, tujuan, users, version, activityLogs, slaTargets, mataAnggaran, divisi, departemen, kategori, approvals, payments, seq, todayKey, nextCode };
+  return { requests, ratings, notifications, lokasi, lokasiKerja, tujuan, users, version, activityLogs, slaTargets, mataAnggaran, divisi, departemen, kategori, kendaraan, approvals, payments, seq, todayKey, nextCode };
 })();
 
 /* ============================================================
@@ -1914,6 +2043,35 @@ const db = {
     }
     const { data, error } = await supa.from('departemen_options').update(clean).eq('id',id).select().single();
     if(error) throw error; return data;
+  },
+
+  // ---- v1.9: Kendaraan Operasional fleet master ----
+  async listKendaraan(){
+    if(!SUPA_CONFIGURED) return [...demo.kendaraan];
+    const { data, error } = await supa.from('kendaraan_options').select('*').order('nama_driver');
+    if(error) throw error; return data || [];
+  },
+  async addKendaraan(row){
+    if(!SUPA_CONFIGURED){
+      const r = { id:'ko'+(demo.kendaraan.length+Date.now()), active:true, created_at:new Date().toISOString(), ...row };
+      demo.kendaraan.push(r); return r;
+    }
+    const { data, error } = await supa.from('kendaraan_options').insert(row).select().single();
+    if(error) throw error; return data;
+  },
+  async updateKendaraan(id, patch){
+    if(!SUPA_CONFIGURED){
+      const i = demo.kendaraan.findIndex(d => d.id === id);
+      if(i >= 0) demo.kendaraan[i] = { ...demo.kendaraan[i], ...patch };
+      return demo.kendaraan[i];
+    }
+    const { data, error } = await supa.from('kendaraan_options').update(patch).eq('id',id).select().single();
+    if(error) throw error; return data;
+  },
+  async deleteKendaraan(id){
+    if(!SUPA_CONFIGURED){ demo.kendaraan = demo.kendaraan.filter(d => d.id !== id); return; }
+    const { error } = await supa.from('kendaraan_options').delete().eq('id',id);
+    if(error) throw error;
   },
 
   // ---- Kategori Pemesanan (v1.7 master) ----
@@ -2781,76 +2939,92 @@ async function renderLanding(){
    ============================================================ */
 let _divDepCtl = null;
 function setupDivisiDepartemenFields(initial){
-  const selDiv = $('#select-divisi');
-  const selDep = $('#select-departemen');
-  const divNewInput = $('#input-divisi-new');
-  const depNewInput = $('#input-departemen-new');
-  if(!selDiv || !selDep) return null;
+  const inDiv  = $('#input-divisi');
+  const inDep  = $('#input-departemen');
+  const menuDiv = $('#menu-divisi');
+  const menuDep = $('#menu-departemen');
+  if(!inDiv || !inDep) return null;
 
-  const DEP_NEW_OPT = '<option value="__new__">+ Tambah Departemen baru…</option>';
-  const DIV_NEW_OPT = '<option value="__new__">+ Tambah Divisi baru…</option>';
   let divs = (initial && initial.divs) || [];
   let deps = (initial && initial.deps) || [];
+  const lc = s => (s||'').trim().toLowerCase();
+  const findDiv = () => divs.find(x => lc(x.name) === lc(inDiv.value)) || null;
 
-  function buildDivisiOptions(){
-    selDiv.innerHTML = '<option value="">-- Pilih Divisi --</option>' +
-      divs.map(d => `<option value="${escapeHtml(d.id)}">${escapeHtml(d.name)}</option>`).join('') +
-      DIV_NEW_OPT;
+  function buildDivItems(){
+    const q = lc(inDiv.value);
+    let list = divs.slice().sort((a,b)=> a.name.localeCompare(b.name));
+    if(q) list = list.filter(d => lc(d.name).includes(q));
+    const items = list.map(d => ({ type:'opt', label:d.name }));
+    const exact = divs.some(d => lc(d.name) === q);
+    if(inDiv.value.trim() && !exact) items.push({ type:'add', label:`Tambah "${inDiv.value.trim()}"`, value:inDiv.value.trim() });
+    return items;
   }
-  function buildDepartemenOptions(divisiId){
-    const opts = deps.filter(d => d.divisi_id === divisiId);
-    selDep.innerHTML = '<option value="">-- Pilih Departemen --</option>' +
-      opts.map(d => `<option>${escapeHtml(d.name)}</option>`).join('') + DEP_NEW_OPT;
+  function buildDepItems(){
+    const did = findDiv()?.id || null;
+    const q = lc(inDep.value);
+    let pool = did ? deps.filter(d => d.divisi_id === did) : [];
+    pool = pool.slice().sort((a,b)=> a.name.localeCompare(b.name));
+    if(q) pool = pool.filter(d => lc(d.name).includes(q));
+    const items = pool.map(d => ({ type:'opt', label:d.name }));
+    const exact = did && deps.some(d => d.divisi_id===did && lc(d.name)===q);
+    if(inDep.value.trim() && !exact) items.push({ type:'add', label:`Tambah "${inDep.value.trim()}"`, value:inDep.value.trim() });
+    return items;
   }
-  function showDivNew(show){ if(divNewInput){ divNewInput.style.display = show?'':'none'; if(!show) divNewInput.value=''; } }
-  function showDepNew(show){ if(depNewInput){ depNewInput.style.display = show?'':'none'; if(!show) depNewInput.value=''; } }
+  function renderMenu(menu, items){
+    if(!items.length){ menu.innerHTML = '<div class="combo-empty">Ketik untuk menambah baru…</div>'; return; }
+    menu.innerHTML = items.map((it,i)=>
+      `<div class="combo-item ${it.type==='add'?'add':''}" data-i="${i}" role="option">
+         <span class="material-symbols-rounded">${it.type==='add'?'add_circle':'corporate_fare'}</span>
+         <span>${escapeHtml(it.label)}</span>
+       </div>`).join('');
+  }
+  function bindCombo(input, menu, buildItems, onChoose){
+    let items = [], active = -1;
+    const open = () => { items = buildItems(); renderMenu(menu, items); menu.classList.add('show'); input.setAttribute('aria-expanded','true'); active = -1; wire(); };
+    const close = () => { menu.classList.remove('show'); input.setAttribute('aria-expanded','false'); active = -1; };
+    const wire = () => $$('.combo-item', menu).forEach(el =>
+      el.addEventListener('mousedown', e => { e.preventDefault(); onChoose(items[+el.dataset.i]); close(); }));
+    const paint = () => { const els = $$('.combo-item', menu); els.forEach((el,i)=> el.classList.toggle('active', i===active)); if(els[active]) els[active].scrollIntoView({block:'nearest'}); };
+    input.addEventListener('focus', open);
+    input.addEventListener('input', () => { if(input===inDiv) syncDepEnabled(); open(); });
+    input.addEventListener('keydown', e => {
+      if(!menu.classList.contains('show')){ if(e.key==='ArrowDown') open(); return; }
+      const els = $$('.combo-item', menu);
+      if(e.key==='ArrowDown'){ e.preventDefault(); active = Math.min(active+1, els.length-1); paint(); }
+      else if(e.key==='ArrowUp'){ e.preventDefault(); active = Math.max(active-1, 0); paint(); }
+      else if(e.key==='Enter'){ if(active>=0 && items[active]){ e.preventDefault(); onChoose(items[active]); close(); } }
+      else if(e.key==='Escape'){ close(); }
+    });
+    input.addEventListener('blur', () => setTimeout(close, 130));
+  }
+  function syncDepEnabled(){
+    const hasDiv = !!inDiv.value.trim();
+    inDep.disabled = !hasDiv;
+    inDep.placeholder = hasDiv ? 'Ketik untuk mencari Departemen…' : 'Pilih Divisi terlebih dahulu…';
+    if(!hasDiv) inDep.value = '';
+  }
 
-  function onDivChange(){
-    const v = selDiv.value;
-    if(v === '__new__'){
-      // brand-new divisi: no existing departemen, but allow optional new dept
-      showDivNew(true);
-      selDep.innerHTML = '<option value="">— (opsional) —</option>' + DEP_NEW_OPT;
-      selDep.value = '';
-      showDepNew(false);
-      return;
-    }
-    showDivNew(false);
-    showDepNew(false);
-    if(!v){
-      selDep.innerHTML = '<option value="">— Pilih Divisi terlebih dahulu —</option>';
-      return;
-    }
-    buildDepartemenOptions(v);
-  }
-  function onDepChange(){
-    showDepNew(selDep.value === '__new__');
-  }
-
-  // wire once
-  selDiv.addEventListener('change', onDivChange);
-  selDep.addEventListener('change', onDepChange);
+  bindCombo(inDiv, menuDiv, buildDivItems, (it) => {
+    if(!it) return;
+    inDiv.value = it.type==='opt' ? it.label : (it.value||'');
+    syncDepEnabled();
+    inDep.value = '';
+  });
+  bindCombo(inDep, menuDep, buildDepItems, (it) => {
+    if(!it) return;
+    inDep.value = it.type==='opt' ? it.label : (it.value||'');
+  });
 
   function reset(){
-    buildDivisiOptions();
-    selDiv.value = '';
-    selDep.innerHTML = '<option value="">— Pilih Divisi terlebih dahulu —</option>';
-    showDivNew(false);
-    showDepNew(false);
+    inDiv.value=''; inDep.value=''; syncDepEnabled();
+    menuDiv.classList.remove('show'); menuDep.classList.remove('show');
   }
-
   async function refresh(){
-    try{
-      divs = await db.listDivisi().catch(()=>divs);
-      deps = await db.listDepartemen().catch(()=>deps);
-    }catch(e){ console.warn('[divdep refresh]', e); }
+    try{ divs = await db.listDivisi().catch(()=>divs); deps = await db.listDepartemen().catch(()=>deps); }
+    catch(e){ console.warn('[divdep refresh]', e); }
     reset();
   }
-
-  // initial paint
-  buildDivisiOptions();
-  selDep.innerHTML = '<option value="">— Pilih Divisi terlebih dahulu —</option>';
-
+  syncDepEnabled();
   return { refresh, reset, getDivs:()=>divs, getDeps:()=>deps };
 }
 
@@ -2875,6 +3049,21 @@ function setupRequestForm(){
   const kodePreview = $('#kode-preview');
   const smartoffField = $('#smartoffice-field');
   const inputHarga = $('#input-harga');
+  const koSection = $('#ko-section');
+  let _koDriversLoaded = false;
+
+  async function ensureKoDrivers(){
+    if(_koDriversLoaded) return;
+    const sel = $('#ko-driver');
+    if(!sel) return;
+    try{
+      const fleet = await db.listKendaraan().catch(()=>[]);
+      sel.innerHTML = '<option value="">— Pilih armada —</option>' +
+        fleet.filter(v => v.active !== false).map(v =>
+          `<option value="${escapeHtml(v.id)}">${escapeHtml(v.nama_driver)} · ${escapeHtml(v.nomor_polisi||'')} (${escapeHtml(v.keterangan||v.ownership||'')})</option>`).join('');
+      _koDriversLoaded = true;
+    }catch(e){ console.warn('[ko drivers]', e); }
+  }
 
   if(katSel) katSel.addEventListener('change', () => {
     const k = KATEGORI_KODE[katSel.value];
@@ -2885,6 +3074,10 @@ function setupRequestForm(){
       if(kodePreview) kodePreview.value = '';
       if(smartoffField) smartoffField.style.display = 'none';
     }
+    // Kendaraan Operasional booking section
+    const isKO = katSel.value === KO_KATEGORI;
+    if(koSection) koSection.style.display = isKO ? '' : 'none';
+    if(isKO) ensureKoDrivers();
   });
 
   // Rupiah formatter
@@ -2926,56 +3119,61 @@ function setupRequestForm(){
       // Fix #2: best-effort auto-add. Even if the master insert is blocked
       // (RLS / race / duplicate), the request still records the typed names
       // and never throws, so the form can't get stuck "sometimes".
+      // Resolve Divisi & Departemen from the type-search inputs (name-based).
+      // The user types a name; if it does not exist yet it is auto-added to the
+      // master (best-effort — a blocked insert still records the typed name so
+      // the submit never gets stuck).
       const lcEq = (a,b) => (a||'').trim().toLowerCase() === (b||'').trim().toLowerCase();
       let divList = await db.listDivisi().catch(() => []);
-      let divisiName = null, resolvedDivisiId = '';
-      const divSelVal = fd.get('divisi') || '';
-      if(divSelVal === '__new__'){
-        const typed = ($('#input-divisi-new')?.value || '').trim();
-        if(typed){
-          let d = divList.find(x => lcEq(x.name, typed));
-          if(!d){
-            try{ d = await db.addDivisi({ name: typed }); }
-            catch(divErr){
-              console.warn('addDivisi gagal:', divErr);
-              divList = await db.listDivisi().catch(() => divList);
-              d = divList.find(x => lcEq(x.name, typed));
-            }
+      let divisiName = (fd.get('divisi') || '').toString().trim() || null;
+      let resolvedDivisiId = '';
+      if(divisiName){
+        let d = divList.find(x => lcEq(x.name, divisiName));
+        if(!d){
+          try{ d = await db.addDivisi({ name: divisiName }); }
+          catch(divErr){
+            console.warn('addDivisi gagal:', divErr);
+            divList = await db.listDivisi().catch(() => divList);
+            d = divList.find(x => lcEq(x.name, divisiName));
           }
-          if(d){ divisiName = d.name; resolvedDivisiId = d.id; }
-          else { divisiName = typed; }   // record what the user typed even if master insert failed
         }
-      } else if(divSelVal){
-        const d = divList.find(x => x.id === divSelVal);
         if(d){ divisiName = d.name; resolvedDivisiId = d.id; }
       }
 
-      let departemenName = null;
-      const depSelVal = fd.get('departemen') || '';
-      if(depSelVal === '__new__'){
-        const typedDep = ($('#input-departemen-new')?.value || '').trim();
-        if(typedDep){
-          // Only insert into the master when we have a real parent Divisi id.
-          // Without one we still record the typed departemen name on the request
-          // instead of throwing (previous behaviour blocked the whole submit).
-          if(resolvedDivisiId){
-            let depList = await db.listDepartemen().catch(() => []);
-            let dep = depList.find(x => x.divisi_id === resolvedDivisiId && lcEq(x.name, typedDep));
-            if(!dep){
-              try{ dep = await db.addDepartemen({ name: typedDep, divisi_id: resolvedDivisiId }); }
-              catch(depErr){
-                console.warn('addDepartemen gagal:', depErr);
-                depList = await db.listDepartemen().catch(() => depList);
-                dep = depList.find(x => x.divisi_id === resolvedDivisiId && lcEq(x.name, typedDep));
-              }
-            }
-            departemenName = dep ? dep.name : typedDep;
-          } else {
-            departemenName = typedDep;
+      let departemenName = (fd.get('departemen') || '').toString().trim() || null;
+      if(departemenName && resolvedDivisiId){
+        let depList = await db.listDepartemen().catch(() => []);
+        let dep = depList.find(x => x.divisi_id === resolvedDivisiId && lcEq(x.name, departemenName));
+        if(!dep){
+          try{ dep = await db.addDepartemen({ name: departemenName, divisi_id: resolvedDivisiId }); }
+          catch(depErr){
+            console.warn('addDepartemen gagal:', depErr);
+            depList = await db.listDepartemen().catch(() => depList);
+            dep = depList.find(x => x.divisi_id === resolvedDivisiId && lcEq(x.name, departemenName));
           }
         }
-      } else if(depSelVal){
-        departemenName = depSelVal;
+        departemenName = dep ? dep.name : departemenName;
+      }
+      // (departemen typed without a resolvable divisi keeps its typed name)
+
+      // v1.9: Kendaraan Operasional booking detail (when that category is chosen)
+      let kendaraan_detail = null;
+      if(kategori === KO_KATEGORI){
+        const drvSel = $('#ko-driver');
+        const drvId = drvSel ? drvSel.value : '';
+        const drvLabel = drvId && drvSel.selectedOptions[0] ? drvSel.selectedOptions[0].textContent : '';
+        kendaraan_detail = {
+          area:        $('#ko-area')?.value || '',
+          driver_id:   drvId || '',
+          driver_label:drvLabel || '',
+          kontak:      $('#ko-kontak')?.value || '',
+          prioritas:   $('#ko-prioritas')?.value || '',
+          drop_jam:    $('#ko-drop-jam')?.value || '',
+          drop_lokasi: $('#ko-drop-lokasi')?.value || '',
+          standby_jam: $('#ko-standby-jam')?.value || '',
+          pickup_lokasi: $('#ko-pickup-lokasi')?.value || '',
+          ev_status:   $('#ko-ev')?.value || ''
+        };
       }
 
       const payload = {
@@ -2994,6 +3192,8 @@ function setupRequestForm(){
         detail_kebutuhan: fd.get('detail_kebutuhan'),
         estimasi_harga: hargaDigits ? Number(hargaDigits) : 0,
         lampiran_url,
+        pakai_anggaran_ga: true,
+        kendaraan_detail,
         status: 'Belum Dikonfirmasi'
       };
 
@@ -3099,8 +3299,11 @@ async function renderAdmin(page){
   });
   $$('#admin-nav .nav-item').forEach(it => {
     // Role gating: hide items the user isn't allowed to access
+    // - ROUTE_ROLES[route] → authoritative per-route allow list
     // - data-requires-role="superadmin" → only that role
     // - data-allowed-roles="superadmin,admin" → comma-separated list
+    const rr = ROUTE_ROLES[it.dataset.route];
+    if(rr && !rr.includes(u.role)){ it.style.display = 'none'; return; }
     const reqRole = it.dataset.requiresRole;
     const allowed = it.dataset.allowedRoles ? it.dataset.allowedRoles.split(',').map(s => s.trim()) : null;
     if(reqRole && u.role !== reqRole){
@@ -3154,6 +3357,7 @@ async function renderAdmin(page){
     kategori:'Kategori Pemesanan',
     divisi:'Divisi',
     departemen:'Departemen',
+    kendaraan:'Armada Kendaraan',
     users:'Manajemen User',
     slatargets:'SLA Target',
     activity:'Log Aktivitas',
@@ -3164,28 +3368,16 @@ async function renderAdmin(page){
 
   const c = $('#admin-content');
 
-  // Role-based access control for direct URL navigation
-  // Roles: superadmin (all), admin (all except users + slatargets), pic (all except master data, users, slatargets)
-  const access = {
-    slatargets: ['superadmin'],
-    users:      ['superadmin'],
-    masterdata: ['superadmin','admin'],
-    kategori:   ['superadmin','admin'],
-    divisi:     ['superadmin','admin'],
-    departemen: ['superadmin','admin']
-  };
+  // Role-based access control for direct URL navigation (mirrors sidebar gating)
+  const access = ROUTE_ROLES;
   const allowed = access[page];
   if(allowed && !allowed.includes(u.role)){
-    const labelMap = {
-      slatargets:'SLA Target', users:'Manajemen User', masterdata:'Master Data',
-      kategori:'Kategori Pemesanan', divisi:'Divisi', departemen:'Departemen'
-    };
-    const roleStr  = allowed.join(' / ');
+    const roleStr  = allowed.map(r => ROLE_LABEL[r] || r).join(' / ');
     c.innerHTML = `
       <div class="card card-pad center" style="background:#FEF3C7;border-color:#FCD34D">
         <span class="material-symbols-rounded" style="font-size:48px;color:#92400E">lock</span>
         <h3 style="margin:8px 0;color:#92400E">Akses Ditolak</h3>
-        <p class="muted">Halaman <strong>${labelMap[page]||page}</strong> hanya dapat diakses oleh <strong>${roleStr}</strong>.</p>
+        <p class="muted">Halaman <strong>${titles[page]||page}</strong> hanya dapat diakses oleh <strong>${roleStr}</strong>.</p>
         <a class="btn btn-primary" href="#/admin/dashboard" style="margin-top:8px">Kembali ke Dashboard</a>
       </div>`;
     return;
@@ -3201,6 +3393,7 @@ async function renderAdmin(page){
   else if(page==='kategori')   await viewAdminKategori(c);
   else if(page==='divisi')     await viewAdminDivisi(c);
   else if(page==='departemen') await viewAdminDepartemen(c);
+  else if(page==='kendaraan')  await viewAdminKendaraan(c);
   else if(page==='users')      await viewAdminUsers(c);
   else if(page==='slatargets') await viewAdminSlaTargets(c);
   else if(page==='activity')   await viewAdminActivity(c);
@@ -3334,7 +3527,7 @@ async function viewAdminDashboard(c){
 
     <!-- v1.8: Payment statistics -->
     <h3 style="margin:18px 0 10px;font-size:15px;display:flex;align-items:center;gap:8px;color:var(--mrt-blue)">
-      <span class="material-symbols-rounded">payments</span> Statistik Payment
+      <span class="material-symbols-rounded">payments</span> Statistik Payment <span class="tag" style="font-weight:600">Anggaran GA</span>
     </h3>
     <div class="adm-stat-grid">
       <div class="stat-card"><div class="stat-icon" style="background:#E0F2FE;color:#0369A1"><span class="material-symbols-rounded">receipt_long</span></div>
@@ -3354,6 +3547,16 @@ async function viewAdminDashboard(c){
       <div class="card" style="margin:0">
         <div class="card-head"><h3>Nilai Pembayaran (Lunas vs Outstanding)</h3></div>
         <div class="card-body"><canvas id="adp-chart-value" height="160"></canvas></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <h3>Daftar Payment — Anggaran GA</h3>
+        <a href="#/admin/payments" class="btn btn-ghost btn-sm" data-html2canvas-ignore="true">Buka Payment <span class="material-symbols-rounded" style="font-size:18px">arrow_forward</span></a>
+      </div>
+      <div class="card-body">
+        <div id="adp-ga-list"></div>
       </div>
     </div>
 
@@ -3441,11 +3644,11 @@ async function viewAdminDashboard(c){
     });
   }
 
-  // v1.8: Payment statistics ------------------------------------------------
+  // v1.8/v1.9: Payment statistics (GA-budget only) ------------------------
   try{
     const pays = await db.listPayments().catch(()=>[]);
     const byReq = {}; (pays||[]).forEach(p => { byReq[p.request_id] = p; });
-    const merged = reqs.map(r => mergePayment(r, byReq[r.id]));
+    const merged = reqs.filter(r => reqUsesGABudget(r)).map(r => mergePayment(r, byReq[r.id]));
     const total = merged.length;
     const counts = {}; PAYMENT_STATUSES.forEach(s => counts[s] = 0);
     let grandTotal = 0, lunasValue = 0;
@@ -3483,6 +3686,34 @@ async function viewAdminDashboard(c){
           plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:(ctx)=>fmtRupiah(ctx.parsed.y) } } },
           scales:{ y:{ beginAtZero:true, ticks:{ callback:(v)=>'Rp '+Number(v).toLocaleString('id-ID'), font:{size:9} } } } }
       });
+    }
+
+    // v1.9: GA-budget payment list (most recent 12)
+    const gaHost = $('#adp-ga-list');
+    if(gaHost){
+      const list = merged.slice().sort((a,b)=> new Date(b._req.created_at) - new Date(a._req.created_at)).slice(0,12);
+      if(!list.length){ gaHost.innerHTML = '<div class="muted text-sm">Belum ada permintaan ber-anggaran GA.</div>'; }
+      else gaHost.innerHTML = `
+        <div class="table-wrap"><table class="t t-dense">
+          <thead><tr>
+            <th>Kode</th><th>Pemesan</th><th>Vendor</th><th style="text-align:right">Grand Total</th>
+            <th>Status Umum</th><th>Status GA</th>
+          </tr></thead>
+          <tbody>
+          ${list.map(m=>{
+            const gt = Number(m.grand_total)|| (Number(m.quantity)>0 && Number(m.price)>0 ? Number(m.quantity)*Number(m.price) : Number(m.price)||0);
+            const st = m.status||'Belum Diproses';
+            const ga = m.ga_payment_status||'Not Complete Yet';
+            return `<tr>
+              <td><span class="code-pill">${escapeHtml(m._req.kode_permintaan)}</span></td>
+              <td>${escapeHtml(m._req.nama_pemesan||'—')}</td>
+              <td>${escapeHtml(m.vendor_name||'—')}</td>
+              <td style="text-align:right">${gt>0?fmtRupiah(gt):'—'}</td>
+              <td><span class="badge ${PAYMENT_STATUS_CLASS[st]||'pay-belum'}">${escapeHtml(st)}</span></td>
+              <td><span class="badge ${GA_PAYMENT_STATUS_CLASS[ga]||'pay-belum'}">${escapeHtml(ga)}</span></td>
+            </tr>`;
+          }).join('')}
+          </tbody></table></div>`;
     }
   }catch(perr){ console.warn('[dashboard payments]', perr); }
 
@@ -3836,6 +4067,26 @@ async function openRequestDetail(id){
       </div>
     </div>` : '';
 
+  // v1.9: Kendaraan Operasional booking block
+  let koDetail = r.kendaraan_detail;
+  if(typeof koDetail === 'string'){ try{ koDetail = JSON.parse(koDetail); }catch{ koDetail = null; } }
+  const koBlock = (koDetail && (koDetail.area||koDetail.driver_label||koDetail.drop_lokasi||koDetail.pickup_lokasi)) ? `
+    <div style="grid-column:1/-1;margin-top:6px;padding:10px 12px;background:var(--mrt-blue-soft);border-radius:8px;border-left:3px solid var(--mrt-blue)">
+      <div style="font-weight:700;color:var(--mrt-blue);font-size:13px;margin-bottom:6px">
+        <span class="material-symbols-rounded" style="vertical-align:-4px;font-size:18px">directions_car</span> Detail Kendaraan Operasional
+      </div>
+      <div class="kvlist" style="grid-template-columns:140px 1fr;gap:4px 12px;font-size:13px">
+        <div class="k">Area</div><div class="v">${escapeHtml(koDetail.area||'—')}</div>
+        <div class="k">Pengemudi/Kendaraan</div><div class="v">${escapeHtml(koDetail.driver_label||'—')}</div>
+        <div class="k">Kontak</div><div class="v">${escapeHtml(koDetail.kontak||'—')}</div>
+        <div class="k">Prioritas</div><div class="v">${escapeHtml(koDetail.prioritas||'—')}</div>
+        <div class="k">Drop</div><div class="v">${escapeHtml(koDetail.drop_jam||'—')} · ${escapeHtml(koDetail.drop_lokasi||'—')}</div>
+        <div class="k">Standby</div><div class="v">${escapeHtml(koDetail.standby_jam||'—')}</div>
+        <div class="k">Pick Up</div><div class="v">${escapeHtml(koDetail.pickup_lokasi||'—')}</div>
+        <div class="k">Jenis</div><div class="v">${escapeHtml(koDetail.ev_status||'—')}</div>
+      </div>
+    </div>` : '';
+
   openModal(`
     <div class="modal-head">
       <h3><span class="material-symbols-rounded" style="vertical-align:-6px;color:var(--mrt-blue)">assignment</span> Detail Permintaan</h3>
@@ -3854,6 +4105,7 @@ async function openRequestDetail(id){
         <div class="k">Divisi</div><div class="v">${escapeHtml(r.divisi||'—')}</div>
         <div class="k">Departemen</div><div class="v">${escapeHtml(r.departemen||'—')}</div>
         <div class="k">Mata Anggaran</div><div class="v">${escapeHtml(r.mata_anggaran||'—')}</div>
+        <div class="k">Sumber Anggaran</div><div class="v">${r.pakai_anggaran_ga===false?'<span class="badge gray">Bukan Anggaran GA</span>':'<span class="badge status-selesai">Menggunakan Anggaran GA</span>'}</div>
         <div class="k">Tanggal Kebutuhan</div><div class="v">${fmtDate(r.tanggal_kebutuhan)}</div>
         <div class="detail-block">
           <div class="detail-label"><span class="material-symbols-rounded" style="font-size:16px">description</span> Detail Kebutuhan</div>
@@ -3871,6 +4123,7 @@ async function openRequestDetail(id){
         ${r.completed_at?`<div class="k">Selesai pada</div><div class="v">${fmtDateTime(r.completed_at)}${r.completed_at_edited_by?`<br><span class="hint" style="color:#92400E"><span class="material-symbols-rounded" style="font-size:14px;vertical-align:-2px">edit</span> Diubah oleh superadmin · ${escapeHtml(r.completed_at_edit_reason||'')}</span>`:''}</div>`:''}
         <div class="k">SLA</div><div class="v">${slaInfoHtml}</div>
         ${rating?`<div class="k">Penilaian</div><div class="v">${rating.rating}★ — ${escapeHtml(rating.kritik_saran||'')}</div>`:''}
+        ${koBlock}
         ${buktiBlock}
       </div>
     </div>
@@ -4021,6 +4274,13 @@ async function openRequestEdit(id){
             </select>
             <span class="hint">Daftar Mata Anggaran dikelola di menu Master Data.</span>
           </div>
+          <div class="field"><label>Sumber Anggaran</label>
+            <select class="select" name="pakai_anggaran_ga" id="ed-anggaran-ga">
+              <option value="true"  ${r.pakai_anggaran_ga!==false?'selected':''}>Menggunakan Anggaran GA</option>
+              <option value="false" ${r.pakai_anggaran_ga===false?'selected':''}>Bukan Anggaran GA</option>
+            </select>
+            <span class="hint">Hanya yang <strong>Menggunakan Anggaran GA</strong> yang masuk ke modul Payment.</span>
+          </div>
           <div class="field full"><label>Detail Kebutuhan</label>
             <textarea class="textarea" name="detail_kebutuhan">${escapeHtml(r.detail_kebutuhan||'')}</textarea></div>
         </div>
@@ -4143,7 +4403,8 @@ async function openRequestEdit(id){
       divisi:        divObj ? divObj.name : null,
       departemen:    fd.get('departemen') || null,
       mata_anggaran: fd.get('mata_anggaran') || null,
-      detail_kebutuhan: fd.get('detail_kebutuhan') || null
+      detail_kebutuhan: fd.get('detail_kebutuhan') || null,
+      pakai_anggaran_ga: fd.get('pakai_anggaran_ga') !== 'false'
     };
 
     // Friendly reminder if user is closing the ticket without evidence (status = Selesai)
@@ -4488,6 +4749,10 @@ function payCellHtml(m, f){
     const sv = v || 'Belum Diproses';
     return `<span class="badge ${PAYMENT_STATUS_CLASS[sv]||'pay-belum'}">${escapeHtml(sv)}</span>`;
   }
+  if(f.key === 'ga_payment_status'){
+    const sv = v || 'Not Complete Yet';
+    return `<span class="badge ${GA_PAYMENT_STATUS_CLASS[sv]||'pay-belum'}">${escapeHtml(sv)}</span>`;
+  }
   if(f.type === 'date')  return v ? fmtDate(v) : '—';
   if(f.type === 'money') return (v!=null && v!=='' && Number(v)>0) ? fmtRupiah(v) : '—';
   if(f.type === 'number')return (v!=null && v!=='') ? escapeHtml(v) : '—';
@@ -4512,7 +4777,7 @@ async function viewAdminPayments(c){
       </div>
       <div class="card-body">
         <p class="muted text-sm" style="margin:-6px 0 12px">
-          Seluruh permintaan masuk ke modul ini untuk proses pembayaran. Klik <strong>Edit</strong> pada baris untuk mengisi/memperbarui data pembayaran — dapat diupdate oleh semua user.
+          Hanya permintaan yang <strong>Menggunakan Anggaran GA</strong> yang muncul di sini. Klik <strong>Edit</strong> pada baris untuk mengisi/memperbarui data pembayaran sesuai alur <em>Report Payment</em> (Identifikasi → Proforma/PR → PO/GR → Invoice/Fund).
           Geser tabel ke kanan untuk melihat seluruh kolom.
         </p>
         <div class="toolbar" style="flex-wrap:wrap">
@@ -4544,7 +4809,8 @@ async function viewAdminPayments(c){
         db.listPayments().catch(()=>[])
       ]);
       const byReq = {}; (pays||[]).forEach(p => { byReq[p.request_id] = p; });
-      _payMerged = reqs.map(r => mergePayment(r, byReq[r.id]));
+      // v1.9: only requests that use the GA budget flow into Payment
+      _payMerged = reqs.filter(r => reqUsesGABudget(r)).map(r => mergePayment(r, byReq[r.id]));
       renderPaymentsTable(host);
     }catch(err){
       console.error('[payments]', err);
@@ -4653,29 +4919,35 @@ function openPaymentEdit(requestId){
   const m = _payMerged.find(x => x.request_id === requestId);
   if(!m){ toast('Data tidak ditemukan','error'); return; }
   const req = m._req;
+  const me = session.get();
+  // Only Admin Payment (and Superadmin) may edit the GA payment workflow status.
+  const canGA = !!me && (me.role === 'admin_payment' || me.role === 'superadmin');
 
   const fieldHtml = (f) => {
-    const syncedTag = (f.synced||f.syncedDate||f.syncedPrice) ? '<span class="synced-tag">sinkron</span>' : '';
+    const syncedTag = (f.synced||f.syncedDate||f.syncedPrice||f.syncedFund||f.syncedActivity) ? '<span class="synced-tag">sinkron</span>' : '';
+    const lockGA = f.adminPaymentOnly && !canGA;
+    const disAttr = lockGA ? ' disabled' : '';
+    const lockHint = lockGA ? ' <span class="hint" style="color:var(--text-mut)">(hanya Admin Payment)</span>' : '';
     let val = m[f.key];
     if(f.type === 'date' && val) val = String(val).slice(0,10);
     const full = f.type === 'textarea' ? ' full' : '';
     let control;
     if(f.type === 'select'){
       const opts = ['<option value=""></option>'].concat((f.options||[]).map(o => `<option ${String(val)===o?'selected':''}>${escapeHtml(o)}</option>`)).join('');
-      control = `<select class="select" data-pf="${f.key}">${opts}</select>`;
+      control = `<select class="select" data-pf="${f.key}"${disAttr}>${opts}</select>`;
     } else if(f.type === 'textarea'){
-      control = `<textarea class="textarea" data-pf="${f.key}" style="min-height:70px">${escapeHtml(val||'')}</textarea>`;
+      control = `<textarea class="textarea" data-pf="${f.key}" style="min-height:70px"${disAttr}>${escapeHtml(val||'')}</textarea>`;
     } else if(f.type === 'date'){
-      control = `<input type="date" class="input" data-pf="${f.key}" value="${escapeHtml(val||'')}" />`;
+      control = `<input type="date" class="input" data-pf="${f.key}" value="${escapeHtml(val||'')}"${disAttr} />`;
     } else if(f.type === 'money'){
       const disp = (val!=null && val!=='' && Number(val)>0) ? 'Rp ' + Number(val).toLocaleString('id-ID') : '';
-      control = `<input type="text" class="input pf-money" inputmode="numeric" data-pf="${f.key}" value="${escapeHtml(disp)}" placeholder="Rp 0" />`;
+      control = `<input type="text" class="input pf-money" inputmode="numeric" data-pf="${f.key}" value="${escapeHtml(disp)}" placeholder="Rp 0"${disAttr} />`;
     } else if(f.type === 'number'){
-      control = `<input type="number" class="input" data-pf="${f.key}" value="${escapeHtml(val??'')}" min="0" step="any" />`;
+      control = `<input type="number" class="input" data-pf="${f.key}" value="${escapeHtml(val??'')}" min="0" step="any"${disAttr} />`;
     } else {
-      control = `<input type="text" class="input" data-pf="${f.key}" value="${escapeHtml(val||'')}" />`;
+      control = `<input type="text" class="input" data-pf="${f.key}" value="${escapeHtml(val||'')}"${disAttr} />`;
     }
-    return `<div class="field${full}"><label>${escapeHtml(f.label)}${syncedTag}</label>${control}</div>`;
+    return `<div class="field${full}"><label>${escapeHtml(f.label)}${syncedTag}${lockHint}</label>${control}</div>`;
   };
 
   const group = (keys) => PAYMENT_FIELDS.filter(f => keys.includes(f.key)).map(fieldHtml).join('');
@@ -4692,11 +4964,11 @@ function openPaymentEdit(requestId){
       </div>
       <div class="pay-form-grid">
         <div class="pay-section-title">Identitas & Organisasi</div>
-        ${group(['fund_owner','vendor_name','pic_user_name','tanggal_permintaan','tanggal_kebutuhan','location','sub_location','directorate','division','department','category','sub_category','administrator','user_sap'])}
+        ${group(['activity_name','fund','vendor_name','pic_user_name','fund_owner','tanggal_permintaan','tanggal_kebutuhan','location','sub_location','directorate','division','department','category','sub_category','administrator','user_sap'])}
         <div class="pay-section-title">Dokumen Pengadaan</div>
-        ${group(['proforma_number','proforma_date','pr_number','pr_date','po_number','po_date','gr_number','gr_date','invoice_number','invoice_date','submit_date'])}
+        ${group(['proforma_number','proforma_date','pr_number','pr_date','po_number','po_date','gr_number','gr_date','invoice_number','invoice_date','description_fund','submit_date'])}
         <div class="pay-section-title">Pembayaran</div>
-        ${group(['cost_type','cost_purpose','jenis_pembayaran','quantity','price','grand_total','status'])}
+        ${group(['cost_type','cost_purpose','jenis_pembayaran','quantity','price','grand_total','status','ga_payment_status'])}
         ${group(['note'])}
       </div>
     </div>
@@ -4730,6 +5002,7 @@ function openPaymentEdit(requestId){
     try{
       const patch = {};
       PAYMENT_FIELDS.forEach(f => {
+        if(f.adminPaymentOnly && !canGA) return; // do not let non-Admin-Payment touch GA status
         const el = $(`[data-pf="${f.key}"]`);
         if(!el) return;
         let v = el.value;
@@ -4739,12 +5012,16 @@ function openPaymentEdit(requestId){
         patch[f.key] = v;
       });
       if(!patch.status) patch.status = 'Belum Diproses';
+      if(canGA && !patch.ga_payment_status) patch.ga_payment_status = 'Not Complete Yet';
       await db.upsertPayment(requestId, patch);
       db.logActivity({ action:'payment.update', target_type:'payment', target_id:requestId,
                        detail:`Update payment ${req.kode_permintaan} (status: ${patch.status})` });
-      // update local cache
+      // update local cache (preserve fields the current user could not edit)
       const idx = _payMerged.findIndex(x => x.request_id === requestId);
-      if(idx >= 0) _payMerged[idx] = mergePayment(req, { request_id:requestId, ...patch });
+      if(idx >= 0){
+        const base = {}; PAYMENT_FIELDS.forEach(f => { base[f.key] = m[f.key]; });
+        _payMerged[idx] = mergePayment(req, { request_id:requestId, ...base, ...patch });
+      }
       closeModal();
       const host = $('#pay-table-host'); if(host) renderPaymentsTable(host);
       toast('Data pembayaran tersimpan','success');
@@ -5380,6 +5657,148 @@ async function viewAdminDepartemen(c){
 }
 
 /* ============================================================
+   v1.9: ARMADA KENDARAAN (Kendaraan Operasional fleet master) — CRUD
+   The "Keterangan" driver/vehicle table from form GA-08. Used as the
+   source for the Pengemudi dropdown on the Kendaraan Operasional form.
+   ============================================================ */
+async function viewAdminKendaraan(c){
+  c.innerHTML = `
+    <div class="card">
+      <div class="card-head">
+        <h3>Armada Kendaraan</h3>
+        <div class="flex gap-2">
+          <input class="input" id="ko-search" placeholder="Cari driver / nopol..." style="max-width:240px"/>
+          <button class="btn btn-primary btn-sm" id="ko-add"><span class="material-symbols-rounded">add</span>Tambah</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <p class="muted text-sm" style="margin:0 0 12px">
+          Daftar driver &amp; kendaraan operasional (form GA-08). Data ini menjadi pilihan <strong>Pengemudi / Kendaraan</strong>
+          pada formulir kategori <strong>Kendaraan Operasional</strong>.
+        </p>
+        <div id="ko-host"></div>
+      </div>
+    </div>
+  `;
+
+  function modalForm(item){
+    const v = item || {};
+    const opt = (arr, cur) => arr.map(o => `<option ${cur===o?'selected':''}>${escapeHtml(o)}</option>`).join('');
+    return `
+      <div class="modal-head">
+        <h3><span class="material-symbols-rounded" style="vertical-align:-6px;color:var(--mrt-blue)">directions_car</span> ${item?'Edit':'Tambah'} Armada</h3>
+        <button class="btn-icon" onclick="closeModal()"><span class="material-symbols-rounded">close</span></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-grid">
+          <div class="field field-required"><label>Nama Driver</label><input class="input" id="ko-f-driver" value="${escapeHtml(v.nama_driver||'')}"/></div>
+          <div class="field"><label>No. HP</label><input class="input" id="ko-f-hp" value="${escapeHtml(v.no_hp||'')}"/></div>
+          <div class="field field-required"><label>Nomor Polisi</label><input class="input" id="ko-f-nopol" value="${escapeHtml(v.nomor_polisi||'')}"/></div>
+          <div class="field"><label>Posisi</label><select class="select" id="ko-f-posisi"><option value="">—</option>${opt(KO_POSISI, v.posisi)}</select></div>
+          <div class="field"><label>Ownership</label><select class="select" id="ko-f-own"><option value="">—</option>${opt(KO_OWNERSHIP, v.ownership)}</select></div>
+          <div class="field"><label>Jenis</label><select class="select" id="ko-f-ev"><option value="">—</option>${opt(KO_EV_STATUS, v.ev_status)}</select></div>
+          <div class="field"><label>GA / GE (Ganjil/Genap)</label><select class="select" id="ko-f-gage"><option value="">—</option>${opt(KO_GA_GE, v.ga_ge)}</select></div>
+          <div class="field"><label>Keterangan (tipe mobil)</label><input class="input" id="ko-f-ket" value="${escapeHtml(v.keterangan||'')}" placeholder="Mis. Toyota - Zenix"/></div>
+          <div class="field"><label>Status</label><select class="select" id="ko-f-active"><option value="true" ${v.active!==false?'selected':''}>Aktif</option><option value="false" ${v.active===false?'selected':''}>Nonaktif</option></select></div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-ghost" onclick="closeModal()">Batal</button>
+        <button class="btn btn-primary" id="ko-save"><span class="material-symbols-rounded">save</span>Simpan</button>
+      </div>`;
+  }
+  function readForm(){
+    return {
+      nama_driver: $('#ko-f-driver').value.trim(),
+      no_hp:       $('#ko-f-hp').value.trim() || null,
+      nomor_polisi:$('#ko-f-nopol').value.trim(),
+      posisi:      $('#ko-f-posisi').value || null,
+      ownership:   $('#ko-f-own').value || null,
+      ev_status:   $('#ko-f-ev').value || null,
+      ga_ge:       $('#ko-f-gage').value || null,
+      keterangan:  $('#ko-f-ket').value.trim() || null,
+      active:      $('#ko-f-active').value !== 'false'
+    };
+  }
+
+  async function refresh(){
+    const list = await db.listKendaraan().catch(()=>[]);
+    const q = ($('#ko-search').value||'').toLowerCase();
+    const filtered = q ? list.filter(v =>
+      (v.nama_driver||'').toLowerCase().includes(q) ||
+      (v.nomor_polisi||'').toLowerCase().includes(q) ||
+      (v.keterangan||'').toLowerCase().includes(q)) : list;
+    const host = $('#ko-host');
+    if(!filtered.length){ host.innerHTML = '<div class="muted">'+(q?'Tidak ada hasil.':'Belum ada data armada.')+'</div>'; return; }
+    host.innerHTML = `
+      <div class="table-wrap"><table class="t t-dense">
+        <thead><tr>
+          <th style="width:40px">#</th><th>Nama Driver</th><th>No. HP</th><th>Nomor Polisi</th>
+          <th>Posisi</th><th>Ownership</th><th>Jenis</th><th>GA/GE</th><th>Keterangan</th><th>Status</th>
+          <th style="width:96px;text-align:right">Aksi</th>
+        </tr></thead>
+        <tbody>
+        ${filtered.map((v,i)=>`<tr>
+          <td>${i+1}</td>
+          <td><strong>${escapeHtml(v.nama_driver||'')}</strong></td>
+          <td>${escapeHtml(v.no_hp||'—')}</td>
+          <td>${escapeHtml(v.nomor_polisi||'—')}</td>
+          <td>${escapeHtml(v.posisi||'—')}</td>
+          <td>${escapeHtml(v.ownership||'—')}</td>
+          <td>${v.ev_status?`<span class="badge ${v.ev_status==='EV'?'status-selesai':'gray'}">${escapeHtml(v.ev_status)}</span>`:'—'}</td>
+          <td>${escapeHtml(v.ga_ge||'—')}</td>
+          <td>${escapeHtml(v.keterangan||'—')}</td>
+          <td>${v.active===false?'<span class="badge status-ditolak">Nonaktif</span>':'<span class="badge status-selesai">Aktif</span>'}</td>
+          <td style="text-align:right;white-space:nowrap">
+            <button class="btn-icon" data-ko-edit="${v.id}" title="Edit"><span class="material-symbols-rounded">edit</span></button>
+            <button class="btn-icon" data-ko-del="${v.id}" title="Hapus"><span class="material-symbols-rounded">delete</span></button>
+          </td>
+        </tr>`).join('')}
+        </tbody></table></div>`;
+
+    $$('button[data-ko-edit]', host).forEach(b => b.addEventListener('click', () => {
+      const item = filtered.find(x => x.id === b.dataset.koEdit);
+      openModal(modalForm(item), 'lg');
+      $('#ko-save').addEventListener('click', async () => {
+        const row = readForm();
+        if(!row.nama_driver){ toast('Nama driver wajib','warn'); return; }
+        if(!row.nomor_polisi){ toast('Nomor polisi wajib','warn'); return; }
+        try{
+          await db.updateKendaraan(item.id, row);
+          db.logActivity({ action:'masterdata.update', target_type:'kendaraan', target_id:item.id, detail:`Edit armada: ${row.nama_driver} (${row.nomor_polisi})` });
+          closeModal(); toast('Armada diperbarui','success'); refresh();
+        }catch(err){ toast('Gagal: '+(err.message||''),'error'); }
+      });
+    }));
+    $$('button[data-ko-del]', host).forEach(b => b.addEventListener('click', async () => {
+      const item = filtered.find(x => x.id === b.dataset.koDel);
+      if(!confirm(`Hapus armada "${item?.nama_driver}" (${item?.nomor_polisi})?`)) return;
+      try{
+        await db.deleteKendaraan(item.id);
+        db.logActivity({ action:'masterdata.delete', target_type:'kendaraan', target_id:item.id, detail:`Hapus armada: ${item?.nama_driver}` });
+        toast('Armada dihapus','success'); refresh();
+      }catch(err){ toast('Gagal: '+(err.message||''),'error'); }
+    }));
+  }
+
+  $('#ko-search').addEventListener('input', refresh);
+  $('#ko-add').addEventListener('click', () => {
+    openModal(modalForm(null), 'lg');
+    $('#ko-save').addEventListener('click', async () => {
+      const row = readForm();
+      if(!row.nama_driver){ toast('Nama driver wajib','warn'); return; }
+      if(!row.nomor_polisi){ toast('Nomor polisi wajib','warn'); return; }
+      try{
+        await db.addKendaraan(row);
+        db.logActivity({ action:'masterdata.create', target_type:'kendaraan', detail:`Tambah armada: ${row.nama_driver} (${row.nomor_polisi})` });
+        closeModal(); toast('Armada ditambahkan','success'); refresh();
+      }catch(err){ toast('Gagal: '+(err.message||''),'error'); }
+    });
+  });
+  await refresh();
+}
+
+/* ============================================================
    v1.7: PERSETUJUAN (Approvals)
    Lists pending approvals for the current user (as Kepala Departemen).
    ============================================================ */
@@ -5591,7 +6010,7 @@ async function openUserModal(user, onDone){
             <input class="input" name="username" required value="${escapeHtml(user?.username||'')}" ${isEdit?'disabled':''}/></div>
           <div class="field field-required"><label>Role</label>
             <select class="select" name="role" required>
-              ${['superadmin','admin','pic'].map(r=>`<option ${user?.role===r?'selected':''}>${r}</option>`).join('')}
+              ${['superadmin','admin','pic','admin_payment'].map(r=>`<option value="${r}" ${user?.role===r?'selected':''}>${ROLE_LABEL[r]||r}</option>`).join('')}
             </select></div>
           <div class="field full field-required"><label>Nama Lengkap</label>
             <input class="input" name="full_name" required value="${escapeHtml(user?.full_name||'')}"/></div>
@@ -5830,9 +6249,129 @@ function openSlaEditModal(t, onDone){
 }
 
 /* ----------- ADMIN: VERSION ----------- */
+/* ----- v1.9: Supabase-format backup (one CSV per table, zipped) -----
+   Headers match the DB columns so each CSV can be imported directly into the
+   matching Supabase table via Table Editor → Import data from CSV. */
+async function gatherBackupTables(){
+  const safe = (p) => p.catch(()=>[]);
+  const reqs = await safe(db.listRequests());
+  // ratings: walk request ids
+  const ratings = [];
+  for(const r of reqs){
+    try{ const rt = await db.getRatingByRequest(r.id); if(rt) ratings.push(rt); }catch{}
+  }
+  let approvals = [];
+  try{
+    if(SUPA_CONFIGURED){ const { data } = await supa.from('approvals').select('*'); approvals = data||[]; }
+    else approvals = [...demo.approvals];
+  }catch{}
+  const [users, pays, logs, slas, ma, divs, deps, ken, kat, lok, lk, tuj, ver] = await Promise.all([
+    safe(db.listUsers()), safe(db.listPayments()),
+    db.listActivityLogs ? safe(db.listActivityLogs({})) : Promise.resolve([]),
+    safe(db.listSlaTargets()), safe(db.listMataAnggaran()), safe(db.listDivisi()),
+    safe(db.listDepartemen()), safe(db.listKendaraan()), safe(db.listKategori()),
+    safe(db.listLokasi()), safe(db.listLokasiKerja()), safe(db.listTujuan()), safe(db.listVersion())
+  ]);
+  // sanitize app_users: never export passwords
+  const usersSafe = users.map(u => { const c = {...u}; delete c.password; return c; });
+  return [
+    { table:'requests',               rows:reqs },
+    { table:'payments',               rows:pays },
+    { table:'ratings',                rows:ratings },
+    { table:'approvals',              rows:approvals },
+    { table:'app_users',              rows:usersSafe },
+    { table:'activity_logs',          rows:logs },
+    { table:'sla_targets',            rows:slas },
+    { table:'mata_anggaran_options',  rows:ma },
+    { table:'divisi_options',         rows:divs },
+    { table:'departemen_options',     rows:deps },
+    { table:'kendaraan_options',      rows:ken },
+    { table:'kategori_options',       rows:kat },
+    { table:'lokasi_options',         rows:lok },
+    { table:'lokasi_kerja_options',   rows:lk },
+    { table:'tujuan_options',         rows:tuj },
+    { table:'version_history',        rows:ver }
+  ];
+}
+function tableToCsv(rows){
+  if(!rows || !rows.length) return '';
+  const keys = Array.from(rows.reduce((s,r)=>{ Object.keys(r).forEach(k=>{ if(!k.startsWith('_')) s.add(k); }); return s; }, new Set()));
+  const esc = (val) => {
+    if(val == null) return '';
+    let v = (typeof val === 'object') ? JSON.stringify(val) : String(val);
+    if(/[",\n\r]/.test(v)) v = '"' + v.replace(/"/g,'""') + '"';
+    return v;
+  };
+  const lines = [keys.join(',')];
+  rows.forEach(r => lines.push(keys.map(k => esc(r[k])).join(',')));
+  return lines.join('\r\n');
+}
+async function downloadBackupCsvZip(btn){
+  if(typeof JSZip === 'undefined'){ toast('Library JSZip belum termuat. Cek koneksi internet.','error'); return; }
+  const orig = btn ? btn.innerHTML : '';
+  if(btn){ btn.disabled = true; btn.innerHTML = '<span class="material-symbols-rounded">hourglass_top</span>Menyiapkan…'; }
+  try{
+    const tables = await gatherBackupTables();
+    const zip = new JSZip();
+    let totalRows = 0;
+    tables.forEach(t => { zip.file(t.table + '.csv', tableToCsv(t.rows)); totalRows += (t.rows||[]).length; });
+    // small README so the recipient knows how to import
+    zip.file('_README.txt',
+      'Backup GASS CRM — format Supabase (CSV per tabel).\n' +
+      'Cara restore: Supabase → Table Editor → pilih tabel → Insert → Import data from CSV → unggah file <tabel>.csv.\n' +
+      'Header tiap CSV sudah sesuai nama kolom tabel. Kolom JSON (mis. kendaraan_detail) tersimpan sebagai teks JSON.\n' +
+      `Dibuat: ${new Date().toISOString()} · Total ${tables.length} tabel · ${totalRows} baris.\n`);
+    const blob = await zip.generateAsync({ type:'blob' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `backup-gass-crm-${new Date().toISOString().slice(0,10)}.zip`;
+    a.click();
+    setTimeout(()=> URL.revokeObjectURL(a.href), 4000);
+    toast('Backup CSV (Supabase) berhasil diunduh','success');
+    db.logActivity({ action:'backup.csv', target_type:'backup', detail:`Download backup CSV (${tables.length} tabel, ${totalRows} baris)` });
+  }catch(err){
+    console.error('[backup csv]', err);
+    toast('Gagal membuat backup: '+(err.message||''),'error');
+  }finally{
+    if(btn){ btn.disabled = false; btn.innerHTML = orig; }
+  }
+}
+// Rough estimate of DB payload size (proxy for Supabase storage) vs free-tier quota.
+async function estimateStorage(){
+  const tables = await gatherBackupTables();
+  let bytes = 0;
+  tables.forEach(t => { try{ bytes += new Blob([JSON.stringify(t.rows||[])]).size; }catch{} });
+  return { bytes, tables: tables.map(t => ({ table:t.table, rows:(t.rows||[]).length, bytes: (()=>{ try{ return new Blob([JSON.stringify(t.rows||[])]).size; }catch{ return 0; } })() })) };
+}
+
 async function viewAdminVersion(c){
   const v = await db.listVersion();
+  const QUOTA_MB = 500; // Supabase free-tier database size
   c.innerHTML = `
+    <div class="card">
+      <div class="card-head">
+        <h3>Penyimpanan &amp; Backup</h3>
+        <button class="btn btn-accent btn-sm" id="ver-backup" title="Unduh semua data (CSV per tabel, format Supabase)">
+          <span class="material-symbols-rounded" style="font-size:18px">cloud_download</span>Download Backup
+        </button>
+      </div>
+      <div class="card-body">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px">
+          <strong>Estimasi Penyimpanan Database (Supabase)</strong>
+          <span class="text-sm muted" id="ver-storage-num">Menghitung…</span>
+        </div>
+        <div style="height:14px;border-radius:999px;background:#EDF1F7;overflow:hidden;margin:8px 0 6px">
+          <div id="ver-storage-bar" style="height:100%;width:0%;border-radius:999px;background:linear-gradient(90deg,var(--mrt-blue),var(--mrt-green));transition:width .5s"></div>
+        </div>
+        <div class="text-sm muted" id="ver-storage-hint">Estimasi berdasarkan ukuran data tabel (perkiraan, bukan ukuran disk aktual). Kuota free-tier ±${QUOTA_MB} MB.</div>
+        <div id="ver-storage-detail" style="margin-top:10px"></div>
+        <p class="text-sm muted" style="margin:12px 0 0">
+          <strong>Download Backup</strong> menghasilkan satu file <code>.zip</code> berisi satu <code>.csv</code> per tabel
+          dengan header sesuai kolom Supabase — siap di-<em>import</em> langsung ke Table Editor (mass upload).
+        </p>
+      </div>
+    </div>
+
     <div class="card">
       <div class="card-head"><h3>Riwayat Versi</h3></div>
       <div class="card-body">
@@ -5848,6 +6387,29 @@ async function viewAdminVersion(c){
       </div>
     </div>
   `;
+
+  $('#ver-backup').addEventListener('click', (e) => downloadBackupCsvZip(e.currentTarget));
+
+  // storage estimate (async)
+  (async () => {
+    try{
+      const { bytes, tables } = await estimateStorage();
+      const usedMB = bytes / 1048576;
+      const pct = Math.min(100, (usedMB / QUOTA_MB) * 100);
+      const fmtSize = (b) => b < 1048576 ? (b/1024).toFixed(1)+' KB' : (b/1048576).toFixed(2)+' MB';
+      $('#ver-storage-num').textContent = `${fmtSize(bytes)} / ${QUOTA_MB} MB (${pct.toFixed(pct<1?2:1)}%)`;
+      $('#ver-storage-bar').style.width = Math.max(1.5, pct) + '%';
+      const top = tables.slice().sort((a,b)=> b.bytes-a.bytes).slice(0,6);
+      $('#ver-storage-detail').innerHTML = `
+        <div class="table-wrap"><table class="t t-dense">
+          <thead><tr><th>Tabel</th><th style="text-align:right">Baris</th><th style="text-align:right">Ukuran</th></tr></thead>
+          <tbody>${top.map(t=>`<tr><td>${escapeHtml(t.table)}</td><td style="text-align:right">${t.rows}</td><td style="text-align:right">${fmtSize(t.bytes)}</td></tr>`).join('')}</tbody>
+        </table></div>`;
+    }catch(err){
+      $('#ver-storage-num').textContent = 'gagal menghitung';
+      console.warn('[storage estimate]', err);
+    }
+  })();
 }
 
 /* ----------- ADMIN: TIKET SAYA -----------
