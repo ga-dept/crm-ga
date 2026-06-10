@@ -15,7 +15,7 @@
 <meta name="apple-mobile-web-app-title" content="GA Hotline" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300..800&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/icon?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -71,14 +71,19 @@
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
 body{
-  font-family:'Plus Jakarta Sans',system-ui,sans-serif;
+  font-family:'Inter','Plus Jakarta Sans',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
   background:var(--bg);
   color:var(--text);
   font-size:14.5px;
-  line-height:1.5;
+  line-height:1.55;
+  letter-spacing:-0.011em;
+  font-feature-settings:'cv02','cv03','cv04','cv11','ss01';
   -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  text-rendering:optimizeLegibility;
   min-height:100vh;
 }
+h1,h2,h3,h4,.card-head h3{letter-spacing:-0.018em}
 a{color:var(--mrt-blue-3);text-decoration:none}
 a:hover{text-decoration:underline}
 button{font-family:inherit;cursor:pointer}
@@ -325,6 +330,19 @@ button{font-family:inherit;cursor:pointer}
 .card-body{padding:22px}
 
 .split-2{display:grid;grid-template-columns:1.2fr 1fr;gap:20px}
+/* v2.1: landing "Cara Penggunaan" list */
+.landing-info{align-items:stretch}
+.landing-info > .card{display:flex;flex-direction:column}
+.howto-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:14px}
+.howto-list li{display:flex;gap:12px;align-items:flex-start}
+.howto-ic{flex-shrink:0;width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;
+  background:var(--mrt-blue-soft);color:var(--mrt-blue)}
+.howto-ic .material-symbols-rounded{font-size:20px}
+.howto-list li:nth-child(2) .howto-ic{background:#E6F7EE;color:var(--mrt-green)}
+.howto-list li:nth-child(3) .howto-ic{background:#EDE9FE;color:#6D28D9}
+.howto-list li:nth-child(4) .howto-ic{background:#FEF3C7;color:#92400E}
+.howto-list strong{display:block;font-size:14px;margin-bottom:1px}
+.howto-list p{margin:0;font-size:13px;color:var(--text-mut);line-height:1.45}
 .split-3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
 
 /* tracking */
@@ -426,6 +444,25 @@ button{font-family:inherit;cursor:pointer}
   text-transform:uppercase;
 }
 .sidebar.collapsed .sidebar-section-label{display:none}
+
+/* v2.1: collapsible sidebar groups */
+.nav-group{margin-bottom:2px}
+.nav-group-head{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  padding:9px 14px 6px;cursor:pointer;user-select:none;border-radius:8px;
+  font-size:10.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;
+  color:var(--text-mut);transition:color .15s,background .15s;
+}
+.nav-group-head:hover{color:var(--mrt-blue);background:rgba(0,85,184,.05)}
+.nav-group-head .chev{font-size:18px;transition:transform .22s ease;color:var(--text-mut)}
+.nav-group.collapsed .chev{transform:rotate(-90deg)}
+.nav-group-body{overflow:hidden;transition:max-height .25s ease;max-height:1000px}
+.nav-group.collapsed .nav-group-body{max-height:0}
+/* icon-only (rail) mode: hide group heads, always show items */
+.sidebar.collapsed .nav-group-head{display:none}
+.sidebar.collapsed .nav-group-body{max-height:none!important}
+.sidebar.collapsed .nav-group{border-top:1px solid var(--border-2,#eef1f6);margin-top:4px;padding-top:4px}
+.sidebar.collapsed .nav-group:first-child{border-top:none}
 .nav-badge{
   display:inline-flex;align-items:center;justify-content:center;
   background:var(--danger);color:#fff;border-radius:10px;
@@ -903,15 +940,28 @@ table.t{
 
   <section class="section" id="dashboard" style="padding-top:24px">
     <div class="section-inner">
-      <div class="card" id="tracker" style="max-width:720px;margin:0 auto">
-        <div class="card-head"><h3>Cek Status Permintaan</h3></div>
-        <div class="card-body">
-          <p class="muted text-sm" style="margin:0 0 12px">Masukkan <strong>kode permintaan</strong> (contoh: <span class="code-pill" style="padding:2px 8px;font-size:12px">FB-120520260001</span>) atau <strong>kode SmartOffice</strong> Anda untuk melihat status terkini.</p>
-          <div class="tracker-input-row">
-            <input type="text" class="input" id="track-input" placeholder="Kode permintaan atau kode SmartOffice..." />
-            <button class="btn btn-primary" id="track-btn"><span class="material-symbols-rounded">search</span><span class="hide-sm">Cek</span></button>
+      <div class="split-2 landing-info">
+        <div class="card" id="tracker" style="margin:0">
+          <div class="card-head"><h3><span class="material-symbols-rounded" style="vertical-align:-5px;color:var(--mrt-blue)">search</span> Cek Status Permintaan</h3></div>
+          <div class="card-body">
+            <p class="muted text-sm" style="margin:0 0 12px">Masukkan <strong>kode permintaan</strong> (contoh: <span class="code-pill" style="padding:2px 8px;font-size:12px">FB-120520260001</span>) atau <strong>kode SmartOffice</strong> Anda untuk melihat status terkini.</p>
+            <div class="tracker-input-row">
+              <input type="text" class="input" id="track-input" placeholder="Kode permintaan atau kode SmartOffice..." />
+              <button class="btn btn-primary" id="track-btn"><span class="material-symbols-rounded">search</span><span class="hide-sm">Cek</span></button>
+            </div>
+            <div class="tracker-result" id="track-result"></div>
           </div>
-          <div class="tracker-result" id="track-result"></div>
+        </div>
+        <div class="card" id="howto" style="margin:0">
+          <div class="card-head"><h3><span class="material-symbols-rounded" style="vertical-align:-5px;color:var(--mrt-green)">help</span> Cara Penggunaan Portal</h3></div>
+          <div class="card-body">
+            <ol class="howto-list">
+              <li><span class="howto-ic"><span class="material-symbols-rounded">edit_note</span></span><div><strong>Isi Formulir</strong><p>Buka "Buat Permintaan", pilih kategori, lengkapi detail kebutuhan.</p></div></li>
+              <li><span class="howto-ic"><span class="material-symbols-rounded">qr_code_2</span></span><div><strong>Simpan Kode</strong><p>Salin kode permintaan otomatis — dipakai untuk tracking.</p></div></li>
+              <li><span class="howto-ic"><span class="material-symbols-rounded">monitoring</span></span><div><strong>Pantau Status</strong><p>Cek perkembangan kapan saja lewat kolom "Cek Status".</p></div></li>
+              <li><span class="howto-ic"><span class="material-symbols-rounded">star_rate</span></span><div><strong>Beri Penilaian</strong><p>Setelah selesai, isi penilaian dari tautan yang dikirim tim GA.</p></div></li>
+            </ol>
+          </div>
         </div>
       </div>
     </div>
@@ -925,11 +975,11 @@ table.t{
       </div>
 
       <div class="collapse-card">
-        <div class="collapse-head open" id="form-toggle" role="button" tabindex="0" aria-expanded="true">
+        <div class="collapse-head" id="form-toggle" role="button" tabindex="0" aria-expanded="false">
           <h3><span class="material-symbols-rounded">assignment_add</span>Formulir Input Permintaan</h3>
           <span class="material-symbols-rounded chev">expand_more</span>
         </div>
-        <div class="collapse-body open" id="form-body">
+        <div class="collapse-body" id="form-body">
           <form id="request-form" novalidate>
             <div class="form-grid">
               <div class="field field-required">
@@ -1076,29 +1126,6 @@ table.t{
     </div>
   </section>
 
-  <section class="section" id="howto" style="background:#fff;border-top:1px solid var(--border-2);border-bottom:1px solid var(--border-2)">
-    <div class="section-inner">
-      <div class="section-head center">
-        <h2>Cara Pakai Portal</h2>
-        <p style="margin:6px auto 0">Empat langkah sederhana untuk mengajukan dan memantau permintaan Anda.</p>
-      </div>
-      <div class="steps">
-        <div class="step"><div class="step-num">1</div>
-          <span class="material-symbols-rounded">edit_note</span>
-          <h4>Isi Formulir</h4><p>Buka bagian "Buat Permintaan", pilih kategori, dan lengkapi detail kebutuhan Anda.</p></div>
-        <div class="step"><div class="step-num">2</div>
-          <span class="material-symbols-rounded">qr_code_2</span>
-          <h4>Simpan Kode</h4><p>Salin kode permintaan yang otomatis dibuat. Anda butuh kode ini untuk tracking.</p></div>
-        <div class="step"><div class="step-num">3</div>
-          <span class="material-symbols-rounded">monitoring</span>
-          <h4>Pantau Status</h4><p>Cek perkembangan permintaan kapan saja melalui kolom "Cek Status".</p></div>
-        <div class="step"><div class="step-num">4</div>
-          <span class="material-symbols-rounded">star_rate</span>
-          <h4>Beri Penilaian</h4><p>Setelah selesai, isi penilaian kepuasan dari tautan yang dikirim tim GA.</p></div>
-      </div>
-    </div>
-  </section>
-
   <footer class="public-footer">
     <div class="public-footer-inner">
       <div>© 2026 General Affairs · PT MRT Jakarta. All rights reserved.</div>
@@ -1146,24 +1173,42 @@ table.t{
         <div class="brand-name"><strong>GA Hotline</strong><span style="font-size:11px;color:var(--text-mut)">Admin Panel</span></div>
       </div>
       <nav class="sidebar-nav" id="admin-nav">
-        <a class="nav-item" data-route="dashboard"><span class="material-symbols-rounded">dashboard</span><span class="nav-label">Dashboard</span></a>
-        <a class="nav-item" data-route="myticket"><span class="material-symbols-rounded">assignment_ind</span><span class="nav-label">Tiket Saya</span></a>
-        <a class="nav-item" data-route="approvals"><span class="material-symbols-rounded">approval</span><span class="nav-label">Persetujuan <span id="approval-badge" class="nav-badge" style="display:none">0</span></span></a>
-        <a class="nav-item" data-route="requests"><span class="material-symbols-rounded">list_alt</span><span class="nav-label">Daftar Permintaan</span></a>
-        <a class="nav-item" data-route="ratings"><span class="material-symbols-rounded">star</span><span class="nav-label">Daftar Penilaian</span></a>
-        <a class="nav-item" data-route="payments"><span class="material-symbols-rounded">payments</span><span class="nav-label">Payment</span></a>
-        <a class="nav-item" data-route="anggaran" data-allowed-roles="superadmin,admin"><span class="material-symbols-rounded">savings</span><span class="nav-label">Manajemen Anggaran</span></a>
-        <div class="sidebar-section-label" data-allowed-roles="superadmin,admin">MASTER DATA</div>
-        <a class="nav-item" data-route="masterdata"  data-allowed-roles="superadmin,admin"><span class="material-symbols-rounded">tune</span><span class="nav-label">Lokasi, Tujuan, Anggaran</span></a>
-        <a class="nav-item" data-route="kategori"    data-allowed-roles="superadmin,admin"><span class="material-symbols-rounded">category</span><span class="nav-label">Kategori Pemesanan</span></a>
-        <a class="nav-item" data-route="divisi"      data-allowed-roles="superadmin,admin"><span class="material-symbols-rounded">account_tree</span><span class="nav-label">Divisi</span></a>
-        <a class="nav-item" data-route="departemen"  data-allowed-roles="superadmin,admin"><span class="material-symbols-rounded">groups</span><span class="nav-label">Departemen</span></a>
-        <a class="nav-item" data-route="kendaraan"    data-allowed-roles="superadmin,admin"><span class="material-symbols-rounded">directions_car</span><span class="nav-label">Armada Kendaraan</span></a>
-        <div class="sidebar-section-label" data-allowed-roles="superadmin">ADMIN</div>
-        <a class="nav-item" data-route="users" data-allowed-roles="superadmin"><span class="material-symbols-rounded">manage_accounts</span><span class="nav-label">Manajemen User</span></a>
-        <a class="nav-item nav-item-sa" data-route="slatargets" data-requires-role="superadmin"><span class="material-symbols-rounded">speed</span><span class="nav-label">SLA Target</span></a>
-        <a class="nav-item" data-route="activity"><span class="material-symbols-rounded">receipt_long</span><span class="nav-label">Log Aktivitas</span></a>
-        <a class="nav-item" data-route="version" data-requires-role="superadmin"><span class="material-symbols-rounded">history</span><span class="nav-label">Riwayat Versi</span></a>
+        <div class="nav-group" data-group="utama">
+          <div class="nav-group-head"><span class="ng-label">Utama</span><span class="material-symbols-rounded chev">expand_more</span></div>
+          <div class="nav-group-body">
+            <a class="nav-item" data-route="dashboard"><span class="material-symbols-rounded">dashboard</span><span class="nav-label">Dashboard</span></a>
+            <a class="nav-item" data-route="myticket"><span class="material-symbols-rounded">assignment_ind</span><span class="nav-label">Tiket Saya</span></a>
+            <a class="nav-item" data-route="approvals"><span class="material-symbols-rounded">approval</span><span class="nav-label">Persetujuan <span id="approval-badge" class="nav-badge" style="display:none">0</span></span></a>
+            <a class="nav-item" data-route="requests"><span class="material-symbols-rounded">list_alt</span><span class="nav-label">Daftar Permintaan</span></a>
+            <a class="nav-item" data-route="ratings"><span class="material-symbols-rounded">star</span><span class="nav-label">Daftar Penilaian</span></a>
+          </div>
+        </div>
+        <div class="nav-group" data-group="keuangan">
+          <div class="nav-group-head"><span class="ng-label">Keuangan</span><span class="material-symbols-rounded chev">expand_more</span></div>
+          <div class="nav-group-body">
+            <a class="nav-item" data-route="payments"><span class="material-symbols-rounded">payments</span><span class="nav-label">Payment</span></a>
+            <a class="nav-item" data-route="anggaran" data-allowed-roles="superadmin,admin"><span class="material-symbols-rounded">savings</span><span class="nav-label">Manajemen Anggaran</span></a>
+          </div>
+        </div>
+        <div class="nav-group" data-group="masterdata" data-allowed-roles="superadmin,admin">
+          <div class="nav-group-head"><span class="ng-label">Master Data</span><span class="material-symbols-rounded chev">expand_more</span></div>
+          <div class="nav-group-body">
+            <a class="nav-item" data-route="masterdata"  data-allowed-roles="superadmin,admin"><span class="material-symbols-rounded">tune</span><span class="nav-label">Lokasi, Tujuan, Anggaran</span></a>
+            <a class="nav-item" data-route="kategori"    data-allowed-roles="superadmin,admin"><span class="material-symbols-rounded">category</span><span class="nav-label">Kategori Pemesanan</span></a>
+            <a class="nav-item" data-route="divisi"      data-allowed-roles="superadmin,admin"><span class="material-symbols-rounded">account_tree</span><span class="nav-label">Divisi</span></a>
+            <a class="nav-item" data-route="departemen"  data-allowed-roles="superadmin,admin"><span class="material-symbols-rounded">groups</span><span class="nav-label">Departemen</span></a>
+            <a class="nav-item" data-route="kendaraan"    data-allowed-roles="superadmin,admin"><span class="material-symbols-rounded">directions_car</span><span class="nav-label">Armada Kendaraan</span></a>
+          </div>
+        </div>
+        <div class="nav-group" data-group="admin" data-allowed-roles="superadmin">
+          <div class="nav-group-head"><span class="ng-label">Admin</span><span class="material-symbols-rounded chev">expand_more</span></div>
+          <div class="nav-group-body">
+            <a class="nav-item" data-route="users" data-allowed-roles="superadmin"><span class="material-symbols-rounded">manage_accounts</span><span class="nav-label">Manajemen User</span></a>
+            <a class="nav-item nav-item-sa" data-route="slatargets" data-requires-role="superadmin"><span class="material-symbols-rounded">speed</span><span class="nav-label">SLA Target</span></a>
+            <a class="nav-item" data-route="activity" data-allowed-roles="superadmin,admin,pic"><span class="material-symbols-rounded">receipt_long</span><span class="nav-label">Log Aktivitas</span></a>
+            <a class="nav-item" data-route="version" data-requires-role="superadmin"><span class="material-symbols-rounded">history</span><span class="nav-label">Riwayat Versi</span></a>
+          </div>
+        </div>
       </nav>
       <div class="sidebar-foot">
         <div class="user-chip">
@@ -1555,7 +1600,8 @@ const demo = (() => {
     {id:'v9',version:'1.8.0',release_date:'2026-06-07',changes:'Modul Payment baru (semua permintaan masuk untuk update pembayaran: Proforma/PR/PO/GR/Invoice, Cost Type, Grand Total, dll — dapat diupdate semua user), statistik Payment di Dashboard, Detail Permintaan kini mempertahankan baris baru & lebih mudah dibaca, tabel Daftar Permintaan dirampingkan agar muat di desktop tanpa scroll, perbaikan auto-add Divisi/Departemen, dukungan PWA (installable + offline).'},
     {id:'v10',version:'1.8.1',release_date:'2026-06-08',changes:'CRUD penuh untuk Divisi & Departemen: tombol Edit untuk mengubah nama Divisi, serta mengubah nama, memindah Divisi induk, dan menunjuk Kepala Departemen dalam satu dialog. Penjagaan nama ganda saat menambah/mengubah. Auto-add dari formulir publik tetap berfungsi seperti sebelumnya.'},
     {id:'v11',version:'1.9.0',release_date:'2026-06-08',changes:'Kolom Divisi & Departemen di formulir kini berupa type-search (cari sambil mengetik). Kategori "Kendaraan Operasional" (form GA-08) dengan master Armada Kendaraan yang dapat di-CRUD. Dropdown "Menggunakan/Bukan Anggaran GA" di Edit Permintaan — hanya yang ber-anggaran GA yang masuk Payment. Status pembayaran GA (Not Complete Yet/Submitted/Verified/Revision/Paid) yang hanya bisa diubah Admin Payment. Role baru "Admin Payment". Dashboard menampilkan daftar Payment anggaran GA. Modul Payment diselaraskan dengan Report Payment (Fund, Nama Kegiatan, Description Fund). Halaman publik /cektiket. Riwayat Versi kini menampilkan estimasi penyimpanan & Download Backup CSV format Supabase (per tabel).'},
-    {id:'v12',version:'2.0.0',release_date:'2026-06-10',changes:'Modul Manajemen Anggaran: total anggaran per fund, realisasi otomatis dari pembayaran, top-up anggaran (nominal/tanggal/sumber/keterangan), perencanaan CDP bulanan, serta laporan (Anggaran vs Realisasi, by Fund, CDP Rencana vs Realisasi, distribusi Invoice/Kas Kecil, by Lokasi). Payment kini punya kolom Sumber Anggaran (fund) dan status tunggal "Status" (khusus Admin Payment) + sort kolom. Kategori Pemesanan kini bisa di-edit penuh. Daftar Permintaan hanya bisa diubah Superadmin (PIC hanya tiket miliknya). Form Kendaraan Operasional: Prioritas & Jenis Layanan dropdown, tambah Titik Jemput & Tujuan, hapus Jenis Kendaraan. Riwayat Versi khusus Superadmin. Tulisan "Dashboard" di halaman publik dihapus.'}
+    {id:'v12',version:'2.0.0',release_date:'2026-06-10',changes:'Modul Manajemen Anggaran: total anggaran per fund, realisasi otomatis dari pembayaran, top-up anggaran (nominal/tanggal/sumber/keterangan), perencanaan CDP bulanan, serta laporan (Anggaran vs Realisasi, by Fund, CDP Rencana vs Realisasi, distribusi Invoice/Kas Kecil, by Lokasi). Payment kini punya kolom Sumber Anggaran (fund) dan status tunggal "Status" (khusus Admin Payment) + sort kolom. Kategori Pemesanan kini bisa di-edit penuh. Daftar Permintaan hanya bisa diubah Superadmin (PIC hanya tiket miliknya). Form Kendaraan Operasional: Prioritas & Jenis Layanan dropdown, tambah Titik Jemput & Tujuan, hapus Jenis Kendaraan. Riwayat Versi khusus Superadmin. Tulisan "Dashboard" di halaman publik dihapus.'},
+    {id:'v13',version:'2.1.0',release_date:'2026-06-10',changes:'Sidebar kini berkelompok dan dapat di-collapse/expand per modul (Utama, Keuangan, Master Data, Admin) dengan status tersimpan. Font diganti ke Inter agar lebih luwes & mudah dibaca. Halaman landing ditata ulang: hero → (Cek Status + Cara Penggunaan berdampingan) → Formulir (collapsed) → footer. Grafik Manajemen Anggaran diperbaiki agar tidak memanjang tak terbatas. Penyesuaian responsif untuk berbagai perangkat.'}
   ];
 
   // Mata Anggaran options
@@ -3132,6 +3178,10 @@ function setupRequestForm(){
     };
     formToggle.addEventListener('click', toggleFn);
     formToggle.addEventListener('keydown', e => { if(e.key==='Enter' || e.key===' '){ e.preventDefault(); toggleFn(); } });
+    // Auto-open when the user jumps to the form (nav / hero CTA / direct hash)
+    const openForm = () => { formToggle.classList.add('open'); formBody.classList.add('open'); formToggle.setAttribute('aria-expanded','true'); };
+    $$('a[href="#form"]').forEach(a => a.addEventListener('click', () => setTimeout(openForm, 60)));
+    if(location.hash === '#form') setTimeout(openForm, 60);
   }
 
   const form = $('#request-form');
@@ -3383,7 +3433,11 @@ async function renderAdmin(page){
   $('#logout-btn-top').onclick  = doLogout;
 
   // Sidebar nav
-  // Hide section labels based on data-allowed-roles too
+  // v2.1: gate whole groups by role, then gate individual items
+  $$('#admin-nav .nav-group').forEach(g => {
+    const allowed = g.dataset.allowedRoles ? g.dataset.allowedRoles.split(',').map(s=>s.trim()) : null;
+    if(allowed && !allowed.includes(u.role)) g.style.display = 'none';
+  });
   $$('#admin-nav .sidebar-section-label').forEach(lab => {
     const allowed = lab.dataset.allowedRoles ? lab.dataset.allowedRoles.split(',').map(s=>s.trim()) : null;
     if(allowed && !allowed.includes(u.role)) lab.style.display = 'none';
@@ -3407,6 +3461,26 @@ async function renderAdmin(page){
     }
     it.classList.toggle('active', it.dataset.route===page);
     it.addEventListener('click', e => { e.preventDefault(); navigate('/admin/'+it.dataset.route); });
+  });
+
+  // v2.1: hide any group whose items are all hidden; collapse/expand wiring
+  let collapsedGroups = {};
+  try{ collapsedGroups = JSON.parse(localStorage.getItem('gass-nav-groups')||'{}'); }catch{}
+  $$('#admin-nav .nav-group').forEach(g => {
+    if(g.style.display === 'none') return;
+    const items = $$('.nav-item', g);
+    const anyVisible = items.some(i => i.style.display !== 'none');
+    if(!anyVisible){ g.style.display = 'none'; return; }
+    const key = g.dataset.group;
+    // restore persisted state; keep the group containing the active route open
+    const hasActive = items.some(i => i.dataset.route === page && i.style.display !== 'none');
+    if(collapsedGroups[key] && !hasActive) g.classList.add('collapsed');
+    const head = $('.nav-group-head', g);
+    if(head) head.addEventListener('click', () => {
+      g.classList.toggle('collapsed');
+      collapsedGroups[key] = g.classList.contains('collapsed');
+      try{ localStorage.setItem('gass-nav-groups', JSON.stringify(collapsedGroups)); }catch{}
+    });
   });
 
   // v1.7: Refresh approval badge count
@@ -6076,16 +6150,16 @@ async function viewAdminAnggaran(c){
 
     <div class="split-2" style="margin-top:14px">
       <div class="card" style="margin:0"><div class="card-head"><h3>Anggaran vs Realisasi per Fund</h3></div>
-        <div class="card-body"><canvas id="ang-chart-fund" height="200"></canvas></div></div>
+        <div class="card-body"><div style="position:relative;height:240px"><canvas id="ang-chart-fund"></canvas></div></div></div>
       <div class="card" style="margin:0"><div class="card-head"><h3>Realisasi by Fund</h3></div>
-        <div class="card-body"><canvas id="ang-chart-byfund" height="200"></canvas></div></div>
+        <div class="card-body"><div style="position:relative;height:240px"><canvas id="ang-chart-byfund"></canvas></div></div></div>
     </div>
 
     <div class="card" style="margin-top:14px">
       <div class="card-head"><h3>CDP (Cash Disbursement Plan) ${year}</h3>
         <span class="muted text-sm">Rencana per bulan vs realisasi pembayaran</span></div>
       <div class="card-body">
-        <canvas id="ang-chart-cdp" height="120"></canvas>
+        <div style="position:relative;height:220px"><canvas id="ang-chart-cdp"></canvas></div>
         <div class="table-wrap" style="margin-top:12px"><table class="t t-dense">
           <thead><tr><th>Bulan</th><th style="text-align:right">Rencana (CDP)</th><th style="text-align:right">Realisasi</th><th style="text-align:right">Selisih</th><th style="width:80px;text-align:right">Aksi</th></tr></thead>
           <tbody>
@@ -6105,9 +6179,9 @@ async function viewAdminAnggaran(c){
 
     <div class="split-2" style="margin-top:14px">
       <div class="card" style="margin:0"><div class="card-head"><h3>Distribusi Biaya (Jenis Pembayaran)</h3></div>
-        <div class="card-body"><canvas id="ang-chart-jenis" height="200"></canvas></div></div>
+        <div class="card-body"><div style="position:relative;height:240px"><canvas id="ang-chart-jenis"></canvas></div></div></div>
       <div class="card" style="margin:0"><div class="card-head"><h3>Penggunaan Biaya by Lokasi</h3></div>
-        <div class="card-body"><canvas id="ang-chart-lokasi" height="200"></canvas></div></div>
+        <div class="card-body"><div style="position:relative;height:240px"><canvas id="ang-chart-lokasi"></canvas></div></div></div>
     </div>
 
     <div class="card" style="margin-top:14px">
