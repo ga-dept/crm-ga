@@ -882,7 +882,6 @@ table.t{
         <div class="brand-name"><strong>CRM Portal</strong><span>General Affairs · MRT Jakarta</span></div>
       </div>
       <div class="nav-links" id="landing-nav-links">
-        <a href="#dashboard">Dashboard</a>
         <a href="#tracker">Cek Permintaan</a>
         <a href="#howto">Cara Pakai</a>
         <a href="#form">Buat Permintaan</a>
@@ -904,33 +903,15 @@ table.t{
 
   <section class="section" id="dashboard" style="padding-top:24px">
     <div class="section-inner">
-      <div class="stat-grid">
-        <div class="stat-card"><div class="stat-icon"><span class="material-symbols-rounded">inventory_2</span></div>
-          <div class="stat-body"><span class="stat-label">Total Permintaan</span><span class="stat-value" id="stat-total">—</span></div></div>
-        <div class="stat-card"><div class="stat-icon green"><span class="material-symbols-rounded">task_alt</span></div>
-          <div class="stat-body"><span class="stat-label">Selesai</span><span class="stat-value" id="stat-done">—</span></div></div>
-        <div class="stat-card"><div class="stat-icon warn"><span class="material-symbols-rounded">pending_actions</span></div>
-          <div class="stat-body"><span class="stat-label">Sedang Berjalan</span><span class="stat-value" id="stat-ongoing">—</span></div></div>
-        <div class="stat-card"><div class="stat-icon purple"><span class="material-symbols-rounded">today</span></div>
-          <div class="stat-body"><span class="stat-label">Hari Ini</span><span class="stat-value" id="stat-today">—</span></div></div>
-      </div>
-
-      <div class="split-2 mt-6">
-        <div class="card">
-          <div class="card-head"><h3>Permintaan per Kategori</h3></div>
-          <div class="card-body"><canvas id="chart-category" height="180"></canvas></div>
-        </div>
-
-        <div class="card" id="tracker">
-          <div class="card-head"><h3>Cek Status Permintaan</h3></div>
-          <div class="card-body">
-            <p class="muted text-sm" style="margin:0 0 12px">Masukkan <strong>kode permintaan</strong> (contoh: <span class="code-pill" style="padding:2px 8px;font-size:12px">FB-120520260001</span>) atau <strong>kode SmartOffice</strong> Anda untuk melihat status terkini.</p>
-            <div class="tracker-input-row">
-              <input type="text" class="input" id="track-input" placeholder="Kode permintaan atau kode SmartOffice..." />
-              <button class="btn btn-primary" id="track-btn"><span class="material-symbols-rounded">search</span><span class="hide-sm">Cek</span></button>
-            </div>
-            <div class="tracker-result" id="track-result"></div>
+      <div class="card" id="tracker" style="max-width:720px;margin:0 auto">
+        <div class="card-head"><h3>Cek Status Permintaan</h3></div>
+        <div class="card-body">
+          <p class="muted text-sm" style="margin:0 0 12px">Masukkan <strong>kode permintaan</strong> (contoh: <span class="code-pill" style="padding:2px 8px;font-size:12px">FB-120520260001</span>) atau <strong>kode SmartOffice</strong> Anda untuk melihat status terkini.</p>
+          <div class="tracker-input-row">
+            <input type="text" class="input" id="track-input" placeholder="Kode permintaan atau kode SmartOffice..." />
+            <button class="btn btn-primary" id="track-btn"><span class="material-symbols-rounded">search</span><span class="hide-sm">Cek</span></button>
           </div>
+          <div class="tracker-result" id="track-result"></div>
         </div>
       </div>
     </div>
@@ -1069,19 +1050,17 @@ table.t{
                         <option>Direktur BD</option><option>Direksi</option>
                         <option>Tamu/VIP</option><option>Lainnya</option>
                       </select></div>
-                    <div class="field"><label>Drop — Jam</label>
-                      <input type="time" class="input" id="ko-drop-jam" /></div>
-                    <div class="field"><label>Drop — Lokasi</label>
-                      <input type="text" class="input" id="ko-drop-lokasi" placeholder="Lokasi tujuan" /></div>
-                    <div class="field"><label>Standby — Jam</label>
-                      <input type="time" class="input" id="ko-standby-jam" /></div>
-                    <div class="field"><label>Pick Up — Lokasi</label>
-                      <input type="text" class="input" id="ko-pickup-lokasi" placeholder="Lokasi penjemputan" /></div>
-                    <div class="field"><label>Jenis Kendaraan</label>
-                      <select class="select" id="ko-ev">
+                    <div class="field"><label>Jenis Layanan</label>
+                      <select class="select" id="ko-layanan">
                         <option value="">— Pilih —</option>
-                        <option>EV</option><option>NON EV</option>
+                        <option>Drop</option><option>Standby</option><option>Pick Up</option>
                       </select></div>
+                    <div class="field"><label>Jam</label>
+                      <input type="time" class="input" id="ko-jam" /></div>
+                    <div class="field"><label>Titik Jemput</label>
+                      <input type="text" class="input" id="ko-jemput" placeholder="Titik / lokasi penjemputan" /></div>
+                    <div class="field"><label>Tujuan</label>
+                      <input type="text" class="input" id="ko-tujuan" placeholder="Lokasi tujuan" /></div>
                   </div>
                 </div>
               </div>
@@ -1173,6 +1152,7 @@ table.t{
         <a class="nav-item" data-route="requests"><span class="material-symbols-rounded">list_alt</span><span class="nav-label">Daftar Permintaan</span></a>
         <a class="nav-item" data-route="ratings"><span class="material-symbols-rounded">star</span><span class="nav-label">Daftar Penilaian</span></a>
         <a class="nav-item" data-route="payments"><span class="material-symbols-rounded">payments</span><span class="nav-label">Payment</span></a>
+        <a class="nav-item" data-route="anggaran" data-allowed-roles="superadmin,admin"><span class="material-symbols-rounded">savings</span><span class="nav-label">Manajemen Anggaran</span></a>
         <div class="sidebar-section-label" data-allowed-roles="superadmin,admin">MASTER DATA</div>
         <a class="nav-item" data-route="masterdata"  data-allowed-roles="superadmin,admin"><span class="material-symbols-rounded">tune</span><span class="nav-label">Lokasi, Tujuan, Anggaran</span></a>
         <a class="nav-item" data-route="kategori"    data-allowed-roles="superadmin,admin"><span class="material-symbols-rounded">category</span><span class="nav-label">Kategori Pemesanan</span></a>
@@ -1183,7 +1163,7 @@ table.t{
         <a class="nav-item" data-route="users" data-allowed-roles="superadmin"><span class="material-symbols-rounded">manage_accounts</span><span class="nav-label">Manajemen User</span></a>
         <a class="nav-item nav-item-sa" data-route="slatargets" data-requires-role="superadmin"><span class="material-symbols-rounded">speed</span><span class="nav-label">SLA Target</span></a>
         <a class="nav-item" data-route="activity"><span class="material-symbols-rounded">receipt_long</span><span class="nav-label">Log Aktivitas</span></a>
-        <a class="nav-item" data-route="version"><span class="material-symbols-rounded">history</span><span class="nav-label">Riwayat Versi</span></a>
+        <a class="nav-item" data-route="version" data-requires-role="superadmin"><span class="material-symbols-rounded">history</span><span class="nav-label">Riwayat Versi</span></a>
       </nav>
       <div class="sidebar-foot">
         <div class="user-chip">
@@ -1326,10 +1306,11 @@ const ROUTE_ROLES = {
   divisi:     ['superadmin','admin'],
   departemen: ['superadmin','admin'],
   kendaraan:  ['superadmin','admin'],
+  anggaran:   ['superadmin','admin'],
   users:      ['superadmin'],
   slatargets: ['superadmin'],
   activity:   ['superadmin','admin','pic'],
-  version:    ['superadmin','admin','pic','admin_payment']
+  version:    ['superadmin']
 };
 const ROLE_LABEL = { superadmin:'Super Admin', admin:'Admin', pic:'PIC GA', admin_payment:'Admin Payment' };
 
@@ -1380,7 +1361,7 @@ const GA_PAYMENT_STATUS_CLASS = {
 };
 const FUND_OPTIONS = ['General Affairs','Non General Affairs'];
 const COST_TYPES = ['CAPEX','OPEX'];
-const JENIS_PEMBAYARAN = ['Transfer','Cash','Petty Cash','Reimbursement','Corporate Card','Lainnya'];
+const JENIS_PEMBAYARAN = ['Invoice','Kas Kecil','Transfer','Petty Cash','Reimbursement','Corporate Card','Lainnya'];
 // All payment columns. `synced` = default value pulled from the parent request
 // (still editable & overridable by any user). type drives the input widget.
 // Field order follows the Report Payment phases (Identifikasi → Proforma/PR → PO/GR → Invoice/Fund).
@@ -1388,6 +1369,7 @@ const PAYMENT_FIELDS = [
   {key:'activity_name',     label:'Nama Kegiatan / Deskripsi', type:'text', syncedActivity:true},
   {key:'vendor_name',       label:'Vendor Name',        type:'text',   synced:'nama_vendor'},
   {key:'fund',              label:'Fund',               type:'select', options:FUND_OPTIONS, syncedFund:true},
+  {key:'fund_id',           label:'Sumber Anggaran',    type:'fundselect'},
   {key:'pic_user_name',     label:'PIC User Name',      type:'text',   synced:'nama_pic_ga'},
   {key:'fund_owner',        label:'Fund Owner',         type:'text'},
   {key:'tanggal_permintaan',label:'Tanggal Permintaan', type:'date',   syncedDate:'created_at'},
@@ -1419,9 +1401,8 @@ const PAYMENT_FIELDS = [
   {key:'quantity',          label:'Quantity',           type:'number'},
   {key:'price',             label:'Price',              type:'money',  syncedPrice:true},
   {key:'grand_total',       label:'Grand Total',        type:'money'},
-  {key:'status',            label:'Status (umum)',      type:'select', options:PAYMENT_STATUSES},
-  // GA-budget workflow status — only Admin Payment / Superadmin may edit
-  {key:'ga_payment_status', label:'Status Pembayaran GA', type:'select', options:GA_PAYMENT_STATUSES, adminPaymentOnly:true},
+  // Single payment status (GA workflow) — only Admin Payment / Superadmin may edit
+  {key:'ga_payment_status', label:'Status',             type:'select', options:GA_PAYMENT_STATUSES, adminPaymentOnly:true},
   {key:'note',              label:'Note',               type:'textarea'}
 ];
 // Default value for a synced field, read from the parent request.
@@ -1573,7 +1554,8 @@ const demo = (() => {
     {id:'v8',version:'1.7.0',release_date:'2026-05-20',changes:'Kategori Pemesanan custom (CRUD master + kode prefix + SLA default), workflow approval Kepala Departemen untuk Direct Purchase, menu Divisi & Departemen dipisah di sidebar, hanya superadmin/admin yang boleh assign PIC.'},
     {id:'v9',version:'1.8.0',release_date:'2026-06-07',changes:'Modul Payment baru (semua permintaan masuk untuk update pembayaran: Proforma/PR/PO/GR/Invoice, Cost Type, Grand Total, dll — dapat diupdate semua user), statistik Payment di Dashboard, Detail Permintaan kini mempertahankan baris baru & lebih mudah dibaca, tabel Daftar Permintaan dirampingkan agar muat di desktop tanpa scroll, perbaikan auto-add Divisi/Departemen, dukungan PWA (installable + offline).'},
     {id:'v10',version:'1.8.1',release_date:'2026-06-08',changes:'CRUD penuh untuk Divisi & Departemen: tombol Edit untuk mengubah nama Divisi, serta mengubah nama, memindah Divisi induk, dan menunjuk Kepala Departemen dalam satu dialog. Penjagaan nama ganda saat menambah/mengubah. Auto-add dari formulir publik tetap berfungsi seperti sebelumnya.'},
-    {id:'v11',version:'1.9.0',release_date:'2026-06-08',changes:'Kolom Divisi & Departemen di formulir kini berupa type-search (cari sambil mengetik). Kategori "Kendaraan Operasional" (form GA-08) dengan master Armada Kendaraan yang dapat di-CRUD. Dropdown "Menggunakan/Bukan Anggaran GA" di Edit Permintaan — hanya yang ber-anggaran GA yang masuk Payment. Status pembayaran GA (Not Complete Yet/Submitted/Verified/Revision/Paid) yang hanya bisa diubah Admin Payment. Role baru "Admin Payment". Dashboard menampilkan daftar Payment anggaran GA. Modul Payment diselaraskan dengan Report Payment (Fund, Nama Kegiatan, Description Fund). Halaman publik /cektiket. Riwayat Versi kini menampilkan estimasi penyimpanan & Download Backup CSV format Supabase (per tabel).'}
+    {id:'v11',version:'1.9.0',release_date:'2026-06-08',changes:'Kolom Divisi & Departemen di formulir kini berupa type-search (cari sambil mengetik). Kategori "Kendaraan Operasional" (form GA-08) dengan master Armada Kendaraan yang dapat di-CRUD. Dropdown "Menggunakan/Bukan Anggaran GA" di Edit Permintaan — hanya yang ber-anggaran GA yang masuk Payment. Status pembayaran GA (Not Complete Yet/Submitted/Verified/Revision/Paid) yang hanya bisa diubah Admin Payment. Role baru "Admin Payment". Dashboard menampilkan daftar Payment anggaran GA. Modul Payment diselaraskan dengan Report Payment (Fund, Nama Kegiatan, Description Fund). Halaman publik /cektiket. Riwayat Versi kini menampilkan estimasi penyimpanan & Download Backup CSV format Supabase (per tabel).'},
+    {id:'v12',version:'2.0.0',release_date:'2026-06-10',changes:'Modul Manajemen Anggaran: total anggaran per fund, realisasi otomatis dari pembayaran, top-up anggaran (nominal/tanggal/sumber/keterangan), perencanaan CDP bulanan, serta laporan (Anggaran vs Realisasi, by Fund, CDP Rencana vs Realisasi, distribusi Invoice/Kas Kecil, by Lokasi). Payment kini punya kolom Sumber Anggaran (fund) dan status tunggal "Status" (khusus Admin Payment) + sort kolom. Kategori Pemesanan kini bisa di-edit penuh. Daftar Permintaan hanya bisa diubah Superadmin (PIC hanya tiket miliknya). Form Kendaraan Operasional: Prioritas & Jenis Layanan dropdown, tambah Titik Jemput & Tujuan, hapus Jenis Kendaraan. Riwayat Versi khusus Superadmin. Tulisan "Dashboard" di halaman publik dihapus.'}
   ];
 
   // Mata Anggaran options
@@ -1636,13 +1618,33 @@ const demo = (() => {
     {id:'ko7', nama_driver:'Dede Suparmono',    no_hp:'089540329157', nomor_polisi:'B 1930 SDU', posisi:'Driver Direksi',     ownership:'Sewa - Pusaka',   ev_status:'EV',     ga_ge:'Genap',  keterangan:'Chery - J6',      active:true},
   ];
 
+  // v2.0: Manajemen Anggaran — funds (kategori anggaran), top-ups, dan CDP bulanan
+  const anggaranFunds = [
+    {id:'f1', name:'Penyedia Jasa Outsourcing',           keterangan:'Termasuk sewa kantor & jasa outsourcing', active:true, created_at:new Date().toISOString()},
+    {id:'f2', name:'Penyedia Fasilitas Konsumsi',         keterangan:'', active:true, created_at:new Date().toISOString()},
+    {id:'f3', name:'Penyedia Barang Perlengkapan Kantor', keterangan:'', active:true, created_at:new Date().toISOString()},
+    {id:'f4', name:'Penyedia Barang Seragam Karyawan',    keterangan:'', active:true, created_at:new Date().toISOString()},
+    {id:'f5', name:'Perjalanan Dinas',                    keterangan:'', active:true, created_at:new Date().toISOString()},
+  ];
+  const anggaranTopups = [
+    {id:'tu1', fund_id:'f1', nominal:8000000000, tanggal:'2024-01-02', sumber:'RKAP 2024', keterangan:'Alokasi awal tahunan', created_at:new Date().toISOString()},
+    {id:'tu2', fund_id:'f2', nominal:1500000000, tanggal:'2024-01-02', sumber:'RKAP 2024', keterangan:'Alokasi awal tahunan', created_at:new Date().toISOString()},
+    {id:'tu3', fund_id:'f3', nominal:1000000000, tanggal:'2024-01-02', sumber:'RKAP 2024', keterangan:'Alokasi awal tahunan', created_at:new Date().toISOString()},
+    {id:'tu4', fund_id:'f4', nominal:800000000,  tanggal:'2024-01-02', sumber:'RKAP 2024', keterangan:'Alokasi awal tahunan', created_at:new Date().toISOString()},
+    {id:'tu5', fund_id:'f5', nominal:500000000,  tanggal:'2024-01-02', sumber:'RKAP 2024', keterangan:'Alokasi awal tahunan', created_at:new Date().toISOString()},
+  ];
+  const cdpPlans = [
+    {id:'c1', fund_id:null, tahun:new Date().getFullYear(), bulan:1, rencana:12783917092, keterangan:'CDP Januari'},
+    {id:'c2', fund_id:null, tahun:new Date().getFullYear(), bulan:2, rencana:1819419784,  keterangan:'CDP Februari'},
+  ];
+
   // v1.7: Approvals
   const approvals = [];
 
   // v1.8: Payment records — one per request (created lazily on first edit).
   const payments = [];
 
-  return { requests, ratings, notifications, lokasi, lokasiKerja, tujuan, users, version, activityLogs, slaTargets, mataAnggaran, divisi, departemen, kategori, kendaraan, approvals, payments, seq, todayKey, nextCode };
+  return { requests, ratings, notifications, lokasi, lokasiKerja, tujuan, users, version, activityLogs, slaTargets, mataAnggaran, divisi, departemen, kategori, kendaraan, anggaranFunds, anggaranTopups, cdpPlans, approvals, payments, seq, todayKey, nextCode };
 })();
 
 /* ============================================================
@@ -2074,6 +2076,62 @@ const db = {
     if(error) throw error;
   },
 
+  // ---- v2.0: Manajemen Anggaran ----
+  async listFunds(){
+    if(!SUPA_CONFIGURED) return [...demo.anggaranFunds];
+    const { data, error } = await supa.from('anggaran_funds').select('*').order('name');
+    if(error) throw error; return data || [];
+  },
+  async addFund(row){
+    if(!SUPA_CONFIGURED){ const r={id:'f'+(demo.anggaranFunds.length+Date.now()),active:true,created_at:new Date().toISOString(),...row}; demo.anggaranFunds.push(r); return r; }
+    const { data, error } = await supa.from('anggaran_funds').insert(row).select().single();
+    if(error) throw error; return data;
+  },
+  async updateFund(id, patch){
+    if(!SUPA_CONFIGURED){ const i=demo.anggaranFunds.findIndex(d=>d.id===id); if(i>=0) demo.anggaranFunds[i]={...demo.anggaranFunds[i],...patch}; return demo.anggaranFunds[i]; }
+    const { data, error } = await supa.from('anggaran_funds').update(patch).eq('id',id).select().single();
+    if(error) throw error; return data;
+  },
+  async deleteFund(id){
+    if(!SUPA_CONFIGURED){ demo.anggaranFunds=demo.anggaranFunds.filter(d=>d.id!==id); demo.anggaranTopups=demo.anggaranTopups.filter(t=>t.fund_id!==id); return; }
+    const { error } = await supa.from('anggaran_funds').delete().eq('id',id);
+    if(error) throw error;
+  },
+  async listFundTopups(){
+    if(!SUPA_CONFIGURED) return [...demo.anggaranTopups];
+    const { data, error } = await supa.from('anggaran_topups').select('*').order('tanggal',{ascending:false});
+    if(error) throw error; return data || [];
+  },
+  async addFundTopup(row){
+    if(!SUPA_CONFIGURED){ const r={id:'tu'+(demo.anggaranTopups.length+Date.now()),created_at:new Date().toISOString(),...row}; demo.anggaranTopups.push(r); return r; }
+    const { data, error } = await supa.from('anggaran_topups').insert(row).select().single();
+    if(error) throw error; return data;
+  },
+  async deleteFundTopup(id){
+    if(!SUPA_CONFIGURED){ demo.anggaranTopups=demo.anggaranTopups.filter(t=>t.id!==id); return; }
+    const { error } = await supa.from('anggaran_topups').delete().eq('id',id);
+    if(error) throw error;
+  },
+  async listCdpPlans(){
+    if(!SUPA_CONFIGURED) return [...demo.cdpPlans];
+    const { data, error } = await supa.from('cdp_plans').select('*').order('bulan');
+    if(error) throw error; return data || [];
+  },
+  async upsertCdpPlan(row){
+    if(!SUPA_CONFIGURED){
+      const i = demo.cdpPlans.findIndex(p => p.tahun===row.tahun && p.bulan===row.bulan && (p.fund_id||null)===(row.fund_id||null));
+      if(i>=0){ demo.cdpPlans[i] = {...demo.cdpPlans[i], ...row}; return demo.cdpPlans[i]; }
+      const r = {id:'c'+(demo.cdpPlans.length+Date.now()), ...row}; demo.cdpPlans.push(r); return r;
+    }
+    const { data, error } = await supa.from('cdp_plans').upsert(row, { onConflict:'tahun,bulan,fund_id' }).select().single();
+    if(error) throw error; return data;
+  },
+  async deleteCdpPlan(id){
+    if(!SUPA_CONFIGURED){ demo.cdpPlans=demo.cdpPlans.filter(p=>p.id!==id); return; }
+    const { error } = await supa.from('cdp_plans').delete().eq('id',id);
+    if(error) throw error;
+  },
+
   // ---- Kategori Pemesanan (v1.7 master) ----
   async listKategori(opts){
     const onlyActive = opts && opts.onlyActive;
@@ -2142,6 +2200,38 @@ const db = {
     }
     const { data, error } = await supa.from('kategori_options').update({active}).eq('id',id).select().single();
     if(error) throw error; return data;
+  },
+  // v2.0: full update of a kategori (name / kode / SLA / description / active)
+  async updateKategori(id, patch){
+    const upperKode = patch.kode != null ? String(patch.kode).trim().toUpperCase() : undefined;
+    if(!SUPA_CONFIGURED){
+      const i = demo.kategori.findIndex(k => k.id === id);
+      if(i < 0) return null;
+      const old = demo.kategori[i];
+      if(upperKode && demo.kategori.some(k => k.id!==id && k.kode===upperKode)) throw new Error('Kode "'+upperKode+'" sudah dipakai.');
+      if(patch.name && demo.kategori.some(k => k.id!==id && k.name.toLowerCase()===patch.name.toLowerCase())) throw new Error('Nama "'+patch.name+'" sudah dipakai.');
+      const upd = { ...old };
+      if(patch.name!=null) upd.name = patch.name;
+      if(upperKode) upd.kode = upperKode;
+      if(patch.default_sla_hours!=null) upd.default_sla_hours = Number(patch.default_sla_hours)||old.default_sla_hours;
+      if(patch.description!==undefined) upd.description = patch.description||null;
+      if(patch.active!==undefined) upd.active = patch.active;
+      demo.kategori[i] = upd;
+      // keep sla_targets mirror in sync (match by old name)
+      demo.slaTargets.forEach(s => { if(s.kategori===old.name){ s.kategori=upd.name; s.kategori_kode=upd.kode; s.target_hours=upd.default_sla_hours; } });
+      _slaTargetsCache = null;
+      return upd;
+    }
+    const clean = {};
+    if(patch.name!=null) clean.name = patch.name;
+    if(upperKode) clean.kode = upperKode;
+    if(patch.default_sla_hours!=null) clean.default_sla_hours = Number(patch.default_sla_hours);
+    if(patch.description!==undefined) clean.description = patch.description||null;
+    if(patch.active!==undefined) clean.active = patch.active;
+    const { data, error } = await supa.from('kategori_options').update(clean).eq('id',id).select().single();
+    if(error) throw error;
+    _slaTargetsCache = null;
+    return data;
   },
   async deleteKategori(id){
     if(!SUPA_CONFIGURED){
@@ -2809,17 +2899,18 @@ async function renderLanding(){
     });
   }
 
-  // --- Stats ---
+  // --- Stats (only if the public stat widgets exist) ---
   try{
-    const reqs = await db.listRequests();
-    $('#stat-total').textContent = reqs.length;
-    $('#stat-done').textContent  = reqs.filter(r=>r.status==='Selesai').length;
-    $('#stat-ongoing').textContent = reqs.filter(r=>['Mencari Penyedia','Sedang Disiapkan','Tersedia'].includes(r.status)).length;
-    const todayStr = new Date().toISOString().slice(0,10);
-    $('#stat-today').textContent = reqs.filter(r=>r.created_at && r.created_at.slice(0,10)===todayStr).length;
+    if($('#stat-total')){
+      const reqs = await db.listRequests();
+      $('#stat-total').textContent = reqs.length;
+      $('#stat-done').textContent  = reqs.filter(r=>r.status==='Selesai').length;
+      $('#stat-ongoing').textContent = reqs.filter(r=>['Mencari Penyedia','Sedang Disiapkan','Tersedia'].includes(r.status)).length;
+      const todayStr = new Date().toISOString().slice(0,10);
+      $('#stat-today').textContent = reqs.filter(r=>r.created_at && r.created_at.slice(0,10)===todayStr).length;
 
-    // Chart by category (skip silently if Chart.js CDN unavailable)
-    if(typeof Chart !== 'undefined'){
+      // Chart by category (skip silently if Chart.js CDN unavailable)
+      if(typeof Chart !== 'undefined' && $('#chart-category')){
       const cats = Object.keys(KATEGORI_KODE);
       const counts = cats.map(c => reqs.filter(r=>r.kategori===c).length);
       const ctx = $('#chart-category').getContext('2d');
@@ -2845,6 +2936,7 @@ async function renderLanding(){
           }
         }
       });
+    }
     }
   }catch(err){ console.error('[stats]', err); }
 
@@ -3168,11 +3260,10 @@ function setupRequestForm(){
           driver_label:drvLabel || '',
           kontak:      $('#ko-kontak')?.value || '',
           prioritas:   $('#ko-prioritas')?.value || '',
-          drop_jam:    $('#ko-drop-jam')?.value || '',
-          drop_lokasi: $('#ko-drop-lokasi')?.value || '',
-          standby_jam: $('#ko-standby-jam')?.value || '',
-          pickup_lokasi: $('#ko-pickup-lokasi')?.value || '',
-          ev_status:   $('#ko-ev')?.value || ''
+          jenis_layanan: $('#ko-layanan')?.value || '',
+          jam:         $('#ko-jam')?.value || '',
+          titik_jemput:$('#ko-jemput')?.value || '',
+          tujuan:      $('#ko-tujuan')?.value || ''
         };
       }
 
@@ -3358,6 +3449,7 @@ async function renderAdmin(page){
     divisi:'Divisi',
     departemen:'Departemen',
     kendaraan:'Armada Kendaraan',
+    anggaran:'Manajemen Anggaran',
     users:'Manajemen User',
     slatargets:'SLA Target',
     activity:'Log Aktivitas',
@@ -3389,6 +3481,7 @@ async function renderAdmin(page){
   else if(page==='requests')   await viewAdminRequests(c);
   else if(page==='ratings')    await viewAdminRatings(c);
   else if(page==='payments')   await viewAdminPayments(c);
+  else if(page==='anggaran')   await viewAdminAnggaran(c);
   else if(page==='masterdata') await viewAdminMaster(c);
   else if(page==='kategori')   await viewAdminKategori(c);
   else if(page==='divisi')     await viewAdminDivisi(c);
@@ -3644,32 +3737,32 @@ async function viewAdminDashboard(c){
     });
   }
 
-  // v1.8/v1.9: Payment statistics (GA-budget only) ------------------------
+  // v1.8/v2.0: Payment statistics (GA-budget only, single GA status) -------
   try{
     const pays = await db.listPayments().catch(()=>[]);
     const byReq = {}; (pays||[]).forEach(p => { byReq[p.request_id] = p; });
     const merged = reqs.filter(r => reqUsesGABudget(r)).map(r => mergePayment(r, byReq[r.id]));
     const total = merged.length;
-    const counts = {}; PAYMENT_STATUSES.forEach(s => counts[s] = 0);
-    let grandTotal = 0, lunasValue = 0;
+    const counts = {}; GA_PAYMENT_STATUSES.forEach(s => counts[s] = 0);
+    let grandTotal = 0, paidValue = 0;
     merged.forEach(m => {
-      const st = m.status || 'Belum Diproses';
+      const st = m.ga_payment_status || 'Not Complete Yet';
       counts[st] = (counts[st]||0) + 1;
       const gt = Number(m.grand_total)|| (Number(m.quantity)>0 && Number(m.price)>0 ? Number(m.quantity)*Number(m.price) : Number(m.price)||0);
       grandTotal += gt;
-      if(st === 'Lunas') lunasValue += gt;
+      if(st === 'Paid') paidValue += gt;
     });
-    const outstanding = Math.max(0, grandTotal - lunasValue);
+    const outstanding = Math.max(0, grandTotal - paidValue);
     const setTxt = (id,v)=>{ const el=$(id); if(el) el.textContent=v; };
     setTxt('#adp-total', total);
-    setTxt('#adp-lunas', counts['Lunas']||0);
-    setTxt('#adp-belum', counts['Belum Diproses']||0);
+    setTxt('#adp-lunas', counts['Paid']||0);
+    setTxt('#adp-belum', counts['Not Complete Yet']||0);
     setTxt('#adp-grand', fmtRupiah(grandTotal));
 
     if(typeof Chart !== 'undefined'){
-      const labels = PAYMENT_STATUSES;
+      const labels = GA_PAYMENT_STATUSES;
       const data = labels.map(l => counts[l]||0);
-      const colors = ['#F59E0B','#1976D2','#6D28D9','#00A859','#DC2626'];
+      const colors = ['#F59E0B','#1976D2','#6D28D9','#DC2626','#00A859'];
       const sc = $('#adp-chart-status');
       if(sc) new Chart(sc.getContext('2d'), {
         type:'doughnut',
@@ -3680,7 +3773,7 @@ async function viewAdminDashboard(c){
       const vc = $('#adp-chart-value');
       if(vc) new Chart(vc.getContext('2d'), {
         type:'bar',
-        data:{ labels:['Lunas','Outstanding'], datasets:[{ data:[lunasValue, outstanding],
+        data:{ labels:['Paid','Outstanding'], datasets:[{ data:[paidValue, outstanding],
           backgroundColor:['#00A859','#F59E0B'], borderRadius:8, maxBarThickness:80 }] },
         options:{ responsive:true, maintainAspectRatio:false,
           plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:(ctx)=>fmtRupiah(ctx.parsed.y) } } },
@@ -3688,7 +3781,7 @@ async function viewAdminDashboard(c){
       });
     }
 
-    // v1.9: GA-budget payment list (most recent 12)
+    // v2.0: GA-budget payment list (most recent 12)
     const gaHost = $('#adp-ga-list');
     if(gaHost){
       const list = merged.slice().sort((a,b)=> new Date(b._req.created_at) - new Date(a._req.created_at)).slice(0,12);
@@ -3696,20 +3789,17 @@ async function viewAdminDashboard(c){
       else gaHost.innerHTML = `
         <div class="table-wrap"><table class="t t-dense">
           <thead><tr>
-            <th>Kode</th><th>Pemesan</th><th>Vendor</th><th style="text-align:right">Grand Total</th>
-            <th>Status Umum</th><th>Status GA</th>
+            <th>Kode</th><th>Pemesan</th><th>Vendor</th><th style="text-align:right">Grand Total</th><th>Status</th>
           </tr></thead>
           <tbody>
           ${list.map(m=>{
             const gt = Number(m.grand_total)|| (Number(m.quantity)>0 && Number(m.price)>0 ? Number(m.quantity)*Number(m.price) : Number(m.price)||0);
-            const st = m.status||'Belum Diproses';
             const ga = m.ga_payment_status||'Not Complete Yet';
             return `<tr>
               <td><span class="code-pill">${escapeHtml(m._req.kode_permintaan)}</span></td>
               <td>${escapeHtml(m._req.nama_pemesan||'—')}</td>
               <td>${escapeHtml(m.vendor_name||'—')}</td>
               <td style="text-align:right">${gt>0?fmtRupiah(gt):'—'}</td>
-              <td><span class="badge ${PAYMENT_STATUS_CLASS[st]||'pay-belum'}">${escapeHtml(st)}</span></td>
               <td><span class="badge ${GA_PAYMENT_STATUS_CLASS[ga]||'pay-belum'}">${escapeHtml(ga)}</span></td>
             </tr>`;
           }).join('')}
@@ -3854,6 +3944,9 @@ function renderRequestsTable(host, data, opts){
   const compact = opts && opts.compact;
   const s = _adminReqsState;
   const targets = _slaTargetsCache || [];
+  // v2.0: Daftar Permintaan CRUD hanya Superadmin; PIC hanya tiket miliknya.
+  const _me = session.get();
+  const canEditReq = (r) => !!_me && (_me.role === 'superadmin' || (_me.role === 'pic' && r.nama_pic_ga === _me.full_name));
 
   // Filter
   let rows = data.slice();
@@ -3948,10 +4041,10 @@ function renderRequestsTable(host, data, opts){
                 <div class="actions-compact">
                   <button class="btn-icon" data-act="view" data-id="${r.id}" title="Detail"><span class="material-symbols-rounded">visibility</span></button>
                   ${!compact?`
-                    <button class="btn-icon" data-act="edit" data-id="${r.id}" title="Edit / Update Status"><span class="material-symbols-rounded">edit</span></button>
+                    ${canEditReq(r)?`<button class="btn-icon" data-act="edit" data-id="${r.id}" title="Edit / Update Status"><span class="material-symbols-rounded">edit</span></button>`:''}
                     ${r.status==='Tersedia' ? `<button class="btn-icon" data-act="pdf" data-id="${r.id}" title="Download tanda terima PDF" style="color:var(--mrt-green)"><span class="material-symbols-rounded">picture_as_pdf</span></button>` : ''}
                     ${r.status==='Selesai' ? `<button class="btn-icon" data-act="link" data-id="${r.id}" title="Salin tautan penilaian"><span class="material-symbols-rounded">link</span></button>` : ''}
-                    <button class="btn-icon" data-act="del" data-id="${r.id}" title="Hapus"><span class="material-symbols-rounded">delete</span></button>
+                    ${canEditReq(r)?`<button class="btn-icon" data-act="del" data-id="${r.id}" title="Hapus"><span class="material-symbols-rounded">delete</span></button>`:''}
                   `:''}
                 </div>
               </td>
@@ -4070,7 +4163,7 @@ async function openRequestDetail(id){
   // v1.9: Kendaraan Operasional booking block
   let koDetail = r.kendaraan_detail;
   if(typeof koDetail === 'string'){ try{ koDetail = JSON.parse(koDetail); }catch{ koDetail = null; } }
-  const koBlock = (koDetail && (koDetail.area||koDetail.driver_label||koDetail.drop_lokasi||koDetail.pickup_lokasi)) ? `
+  const koBlock = (koDetail && (koDetail.area||koDetail.driver_label||koDetail.tujuan||koDetail.titik_jemput)) ? `
     <div style="grid-column:1/-1;margin-top:6px;padding:10px 12px;background:var(--mrt-blue-soft);border-radius:8px;border-left:3px solid var(--mrt-blue)">
       <div style="font-weight:700;color:var(--mrt-blue);font-size:13px;margin-bottom:6px">
         <span class="material-symbols-rounded" style="vertical-align:-4px;font-size:18px">directions_car</span> Detail Kendaraan Operasional
@@ -4080,10 +4173,10 @@ async function openRequestDetail(id){
         <div class="k">Pengemudi/Kendaraan</div><div class="v">${escapeHtml(koDetail.driver_label||'—')}</div>
         <div class="k">Kontak</div><div class="v">${escapeHtml(koDetail.kontak||'—')}</div>
         <div class="k">Prioritas</div><div class="v">${escapeHtml(koDetail.prioritas||'—')}</div>
-        <div class="k">Drop</div><div class="v">${escapeHtml(koDetail.drop_jam||'—')} · ${escapeHtml(koDetail.drop_lokasi||'—')}</div>
-        <div class="k">Standby</div><div class="v">${escapeHtml(koDetail.standby_jam||'—')}</div>
-        <div class="k">Pick Up</div><div class="v">${escapeHtml(koDetail.pickup_lokasi||'—')}</div>
-        <div class="k">Jenis</div><div class="v">${escapeHtml(koDetail.ev_status||'—')}</div>
+        <div class="k">Jenis Layanan</div><div class="v">${escapeHtml(koDetail.jenis_layanan||'—')}</div>
+        <div class="k">Jam</div><div class="v">${escapeHtml(koDetail.jam||'—')}</div>
+        <div class="k">Titik Jemput</div><div class="v">${escapeHtml(koDetail.titik_jemput||'—')}</div>
+        <div class="k">Tujuan</div><div class="v">${escapeHtml(koDetail.tujuan||'—')}</div>
       </div>
     </div>` : '';
 
@@ -4129,10 +4222,11 @@ async function openRequestDetail(id){
     </div>
     <div class="modal-foot">
       <button class="btn btn-ghost" onclick="closeModal()">Tutup</button>
-      <button class="btn btn-primary" id="md-edit"><span class="material-symbols-rounded">edit</span>Edit</button>
+      ${(()=>{ const me=session.get(); const can = me && (me.role==='superadmin' || (me.role==='pic' && r.nama_pic_ga===me.full_name)); return can?`<button class="btn btn-primary" id="md-edit"><span class="material-symbols-rounded">edit</span>Edit</button>`:''; })()}
     </div>
   `, 'lg');
-  $('#md-edit').addEventListener('click', () => { closeModal(); openRequestEdit(id); });
+  const mdEditBtn = $('#md-edit');
+  if(mdEditBtn) mdEditBtn.addEventListener('click', () => { closeModal(); openRequestEdit(id); });
 }
 
 async function openRequestEdit(id){
@@ -4140,6 +4234,9 @@ async function openRequestEdit(id){
   if(!r) return;
   const me = session.get();
   const isSuperadmin = me?.role === 'superadmin';
+  // v2.0: only Superadmin (any ticket) or the assigned PIC may edit a request.
+  const mayEdit = me && (me.role === 'superadmin' || (me.role === 'pic' && r.nama_pic_ga === me.full_name));
+  if(!mayEdit){ toast('Hanya Superadmin atau PIC yang ditugaskan yang dapat mengubah permintaan ini.','warn'); return; }
   const [lok, tuj, picUsers, ma, divs, deps] = await Promise.all([
     db.listLokasi(), db.listTujuan(), db.listPicUsers(),
     db.listMataAnggaran(), db.listDivisi(), db.listDepartemen()
@@ -4741,18 +4838,18 @@ async function viewAdminRatings(c){
    Fields tagged "sinkron" default to the value from the request detail but
    remain overridable. */
 let _payMerged = [];
+let _fundsCache = [];
 let _payState = { page:1, pageSize:15, search:'', filterStatus:'', filterCategory:'', sort:'created_at', dir:'desc' };
+
+function fundName(id){ const f = _fundsCache.find(x => x.id === id); return f ? f.name : ''; }
 
 function payCellHtml(m, f){
   const v = m[f.key];
-  if(f.key === 'status'){
-    const sv = v || 'Belum Diproses';
-    return `<span class="badge ${PAYMENT_STATUS_CLASS[sv]||'pay-belum'}">${escapeHtml(sv)}</span>`;
-  }
   if(f.key === 'ga_payment_status'){
     const sv = v || 'Not Complete Yet';
     return `<span class="badge ${GA_PAYMENT_STATUS_CLASS[sv]||'pay-belum'}">${escapeHtml(sv)}</span>`;
   }
+  if(f.type === 'fundselect'){ const n = fundName(v); return n ? escapeHtml(n) : '—'; }
   if(f.type === 'date')  return v ? fmtDate(v) : '—';
   if(f.type === 'money') return (v!=null && v!=='' && Number(v)>0) ? fmtRupiah(v) : '—';
   if(f.type === 'number')return (v!=null && v!=='') ? escapeHtml(v) : '—';
@@ -4786,8 +4883,8 @@ async function viewAdminPayments(c){
             <input type="text" class="input" id="pay-search" placeholder="Cari kode, pemesan, vendor..." />
           </div>
           <select class="select" id="pay-filter-status" style="max-width:220px">
-            <option value="">Semua Status Pembayaran</option>
-            ${PAYMENT_STATUSES.map(s=>`<option>${s}</option>`).join('')}
+            <option value="">Semua Status</option>
+            ${GA_PAYMENT_STATUSES.map(s=>`<option>${s}</option>`).join('')}
           </select>
           <select class="select" id="pay-filter-category" style="max-width:220px">
             <option value="">Semua Kategori</option>
@@ -4804,10 +4901,12 @@ async function viewAdminPayments(c){
 
   async function load(){
     try{
-      const [reqs, pays] = await Promise.all([
+      const [reqs, pays, funds] = await Promise.all([
         db.listRequests(),
-        db.listPayments().catch(()=>[])
+        db.listPayments().catch(()=>[]),
+        db.listFunds().catch(()=>[])
       ]);
+      _fundsCache = funds || [];
       const byReq = {}; (pays||[]).forEach(p => { byReq[p.request_id] = p; });
       // v1.9: only requests that use the GA budget flow into Payment
       _payMerged = reqs.filter(r => reqUsesGABudget(r)).map(r => mergePayment(r, byReq[r.id]));
@@ -4852,10 +4951,26 @@ function filterPayments(){
       (m._req.kode_smartoffice||'').toLowerCase().includes(s.search)
     );
   }
-  if(s.filterStatus)   rows = rows.filter(m => (m.status||'Belum Diproses') === s.filterStatus);
+  if(s.filterStatus)   rows = rows.filter(m => (m.ga_payment_status||'Not Complete Yet') === s.filterStatus);
   if(s.filterCategory) rows = rows.filter(m => m._req.kategori === s.filterCategory);
-  // newest request first
-  rows.sort((a,b) => new Date(b._req.created_at) - new Date(a._req.created_at));
+
+  // Sorting: 'created_at' (default) or any payment column key, plus 'kode'/'pemesan'
+  const dir = s.dir === 'asc' ? 1 : -1;
+  const getVal = (m, key) => {
+    if(key === 'created_at') return new Date(m._req.created_at).getTime();
+    if(key === 'kode') return (m._req.kode_permintaan||'').toLowerCase();
+    if(key === 'pemesan') return (m._req.nama_pemesan||'').toLowerCase();
+    if(key === 'fund_id') return fundName(m.fund_id).toLowerCase();
+    const f = PAYMENT_FIELDS.find(x => x.key === key);
+    let v = m[key];
+    if(f && (f.type==='money'||f.type==='number')) return Number(v)||0;
+    if(f && f.type==='date') return v ? new Date(v).getTime() : 0;
+    return String(v==null?'':v).toLowerCase();
+  };
+  rows.sort((a,b) => {
+    const va = getVal(a, s.sort), vb = getVal(b, s.sort);
+    if(va < vb) return -1*dir; if(va > vb) return 1*dir; return 0;
+  });
   return rows;
 }
 
@@ -4869,15 +4984,16 @@ function renderPaymentsTable(host){
   const pageRows = rows.slice(start, start + s.pageSize);
 
   const cols = PAYMENT_FIELDS; // ordered exactly as requested
-  const headCells = cols.map(f => `<th${(f.type==='money'||f.type==='number')?' style="text-align:right"':''}>${escapeHtml(f.label)}${f.synced||f.syncedDate||f.syncedPrice?' <span style="color:var(--mrt-green);font-size:9px">●</span>':''}</th>`).join('');
+  const arrow = (key) => s.sort===key ? (s.dir==='asc'?' ▲':' ▼') : '';
+  const headCells = cols.map(f => `<th class="pay-sort" data-sort="${f.key}" style="cursor:pointer${(f.type==='money'||f.type==='number')?';text-align:right':''}">${escapeHtml(f.label)}${f.synced||f.syncedDate||f.syncedPrice?' <span style="color:var(--mrt-green);font-size:9px">●</span>':''}${arrow(f.key)}</th>`).join('');
 
   host.innerHTML = `
     <div class="table-wrap">
       <table class="t pay-table">
         <thead>
           <tr>
-            <th class="sticky-col" style="min-width:170px">Permintaan</th>
-            <th>Pemesan</th>
+            <th class="sticky-col pay-sort" data-sort="kode" style="min-width:170px;cursor:pointer">Permintaan${arrow('kode')}</th>
+            <th class="pay-sort" data-sort="pemesan" style="cursor:pointer">Pemesan${arrow('pemesan')}</th>
             ${headCells}
           </tr>
         </thead>
@@ -4913,6 +5029,12 @@ function renderPaymentsTable(host){
   $('#pay-prev', host)?.addEventListener('click', () => { if(s.page>1){ s.page--; renderPaymentsTable(host); } });
   $('#pay-next', host)?.addEventListener('click', () => { if(s.page<totalPages){ s.page++; renderPaymentsTable(host); } });
   $$('button[data-edit]', host).forEach(b => b.addEventListener('click', () => openPaymentEdit(b.dataset.edit)));
+  $$('th.pay-sort', host).forEach(th => th.addEventListener('click', () => {
+    const col = th.dataset.sort;
+    if(s.sort === col) s.dir = s.dir === 'asc' ? 'desc' : 'asc';
+    else { s.sort = col; s.dir = 'asc'; }
+    renderPaymentsTable(host);
+  }));
 }
 
 function openPaymentEdit(requestId){
@@ -4934,6 +5056,10 @@ function openPaymentEdit(requestId){
     let control;
     if(f.type === 'select'){
       const opts = ['<option value=""></option>'].concat((f.options||[]).map(o => `<option ${String(val)===o?'selected':''}>${escapeHtml(o)}</option>`)).join('');
+      control = `<select class="select" data-pf="${f.key}"${disAttr}>${opts}</select>`;
+    } else if(f.type === 'fundselect'){
+      const opts = ['<option value="">— pilih sumber anggaran —</option>'].concat(
+        _fundsCache.filter(x=>x.active!==false).map(o => `<option value="${escapeHtml(o.id)}" ${String(val)===String(o.id)?'selected':''}>${escapeHtml(o.name)}</option>`)).join('');
       control = `<select class="select" data-pf="${f.key}"${disAttr}>${opts}</select>`;
     } else if(f.type === 'textarea'){
       control = `<textarea class="textarea" data-pf="${f.key}" style="min-height:70px"${disAttr}>${escapeHtml(val||'')}</textarea>`;
@@ -4964,11 +5090,11 @@ function openPaymentEdit(requestId){
       </div>
       <div class="pay-form-grid">
         <div class="pay-section-title">Identitas & Organisasi</div>
-        ${group(['activity_name','fund','vendor_name','pic_user_name','fund_owner','tanggal_permintaan','tanggal_kebutuhan','location','sub_location','directorate','division','department','category','sub_category','administrator','user_sap'])}
+        ${group(['activity_name','fund','fund_id','vendor_name','pic_user_name','fund_owner','tanggal_permintaan','tanggal_kebutuhan','location','sub_location','directorate','division','department','category','sub_category','administrator','user_sap'])}
         <div class="pay-section-title">Dokumen Pengadaan</div>
         ${group(['proforma_number','proforma_date','pr_number','pr_date','po_number','po_date','gr_number','gr_date','invoice_number','invoice_date','description_fund','submit_date'])}
         <div class="pay-section-title">Pembayaran</div>
-        ${group(['cost_type','cost_purpose','jenis_pembayaran','quantity','price','grand_total','status','ga_payment_status'])}
+        ${group(['cost_type','cost_purpose','jenis_pembayaran','quantity','price','grand_total','ga_payment_status'])}
         ${group(['note'])}
       </div>
     </div>
@@ -5238,6 +5364,7 @@ async function viewAdminKategori(c){
                 ? '<span class="badge status-selesai">Aktif</span>'
                 : '<span class="badge gray">Non-aktif</span>'}</td>
               <td style="text-align:right;white-space:nowrap">
+                <button class="btn-icon" data-edit="${k.id}" title="Edit"><span class="material-symbols-rounded">edit</span></button>
                 <button class="btn-icon" data-toggle="${k.id}" title="${k.active?'Nonaktifkan':'Aktifkan'}"><span class="material-symbols-rounded">${k.active?'visibility_off':'visibility'}</span></button>
                 <button class="btn-icon" data-del="${k.id}" title="Hapus"><span class="material-symbols-rounded">delete</span></button>
               </td>
@@ -5245,6 +5372,48 @@ async function viewAdminKategori(c){
           `).join('')}
         </tbody></table></div>
     `;
+    $$('button[data-edit]', host).forEach(b => b.addEventListener('click', () => {
+      const k = items.find(x => x.id === b.dataset.edit);
+      if(!k) return;
+      openModal(`
+        <div class="modal-head">
+          <h3><span class="material-symbols-rounded" style="vertical-align:-6px;color:var(--mrt-blue)">category</span> Edit Kategori</h3>
+          <button class="btn-icon" onclick="closeModal()"><span class="material-symbols-rounded">close</span></button>
+        </div>
+        <div class="modal-body">
+          <div class="field field-required"><label>Nama Kategori</label>
+            <input class="input" id="kat-e-name" value="${escapeHtml(k.name)}"/></div>
+          <div class="form-grid">
+            <div class="field field-required"><label>Kode Prefix</label>
+              <input class="input" id="kat-e-kode" maxlength="6" value="${escapeHtml(k.kode)}" style="text-transform:uppercase"/></div>
+            <div class="field field-required"><label>SLA Default (jam)</label>
+              <input class="input" id="kat-e-sla" type="number" min="1" max="9999" value="${escapeHtml(k.default_sla_hours)}"/></div>
+            <div class="field"><label>Status</label>
+              <select class="select" id="kat-e-active"><option value="true" ${k.active!==false?'selected':''}>Aktif</option><option value="false" ${k.active===false?'selected':''}>Non-aktif</option></select></div>
+            <div class="field full"><label>Deskripsi</label>
+              <textarea class="textarea" id="kat-e-desc">${escapeHtml(k.description||'')}</textarea></div>
+          </div>
+          <span class="hint">Mengubah Kode tidak mengubah kode permintaan lama yang sudah tercatat.</span>
+        </div>
+        <div class="modal-foot">
+          <button class="btn btn-ghost" onclick="closeModal()">Batal</button>
+          <button class="btn btn-primary" id="kat-e-save"><span class="material-symbols-rounded">save</span>Simpan</button>
+        </div>
+      `, 'md');
+      $('#kat-e-save').addEventListener('click', async () => {
+        const name = $('#kat-e-name').value.trim();
+        const kode = $('#kat-e-kode').value.trim().toUpperCase();
+        const hours = Number($('#kat-e-sla').value);
+        if(!name || !kode || !hours){ toast('Lengkapi field wajib','warn'); return; }
+        if(!/^[A-Z0-9-]{2,6}$/.test(kode)){ toast('Kode harus 2-6 huruf/angka/dash','warn'); return; }
+        try{
+          await db.updateKategori(k.id, { name, kode, default_sla_hours:hours, description:$('#kat-e-desc').value.trim()||null, active:$('#kat-e-active').value!=='false' });
+          db.logActivity({ action:'kategori.update', target_type:'kategori', target_id:k.id, detail:`Edit kategori: ${name} (${kode})` });
+          await refreshKategoriKode();
+          closeModal(); toast('Kategori diperbarui','success'); renderKat();
+        }catch(err){ toast('Gagal: '+(err.message||''),'error'); }
+      });
+    }));
     $$('button[data-toggle]', host).forEach(b => b.addEventListener('click', async () => {
       const id = b.dataset.toggle; const k = items.find(x => x.id === id);
       try{
@@ -5796,6 +5965,306 @@ async function viewAdminKendaraan(c){
     });
   });
   await refresh();
+}
+
+/* ============================================================
+   v2.0: MANAJEMEN ANGGARAN
+   Funds (kategori anggaran), top-up, CDP bulanan, dan laporan realisasi.
+   Realisasi = jumlah Grand Total pembayaran (anggaran GA) yang ditautkan
+   ke fund. Mengikuti format reporting 2024 (Anggaran vs Realisasi, by Fund,
+   CDP Rencana vs Realisasi, distribusi Invoice/Kas Kecil, by Lokasi).
+   ============================================================ */
+const _BULAN = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+function payGrandTotal(m){
+  return Number(m.grand_total) || (Number(m.quantity)>0 && Number(m.price)>0 ? Number(m.quantity)*Number(m.price) : Number(m.price)||0);
+}
+function payDateKey(m){ return m.submit_date || m.invoice_date || (m._req && m._req.created_at) || null; }
+
+async function viewAdminAnggaran(c){
+  const year = new Date().getFullYear();
+  c.innerHTML = `<div class="card"><div class="card-body"><div class="muted">Memuat data anggaran…</div></div></div>`;
+
+  let funds=[], topups=[], cdp=[], merged=[];
+  try{
+    const [reqs, pays, fundsL, topupsL, cdpL] = await Promise.all([
+      db.listRequests().catch(()=>[]),
+      db.listPayments().catch(()=>[]),
+      db.listFunds().catch(()=>[]),
+      db.listFundTopups().catch(()=>[]),
+      db.listCdpPlans().catch(()=>[])
+    ]);
+    funds = fundsL; topups = topupsL; cdp = cdpL;
+    const byReq = {}; (pays||[]).forEach(p => { byReq[p.request_id] = p; });
+    merged = reqs.filter(r => reqUsesGABudget(r)).map(r => mergePayment(r, byReq[r.id]));
+  }catch(err){
+    c.innerHTML = `<div class="card card-pad" style="color:#991B1B">Gagal memuat data anggaran: ${escapeHtml(err.message||'')}</div>`;
+    return;
+  }
+
+  // ---- computations ----
+  const anggaranByFund = {}; funds.forEach(f => anggaranByFund[f.id] = 0);
+  topups.forEach(t => { anggaranByFund[t.fund_id] = (anggaranByFund[t.fund_id]||0) + (Number(t.nominal)||0); });
+  const realisasiByFund = {}; funds.forEach(f => realisasiByFund[f.id] = 0);
+  let unassignedRealisasi = 0;
+  merged.forEach(m => {
+    const gt = payGrandTotal(m);
+    if(m.fund_id && realisasiByFund[m.fund_id] !== undefined) realisasiByFund[m.fund_id] += gt;
+    else unassignedRealisasi += gt;
+  });
+  const totalAnggaran = Object.values(anggaranByFund).reduce((a,b)=>a+b,0);
+  const totalRealisasi = Object.values(realisasiByFund).reduce((a,b)=>a+b,0) + unassignedRealisasi;
+  const totalSisa = totalAnggaran - totalRealisasi;
+  const pct = totalAnggaran>0 ? Math.round(totalRealisasi/totalAnggaran*100) : 0;
+
+  // realisasi per month (current year) + per jenis pembayaran + per lokasi
+  const realisasiByMonth = Array(12).fill(0);
+  const byJenis = {}; const byLokasi = {};
+  merged.forEach(m => {
+    const gt = payGrandTotal(m); const dk = payDateKey(m);
+    if(dk){ const d = new Date(dk); if(d.getFullYear()===year) realisasiByMonth[d.getMonth()] += gt; }
+    const j = m.jenis_pembayaran || 'Lainnya'; byJenis[j] = (byJenis[j]||0) + gt;
+    const l = (m.location || m._req.lokasi_kebutuhan || 'Lainnya'); byLokasi[l] = (byLokasi[l]||0) + gt;
+  });
+  const cdpByMonth = Array(12).fill(0);
+  cdp.filter(p => Number(p.tahun)===year).forEach(p => { const b=Number(p.bulan)-1; if(b>=0&&b<12) cdpByMonth[b]+=Number(p.rencana)||0; });
+
+  c.innerHTML = `
+    <div class="adm-stat-grid">
+      <div class="stat-card"><div class="stat-icon" style="background:#FEF3C7;color:#92400E"><span class="material-symbols-rounded">savings</span></div>
+        <div class="stat-body"><span class="stat-label">Total Anggaran</span><span class="stat-value" style="font-size:17px">${fmtRupiah(totalAnggaran)}</span></div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:#FEE2E2;color:#991B1B"><span class="material-symbols-rounded">trending_down</span></div>
+        <div class="stat-body"><span class="stat-label">Total Realisasi</span><span class="stat-value" style="font-size:17px">${fmtRupiah(totalRealisasi)}</span></div></div>
+      <div class="stat-card"><div class="stat-icon green"><span class="material-symbols-rounded">account_balance_wallet</span></div>
+        <div class="stat-body"><span class="stat-label">Sisa Anggaran</span><span class="stat-value" style="font-size:17px">${fmtRupiah(totalSisa)}</span></div></div>
+      <div class="stat-card"><div class="stat-icon purple"><span class="material-symbols-rounded">percent</span></div>
+        <div class="stat-body"><span class="stat-label">Terpakai</span><span class="stat-value">${pct}%</span></div></div>
+    </div>
+
+    <div class="card" style="margin-top:14px">
+      <div class="card-head">
+        <h3>Fund &amp; Anggaran</h3>
+        <button class="btn btn-primary btn-sm" id="ang-add-fund"><span class="material-symbols-rounded">add</span>Tambah Fund</button>
+      </div>
+      <div class="card-body">
+        <div class="table-wrap"><table class="t t-dense">
+          <thead><tr>
+            <th>Fund</th><th style="text-align:right">Anggaran</th><th style="text-align:right">Realisasi</th>
+            <th style="text-align:right">Sisa</th><th style="width:140px">Terpakai</th><th style="width:160px;text-align:right">Aksi</th>
+          </tr></thead>
+          <tbody>
+          ${funds.length ? funds.map(f=>{
+            const ang = anggaranByFund[f.id]||0, real = realisasiByFund[f.id]||0, sisa = ang-real;
+            const p = ang>0 ? Math.min(100, Math.round(real/ang*100)) : 0;
+            const barColor = p>=90 ? '#DC2626' : (p>=70 ? '#F59E0B' : '#00A859');
+            return `<tr>
+              <td><strong>${escapeHtml(f.name)}</strong>${f.active===false?' <span class="badge status-ditolak">nonaktif</span>':''}${f.keterangan?`<div class="muted text-sm">${escapeHtml(f.keterangan)}</div>`:''}</td>
+              <td style="text-align:right">${fmtRupiah(ang)}</td>
+              <td style="text-align:right">${fmtRupiah(real)}</td>
+              <td style="text-align:right;color:${sisa<0?'#DC2626':'inherit'}">${fmtRupiah(sisa)}</td>
+              <td><div style="height:8px;border-radius:6px;background:#EDF1F7;overflow:hidden"><div style="height:100%;width:${p}%;background:${barColor}"></div></div><span class="text-sm muted">${p}%</span></td>
+              <td style="text-align:right;white-space:nowrap">
+                <button class="btn-icon" data-ang-topup="${f.id}" title="Top-up anggaran" style="color:var(--mrt-green)"><span class="material-symbols-rounded">add_card</span></button>
+                <button class="btn-icon" data-ang-edit="${f.id}" title="Edit"><span class="material-symbols-rounded">edit</span></button>
+                <button class="btn-icon" data-ang-del="${f.id}" title="Hapus"><span class="material-symbols-rounded">delete</span></button>
+              </td>
+            </tr>`;
+          }).join('') : `<tr><td colspan="6" class="empty-row">Belum ada fund. Klik "Tambah Fund".</td></tr>`}
+          ${unassignedRealisasi>0?`<tr style="background:#FEF9F2"><td><em>Tanpa fund (belum ditautkan)</em></td><td style="text-align:right">—</td><td style="text-align:right">${fmtRupiah(unassignedRealisasi)}</td><td colspan="3" class="muted text-sm">Tautkan pembayaran ke fund via menu Payment → kolom "Sumber Anggaran".</td></tr>`:''}
+          </tbody></table></div>
+      </div>
+    </div>
+
+    <div class="split-2" style="margin-top:14px">
+      <div class="card" style="margin:0"><div class="card-head"><h3>Anggaran vs Realisasi per Fund</h3></div>
+        <div class="card-body"><canvas id="ang-chart-fund" height="200"></canvas></div></div>
+      <div class="card" style="margin:0"><div class="card-head"><h3>Realisasi by Fund</h3></div>
+        <div class="card-body"><canvas id="ang-chart-byfund" height="200"></canvas></div></div>
+    </div>
+
+    <div class="card" style="margin-top:14px">
+      <div class="card-head"><h3>CDP (Cash Disbursement Plan) ${year}</h3>
+        <span class="muted text-sm">Rencana per bulan vs realisasi pembayaran</span></div>
+      <div class="card-body">
+        <canvas id="ang-chart-cdp" height="120"></canvas>
+        <div class="table-wrap" style="margin-top:12px"><table class="t t-dense">
+          <thead><tr><th>Bulan</th><th style="text-align:right">Rencana (CDP)</th><th style="text-align:right">Realisasi</th><th style="text-align:right">Selisih</th><th style="width:80px;text-align:right">Aksi</th></tr></thead>
+          <tbody>
+          ${_BULAN.map((b,i)=>{
+            const plan = cdpByMonth[i]||0, real = realisasiByMonth[i]||0;
+            return `<tr>
+              <td>${b} ${year}</td>
+              <td style="text-align:right">${plan?fmtRupiah(plan):'—'}</td>
+              <td style="text-align:right">${real?fmtRupiah(real):'—'}</td>
+              <td style="text-align:right;color:${(plan-real)<0?'#DC2626':'inherit'}">${(plan||real)?fmtRupiah(plan-real):'—'}</td>
+              <td style="text-align:right"><button class="btn-icon" data-cdp-edit="${i+1}" title="Set rencana"><span class="material-symbols-rounded">edit</span></button></td>
+            </tr>`;
+          }).join('')}
+          </tbody></table></div>
+      </div>
+    </div>
+
+    <div class="split-2" style="margin-top:14px">
+      <div class="card" style="margin:0"><div class="card-head"><h3>Distribusi Biaya (Jenis Pembayaran)</h3></div>
+        <div class="card-body"><canvas id="ang-chart-jenis" height="200"></canvas></div></div>
+      <div class="card" style="margin:0"><div class="card-head"><h3>Penggunaan Biaya by Lokasi</h3></div>
+        <div class="card-body"><canvas id="ang-chart-lokasi" height="200"></canvas></div></div>
+    </div>
+
+    <div class="card" style="margin-top:14px">
+      <div class="card-head"><h3>Riwayat Top-up Anggaran</h3></div>
+      <div class="card-body">
+        <div class="table-wrap"><table class="t t-dense">
+          <thead><tr><th>Tanggal</th><th>Fund</th><th style="text-align:right">Nominal</th><th>Sumber</th><th>Keterangan</th><th style="width:60px;text-align:right">Aksi</th></tr></thead>
+          <tbody>
+          ${topups.length ? topups.slice().sort((a,b)=>new Date(b.tanggal)-new Date(a.tanggal)).map(t=>`<tr>
+            <td>${fmtDate(t.tanggal)}</td>
+            <td>${escapeHtml((funds.find(f=>f.id===t.fund_id)||{}).name||'—')}</td>
+            <td style="text-align:right">${fmtRupiah(t.nominal)}</td>
+            <td>${escapeHtml(t.sumber||'—')}</td>
+            <td>${escapeHtml(t.keterangan||'—')}</td>
+            <td style="text-align:right"><button class="btn-icon" data-topup-del="${t.id}" title="Hapus"><span class="material-symbols-rounded">delete</span></button></td>
+          </tr>`).join('') : `<tr><td colspan="6" class="empty-row">Belum ada top-up</td></tr>`}
+          </tbody></table></div>
+      </div>
+    </div>
+  `;
+
+  // ---- charts ----
+  if(typeof Chart !== 'undefined'){
+    const palette = ['#7C7468','#1F5C99','#C9622B','#3E7D52','#D9B26A','#8AA0BC','#A8554E','#5B8C7D'];
+    const fundLabels = funds.map(f=>f.name);
+    const cf = $('#ang-chart-fund'); if(cf) new Chart(cf.getContext('2d'),{
+      type:'bar',
+      data:{ labels:fundLabels.map(l=>l.length>16?l.slice(0,15)+'…':l),
+        datasets:[
+          {label:'Anggaran', data:funds.map(f=>anggaranByFund[f.id]||0), backgroundColor:'#D9B26A', borderRadius:6},
+          {label:'Realisasi', data:funds.map(f=>realisasiByFund[f.id]||0), backgroundColor:'#C9622B', borderRadius:6}
+        ]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11}}},tooltip:{callbacks:{label:(x)=>x.dataset.label+': '+fmtRupiah(x.parsed.y)}}},scales:{x:{ticks:{font:{size:9}}},y:{beginAtZero:true,ticks:{callback:v=>'Rp '+Number(v).toLocaleString('id-ID'),font:{size:8}}}}}
+    });
+    const cbf = $('#ang-chart-byfund'); if(cbf) new Chart(cbf.getContext('2d'),{
+      type:'doughnut',
+      data:{ labels:fundLabels, datasets:[{data:funds.map(f=>realisasiByFund[f.id]||0), backgroundColor:palette, borderColor:'#fff', borderWidth:2}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{font:{size:10},boxWidth:12}},tooltip:{callbacks:{label:(x)=>x.label+': '+fmtRupiah(x.parsed)}}},cutout:'50%'}
+    });
+    const cc = $('#ang-chart-cdp'); if(cc) new Chart(cc.getContext('2d'),{
+      type:'bar',
+      data:{ labels:_BULAN.map(b=>b+' '+String(year).slice(2)),
+        datasets:[
+          {label:'Rencana (CDP)', data:cdpByMonth, backgroundColor:'#D9B26A', borderRadius:5},
+          {label:'Realisasi', data:realisasiByMonth, backgroundColor:'#C9622B', borderRadius:5}
+        ]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11}}},tooltip:{callbacks:{label:(x)=>x.dataset.label+': '+fmtRupiah(x.parsed.y)}}},scales:{y:{beginAtZero:true,ticks:{callback:v=>'Rp '+Number(v).toLocaleString('id-ID'),font:{size:8}}}}}
+    });
+    const jLabels=Object.keys(byJenis), jData=jLabels.map(k=>byJenis[k]);
+    const cj=$('#ang-chart-jenis'); if(cj && jLabels.length) new Chart(cj.getContext('2d'),{
+      type:'doughnut', data:{labels:jLabels,datasets:[{data:jData,backgroundColor:palette,borderColor:'#fff',borderWidth:2}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{font:{size:10},boxWidth:12}},tooltip:{callbacks:{label:(x)=>x.label+': '+fmtRupiah(x.parsed)}}},cutout:'55%'}
+    });
+    const lLabels=Object.keys(byLokasi), lData=lLabels.map(k=>byLokasi[k]);
+    const cl=$('#ang-chart-lokasi'); if(cl && lLabels.length) new Chart(cl.getContext('2d'),{
+      type:'doughnut', data:{labels:lLabels,datasets:[{data:lData,backgroundColor:palette,borderColor:'#fff',borderWidth:2}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{font:{size:10},boxWidth:12}},tooltip:{callbacks:{label:(x)=>x.label+': '+fmtRupiah(x.parsed)}}},cutout:'55%'}
+    });
+  }
+
+  // ---- fund add/edit ----
+  function fundModal(item){
+    const v = item||{};
+    return `
+      <div class="modal-head"><h3><span class="material-symbols-rounded" style="vertical-align:-6px;color:var(--mrt-blue)">savings</span> ${item?'Edit':'Tambah'} Fund</h3>
+        <button class="btn-icon" onclick="closeModal()"><span class="material-symbols-rounded">close</span></button></div>
+      <div class="modal-body">
+        <div class="field field-required"><label>Nama Fund</label><input class="input" id="f-name" value="${escapeHtml(v.name||'')}" placeholder="mis. Penyedia Jasa Outsourcing"/></div>
+        <div class="field"><label>Keterangan</label><input class="input" id="f-ket" value="${escapeHtml(v.keterangan||'')}"/></div>
+        <div class="field"><label>Status</label><select class="select" id="f-active"><option value="true" ${v.active!==false?'selected':''}>Aktif</option><option value="false" ${v.active===false?'selected':''}>Nonaktif</option></select></div>
+      </div>
+      <div class="modal-foot"><button class="btn btn-ghost" onclick="closeModal()">Batal</button><button class="btn btn-primary" id="f-save"><span class="material-symbols-rounded">save</span>Simpan</button></div>`;
+  }
+  $('#ang-add-fund').addEventListener('click', ()=>{
+    openModal(fundModal(null),'md');
+    $('#f-save').addEventListener('click', async ()=>{
+      const name=$('#f-name').value.trim(); if(!name){ toast('Nama wajib','warn'); return; }
+      try{ await db.addFund({ name, keterangan:$('#f-ket').value.trim()||null, active:$('#f-active').value!=='false' });
+        db.logActivity({action:'anggaran.create',target_type:'fund',detail:`Tambah fund: ${name}`});
+        closeModal(); toast('Fund ditambahkan','success'); viewAdminAnggaran(c);
+      }catch(err){ toast('Gagal: '+(err.message||''),'error'); }
+    });
+  });
+  $$('button[data-ang-edit]', c).forEach(b=>b.addEventListener('click', ()=>{
+    const f=funds.find(x=>x.id===b.dataset.angEdit); openModal(fundModal(f),'md');
+    $('#f-save').addEventListener('click', async ()=>{
+      const name=$('#f-name').value.trim(); if(!name){ toast('Nama wajib','warn'); return; }
+      try{ await db.updateFund(f.id,{ name, keterangan:$('#f-ket').value.trim()||null, active:$('#f-active').value!=='false' });
+        db.logActivity({action:'anggaran.update',target_type:'fund',target_id:f.id,detail:`Edit fund: ${name}`});
+        closeModal(); toast('Fund diperbarui','success'); viewAdminAnggaran(c);
+      }catch(err){ toast('Gagal: '+(err.message||''),'error'); }
+    });
+  }));
+  $$('button[data-ang-del]', c).forEach(b=>b.addEventListener('click', async ()=>{
+    const f=funds.find(x=>x.id===b.dataset.angDel);
+    if(!confirm(`Hapus fund "${f?.name}" beserta riwayat top-up-nya?`)) return;
+    try{ await db.deleteFund(f.id);
+      db.logActivity({action:'anggaran.delete',target_type:'fund',target_id:f.id,detail:`Hapus fund: ${f?.name}`});
+      toast('Fund dihapus','success'); viewAdminAnggaran(c);
+    }catch(err){ toast('Gagal: '+(err.message||''),'error'); }
+  }));
+
+  // ---- top-up ----
+  $$('button[data-ang-topup]', c).forEach(b=>b.addEventListener('click', ()=>{
+    const f=funds.find(x=>x.id===b.dataset.angTopup);
+    openModal(`
+      <div class="modal-head"><h3><span class="material-symbols-rounded" style="vertical-align:-6px;color:var(--mrt-green)">add_card</span> Top-up Anggaran</h3>
+        <button class="btn-icon" onclick="closeModal()"><span class="material-symbols-rounded">close</span></button></div>
+      <div class="modal-body">
+        <div class="field"><label>Fund</label><input class="input" value="${escapeHtml(f.name)}" disabled/></div>
+        <div class="form-grid">
+          <div class="field field-required"><label>Nominal</label><input class="input pf-money" id="tu-nominal" inputmode="numeric" placeholder="Rp 0"/></div>
+          <div class="field field-required"><label>Tanggal</label><input type="date" class="input" id="tu-tgl" value="${new Date().toISOString().slice(0,10)}"/></div>
+        </div>
+        <div class="field"><label>Sumber Anggaran</label><input class="input" id="tu-sumber" placeholder="mis. RKAP 2024 / Revisi Anggaran"/></div>
+        <div class="field"><label>Keterangan</label><input class="input" id="tu-ket"/></div>
+      </div>
+      <div class="modal-foot"><button class="btn btn-ghost" onclick="closeModal()">Batal</button><button class="btn btn-primary" id="tu-save"><span class="material-symbols-rounded">save</span>Simpan</button></div>
+    `,'md');
+    $('#tu-nominal').addEventListener('input', e=>{ const d=e.target.value.replace(/\D/g,''); e.target.value=d?'Rp '+Number(d).toLocaleString('id-ID'):''; });
+    $('#tu-save').addEventListener('click', async ()=>{
+      const nominal=Number(($('#tu-nominal').value||'').replace(/\D/g,''))||0;
+      if(nominal<=0){ toast('Nominal wajib diisi','warn'); return; }
+      try{ await db.addFundTopup({ fund_id:f.id, nominal, tanggal:$('#tu-tgl').value||new Date().toISOString().slice(0,10), sumber:$('#tu-sumber').value.trim()||null, keterangan:$('#tu-ket').value.trim()||null });
+        db.logActivity({action:'anggaran.topup',target_type:'fund',target_id:f.id,detail:`Top-up ${f.name}: ${fmtRupiah(nominal)}`});
+        closeModal(); toast('Top-up tersimpan','success'); viewAdminAnggaran(c);
+      }catch(err){ toast('Gagal: '+(err.message||''),'error'); }
+    });
+  }));
+  $$('button[data-topup-del]', c).forEach(b=>b.addEventListener('click', async ()=>{
+    if(!confirm('Hapus top-up ini?')) return;
+    try{ await db.deleteFundTopup(b.dataset.topupDel); toast('Top-up dihapus','success'); viewAdminAnggaran(c); }
+    catch(err){ toast('Gagal: '+(err.message||''),'error'); }
+  }));
+
+  // ---- CDP plan ----
+  $$('button[data-cdp-edit]', c).forEach(b=>b.addEventListener('click', ()=>{
+    const bulan=Number(b.dataset.cdpEdit);
+    const existing = cdp.find(p=>Number(p.tahun)===year && Number(p.bulan)===bulan && !p.fund_id);
+    openModal(`
+      <div class="modal-head"><h3><span class="material-symbols-rounded" style="vertical-align:-6px;color:var(--mrt-blue)">event</span> Rencana CDP — ${_BULAN[bulan-1]} ${year}</h3>
+        <button class="btn-icon" onclick="closeModal()"><span class="material-symbols-rounded">close</span></button></div>
+      <div class="modal-body">
+        <div class="field field-required"><label>Rencana Pencairan (CDP)</label><input class="input pf-money" id="cdp-nominal" inputmode="numeric" value="${existing&&existing.rencana?'Rp '+Number(existing.rencana).toLocaleString('id-ID'):''}" placeholder="Rp 0"/></div>
+        <div class="field"><label>Keterangan</label><input class="input" id="cdp-ket" value="${escapeHtml(existing?.keterangan||'')}"/></div>
+      </div>
+      <div class="modal-foot"><button class="btn btn-ghost" onclick="closeModal()">Batal</button><button class="btn btn-primary" id="cdp-save"><span class="material-symbols-rounded">save</span>Simpan</button></div>
+    `,'sm');
+    $('#cdp-nominal').addEventListener('input', e=>{ const d=e.target.value.replace(/\D/g,''); e.target.value=d?'Rp '+Number(d).toLocaleString('id-ID'):''; });
+    $('#cdp-save').addEventListener('click', async ()=>{
+      const rencana=Number(($('#cdp-nominal').value||'').replace(/\D/g,''))||0;
+      try{ await db.upsertCdpPlan({ fund_id:null, tahun:year, bulan, rencana, keterangan:$('#cdp-ket').value.trim()||null });
+        db.logActivity({action:'anggaran.cdp',target_type:'cdp',detail:`Set CDP ${_BULAN[bulan-1]} ${year}: ${fmtRupiah(rencana)}`});
+        closeModal(); toast('Rencana CDP tersimpan','success'); viewAdminAnggaran(c);
+      }catch(err){ toast('Gagal: '+(err.message||''),'error'); }
+    });
+  }));
 }
 
 /* ============================================================
