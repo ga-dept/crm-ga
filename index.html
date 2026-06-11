@@ -594,6 +594,15 @@ table.t{
 .field .synced-tag{font-size:10px;font-weight:600;color:var(--mrt-green);background:var(--mrt-green-soft);
   padding:1px 6px;border-radius:6px;margin-left:6px}
 .modal.xl{max-width:920px}
+/* v2.0.1: payment locked fields + per-user access checklist */
+.field-locked .input,.field-locked .select,.field-locked .textarea,
+.input:disabled,.select:disabled,.textarea:disabled{background:#F1F4F9;color:#7A8699;cursor:not-allowed}
+.ap-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:6px 16px;margin-top:6px;
+  border:1px solid var(--border-2,#E3E8F0);border-radius:10px;padding:12px}
+.ap-item{display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer}
+.ap-item input,.chk-inline input{width:16px;height:16px;accent-color:var(--mrt-blue);cursor:pointer}
+.chk-inline{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--text-mut);cursor:pointer}
+@media(max-width:640px){.ap-grid{grid-template-columns:1fr}}
 
 .empty-row{text-align:center;color:var(--text-mut);padding:32px!important}
 
@@ -1070,8 +1079,8 @@ table.t{
               </div>
 
               <div class="field full">
-                <label>Lampiran <span class="hint" style="font-weight:500">(PDF/PNG/JPG, maksimal 2 MB)</span></label>
-                <input type="file" class="input" name="lampiran" id="input-lampiran" accept=".pdf,.png,.jpg,.jpeg" />
+                <label>Lampiran <span class="hint" style="font-weight:500">(PDF atau PNG, maksimal 1 MB)</span></label>
+                <input type="file" class="input" name="lampiran" id="input-lampiran" accept=".pdf,.png,application/pdf,image/png" />
               </div>
 
               <!-- v1.9: Kendaraan Operasional (form GA-08) — shown only when kategori = Kendaraan Operasional -->
@@ -1358,6 +1367,30 @@ const ROUTE_ROLES = {
   version:    ['superadmin']
 };
 const ROLE_LABEL = { superadmin:'Super Admin', admin:'Admin', pic:'PIC GA', admin_payment:'Admin Payment' };
+// v2.0.1: human labels for every gateable admin page (used by the per-user access editor)
+const PAGE_LABELS = {
+  dashboard:'Dashboard', myticket:'Tiket Saya', approvals:'Persetujuan', requests:'Daftar Permintaan',
+  ratings:'Daftar Penilaian', payments:'Payment', anggaran:'Manajemen Anggaran',
+  masterdata:'Master Data (Lokasi/Tujuan/Anggaran)', kategori:'Kategori Pemesanan', divisi:'Divisi',
+  departemen:'Departemen', kendaraan:'Armada Kendaraan', users:'Manajemen User',
+  slatargets:'SLA Target', activity:'Log Aktivitas', version:'Riwayat Versi'
+};
+const ALL_PAGES = Object.keys(PAGE_LABELS);
+// Effective access: if a user has an explicit allowed_pages list, that list is authoritative
+// (Super Admin can grant/limit any page per account). Otherwise fall back to role defaults.
+function getAllowedPages(user){
+  if(!user) return [];
+  const ap = user.allowed_pages;
+  return (Array.isArray(ap) && ap.length) ? ap : null; // null = use role default
+}
+function userCanAccess(user, route){
+  if(!user) return false;
+  if(user.role === 'superadmin') return true;            // superadmin always has full access
+  const ap = getAllowedPages(user);
+  if(ap) return route === 'dashboard' || ap.includes(route);
+  const rr = ROUTE_ROLES[route];
+  return !rr || rr.includes(user.role);
+}
 
 // Cache of full kategori objects (with active, default_sla_hours, description, etc.)
 let _kategoriCache = null;
@@ -1406,20 +1439,23 @@ const GA_PAYMENT_STATUS_CLASS = {
 };
 const FUND_OPTIONS = ['General Affairs','Non General Affairs'];
 const COST_TYPES = ['CAPEX','OPEX'];
+const SUBSIDI_OPTIONS = ['Subsidi','Non Subsidi'];
 const JENIS_PEMBAYARAN = ['Invoice','Kas Kecil','Transfer','Petty Cash','Reimbursement','Corporate Card','Lainnya'];
-// All payment columns. `synced` = default value pulled from the parent request
-// (still editable & overridable by any user). type drives the input widget.
-// Field order follows the Report Payment phases (Identifikasi → Proforma/PR → PO/GR → Invoice/Fund).
+// Payment columns.
+//  synced/syncedX  → value comes from the parent request; LOCKED here (edit via Data Permintaan)
+//  defaultFrom     → pre-filled from the request but still editable in Payment
+//  req:true        → wajib diisi saat menyimpan
+//  mataselect      → dropdown dari master Mata Anggaran (Number Fund)
 const PAYMENT_FIELDS = [
-  {key:'activity_name',     label:'Nama Kegiatan / Deskripsi', type:'text', syncedActivity:true},
-  {key:'vendor_name',       label:'Vendor Name',        type:'text',   synced:'nama_vendor'},
-  {key:'fund',              label:'Fund',               type:'select', options:FUND_OPTIONS, syncedFund:true},
-  {key:'fund_id',           label:'Sumber Anggaran',    type:'fundselect'},
-  {key:'pic_user_name',     label:'PIC User Name',      type:'text',   synced:'nama_pic_ga'},
+  {key:'activity_name',     label:'Nama Kegiatan / Deskripsi', type:'text', syncedActivity:true, req:true},
+  {key:'vendor_name',       label:'Vendor Name',        type:'text',   synced:'nama_vendor', req:true},
+  {key:'fund',              label:'Fund',               type:'select', options:FUND_OPTIONS, syncedFund:true, req:true},
+  {key:'mata_anggaran',     label:'Number Fund (Mata Anggaran)', type:'mataselect', defaultFrom:'mata_anggaran', req:true},
+  {key:'pic_user_name',     label:'PIC User Name (organic)', type:'text', synced:'nama_pic_ga', req:true},
   {key:'fund_owner',        label:'Fund Owner',         type:'text'},
   {key:'tanggal_permintaan',label:'Tanggal Permintaan', type:'date',   syncedDate:'created_at'},
   {key:'tanggal_kebutuhan', label:'Tanggal Kebutuhan',  type:'date',   synced:'tanggal_kebutuhan'},
-  {key:'location',          label:'Location',           type:'text',   synced:'lokasi_kebutuhan'},
+  {key:'location',          label:'Location',           type:'text',   synced:'lokasi_kebutuhan', req:true},
   {key:'sub_location',      label:'Sub-Location',       type:'text'},
   {key:'directorate',       label:'Directorate',        type:'text',   synced:'divisi'},
   {key:'division',          label:'Division',           type:'text',   synced:'divisi'},
@@ -1428,28 +1464,30 @@ const PAYMENT_FIELDS = [
   {key:'sub_category',      label:'Sub-Category',       type:'text'},
   {key:'administrator',     label:'Administrator',      type:'text'},
   {key:'user_sap',          label:'User SAP',           type:'text'},
-  {key:'proforma_number',   label:'Proforma Number',    type:'text'},
-  {key:'proforma_date',     label:'Proforma Date',      type:'date'},
-  {key:'pr_number',         label:'PR Number',          type:'text'},
-  {key:'pr_date',           label:'PR Date',            type:'date'},
-  {key:'po_number',         label:'PO Number',          type:'text'},
-  {key:'po_date',           label:'PO Date',            type:'date'},
-  {key:'gr_number',         label:'GR Number',          type:'text'},
-  {key:'gr_date',           label:'GR Date',            type:'date'},
-  {key:'invoice_number',    label:'Invoice Number',     type:'text'},
-  {key:'invoice_date',      label:'Invoice Date',       type:'date'},
-  {key:'description_fund',  label:'Description Fund',    type:'textarea'},
+  {key:'proforma_number',   label:'Proforma Invoice Number', type:'text', req:true},
+  {key:'proforma_date',     label:'Proforma Invoice Date',   type:'date', req:true},
+  {key:'pr_number',         label:'PR Number',          type:'text', req:true},
+  {key:'pr_date',           label:'PR Date',            type:'date', req:true},
+  {key:'po_number',         label:'PO Number',          type:'text', req:true},
+  {key:'po_date',           label:'PO Date',            type:'date', req:true},
+  {key:'gr_number',         label:'GR Number',          type:'text', req:true},
+  {key:'gr_date',           label:'GR Date',            type:'date', req:true},
+  {key:'invoice_number',    label:'Invoice Number',     type:'text', req:true},
+  {key:'invoice_date',      label:'Invoice Date',       type:'date', req:true},
+  {key:'description_fund',  label:'Description Fund',    type:'textarea', req:true},
   {key:'submit_date',       label:'Submit Date',        type:'date'},
-  {key:'cost_type',         label:'Cost Type',          type:'select', options:COST_TYPES},
-  {key:'cost_purpose',      label:'Cost Purpose',       type:'text'},
-  {key:'jenis_pembayaran',  label:'Jenis Pembayaran',   type:'select', options:JENIS_PEMBAYARAN},
-  {key:'quantity',          label:'Quantity',           type:'number'},
-  {key:'price',             label:'Price',              type:'money',  syncedPrice:true},
-  {key:'grand_total',       label:'Grand Total',        type:'money'},
+  {key:'cost_type',         label:'Cost Type',          type:'select', options:COST_TYPES, req:true},
+  {key:'cost_purpose',      label:'Cost Purpose',       type:'text', req:true},
+  {key:'subsidi',           label:'Subsidi / Non Subsidi', type:'select', options:SUBSIDI_OPTIONS, req:true},
+  {key:'jenis_pembayaran',  label:'Jenis Pembayaran',   type:'select', options:JENIS_PEMBAYARAN, req:true},
+  {key:'quantity',          label:'Quantity',           type:'number', req:true},
+  {key:'price',             label:'Price',              type:'money',  syncedPrice:true, req:true},
+  {key:'grand_total',       label:'Grand Total',        type:'money', req:true},
   // Single payment status (GA workflow) — only Admin Payment / Superadmin may edit
-  {key:'ga_payment_status', label:'Status',             type:'select', options:GA_PAYMENT_STATUSES, adminPaymentOnly:true},
+  {key:'ga_payment_status', label:'Status saat ini',    type:'select', options:GA_PAYMENT_STATUSES, adminPaymentOnly:true, req:true},
   {key:'note',              label:'Note',               type:'textarea'}
 ];
+function payFieldLocked(f){ return !!(f.synced||f.syncedDate||f.syncedPrice||f.syncedFund||f.syncedActivity); }
 // Default value for a synced field, read from the parent request.
 function paymentSyncedValue(field, req){
   if(!req) return '';
@@ -1458,6 +1496,7 @@ function paymentSyncedValue(field, req){
   if(field.syncedDate) return (req[field.syncedDate]||'').toString().slice(0,10);
   if(field.syncedPrice) return req.total_anggaran || req.estimasi_harga || 0;
   if(field.synced) return req[field.synced] != null ? req[field.synced] : '';
+  if(field.defaultFrom) return req[field.defaultFrom] != null ? req[field.defaultFrom] : '';
   return '';
 }
 // Whether a request flows into the Payment module (only GA-budget requests do).
@@ -1601,7 +1640,8 @@ const demo = (() => {
     {id:'v10',version:'1.8.1',release_date:'2026-06-08',changes:'CRUD penuh untuk Divisi & Departemen: tombol Edit untuk mengubah nama Divisi, serta mengubah nama, memindah Divisi induk, dan menunjuk Kepala Departemen dalam satu dialog. Penjagaan nama ganda saat menambah/mengubah. Auto-add dari formulir publik tetap berfungsi seperti sebelumnya.'},
     {id:'v11',version:'1.9.0',release_date:'2026-06-08',changes:'Kolom Divisi & Departemen di formulir kini berupa type-search (cari sambil mengetik). Kategori "Kendaraan Operasional" (form GA-08) dengan master Armada Kendaraan yang dapat di-CRUD. Dropdown "Menggunakan/Bukan Anggaran GA" di Edit Permintaan — hanya yang ber-anggaran GA yang masuk Payment. Status pembayaran GA (Not Complete Yet/Submitted/Verified/Revision/Paid) yang hanya bisa diubah Admin Payment. Role baru "Admin Payment". Dashboard menampilkan daftar Payment anggaran GA. Modul Payment diselaraskan dengan Report Payment (Fund, Nama Kegiatan, Description Fund). Halaman publik /cektiket. Riwayat Versi kini menampilkan estimasi penyimpanan & Download Backup CSV format Supabase (per tabel).'},
     {id:'v12',version:'2.0.0',release_date:'2026-06-10',changes:'Modul Manajemen Anggaran: total anggaran per fund, realisasi otomatis dari pembayaran, top-up anggaran (nominal/tanggal/sumber/keterangan), perencanaan CDP bulanan, serta laporan (Anggaran vs Realisasi, by Fund, CDP Rencana vs Realisasi, distribusi Invoice/Kas Kecil, by Lokasi). Payment kini punya kolom Sumber Anggaran (fund) dan status tunggal "Status" (khusus Admin Payment) + sort kolom. Kategori Pemesanan kini bisa di-edit penuh. Daftar Permintaan hanya bisa diubah Superadmin (PIC hanya tiket miliknya). Form Kendaraan Operasional: Prioritas & Jenis Layanan dropdown, tambah Titik Jemput & Tujuan, hapus Jenis Kendaraan. Riwayat Versi khusus Superadmin. Tulisan "Dashboard" di halaman publik dihapus.'},
-    {id:'v13',version:'2.1.0',release_date:'2026-06-10',changes:'Sidebar kini berkelompok dan dapat di-collapse/expand per modul (Utama, Keuangan, Master Data, Admin) dengan status tersimpan. Font diganti ke Inter agar lebih luwes & mudah dibaca. Halaman landing ditata ulang: hero → (Cek Status + Cara Penggunaan berdampingan) → Formulir (collapsed) → footer. Grafik Manajemen Anggaran diperbaiki agar tidak memanjang tak terbatas. Penyesuaian responsif untuk berbagai perangkat.'}
+    {id:'v13',version:'2.1.0',release_date:'2026-06-10',changes:'Sidebar kini berkelompok dan dapat di-collapse/expand per modul (Utama, Keuangan, Master Data, Admin) dengan status tersimpan. Font diganti ke Inter agar lebih luwes & mudah dibaca. Halaman landing ditata ulang: hero → (Cek Status + Cara Penggunaan berdampingan) → Formulir (collapsed) → footer. Grafik Manajemen Anggaran diperbaiki agar tidak memanjang tak terbatas. Penyesuaian responsif untuk berbagai perangkat.'},
+    {id:'v14',version:'2.0.1',release_date:'2026-06-11',changes:'Manajemen Anggaran kini SINKRON dengan Mata Anggaran (satu sumber data) — Fund = Mata Anggaran, realisasi dihitung dari pembayaran. Update Payment: field wajib lengkap (deskripsi, vendor, fund, PIC, proforma/PR/PO/GR/invoice, description fund, Number Fund/Mata Anggaran, location, cost type, cost purpose, subsidi, jenis pembayaran, qty/price/grand total, status); field sinkron dikunci (hanya via Data Permintaan); dropdown tidak lagi punya pilihan kosong; status "Paid" mengunci pembayaran kecuali untuk Super Admin. Modul edit hak akses halaman per akun (Super Admin). Lampiran dibatasi maksimal 1 MB dan hanya PDF/PNG.'}
   ];
 
   // Mata Anggaran options
@@ -1673,11 +1713,11 @@ const demo = (() => {
     {id:'f5', name:'Perjalanan Dinas',                    keterangan:'', active:true, created_at:new Date().toISOString()},
   ];
   const anggaranTopups = [
-    {id:'tu1', fund_id:'f1', nominal:8000000000, tanggal:'2024-01-02', sumber:'RKAP 2024', keterangan:'Alokasi awal tahunan', created_at:new Date().toISOString()},
-    {id:'tu2', fund_id:'f2', nominal:1500000000, tanggal:'2024-01-02', sumber:'RKAP 2024', keterangan:'Alokasi awal tahunan', created_at:new Date().toISOString()},
-    {id:'tu3', fund_id:'f3', nominal:1000000000, tanggal:'2024-01-02', sumber:'RKAP 2024', keterangan:'Alokasi awal tahunan', created_at:new Date().toISOString()},
-    {id:'tu4', fund_id:'f4', nominal:800000000,  tanggal:'2024-01-02', sumber:'RKAP 2024', keterangan:'Alokasi awal tahunan', created_at:new Date().toISOString()},
-    {id:'tu5', fund_id:'f5', nominal:500000000,  tanggal:'2024-01-02', sumber:'RKAP 2024', keterangan:'Alokasi awal tahunan', created_at:new Date().toISOString()},
+    {id:'tu1', fund_id:'ma1', nominal:8000000000, tanggal:'2024-01-02', sumber:'RKAP 2024', keterangan:'Alokasi awal tahunan', created_at:new Date().toISOString()},
+    {id:'tu2', fund_id:'ma2', nominal:1500000000, tanggal:'2024-01-02', sumber:'RKAP 2024', keterangan:'Alokasi awal tahunan', created_at:new Date().toISOString()},
+    {id:'tu3', fund_id:'ma3', nominal:1000000000, tanggal:'2024-01-02', sumber:'RKAP 2024', keterangan:'Alokasi awal tahunan', created_at:new Date().toISOString()},
+    {id:'tu4', fund_id:'ma4', nominal:800000000,  tanggal:'2024-01-02', sumber:'RKAP 2024', keterangan:'Alokasi awal tahunan', created_at:new Date().toISOString()},
+    {id:'tu5', fund_id:'ma5', nominal:500000000,  tanggal:'2024-01-02', sumber:'RKAP 2024', keterangan:'Alokasi awal tahunan', created_at:new Date().toISOString()},
   ];
   const cdpPlans = [
     {id:'c1', fund_id:null, tahun:new Date().getFullYear(), bulan:1, rencana:12783917092, keterangan:'CDP Januari'},
@@ -2381,7 +2421,7 @@ const db = {
   async listUsers(){
     if(!SUPA_CONFIGURED) return demo.users.map(u=>({...u,password_hash:'(demo)'}));
     const { data, error } = await supa.from('app_users')
-      .select('id,username,full_name,role,jabatan,lokasi_kerja,active,created_at').order('username');
+      .select('id,username,full_name,role,jabatan,lokasi_kerja,active,allowed_pages,created_at').order('username');
     if(error) throw error; return data || [];
   },
   // PIC-capable users (any active staff can be a PIC; superadmin included so head can also be PIC)
@@ -2389,11 +2429,11 @@ const db = {
     const all = await this.listUsers();
     return all.filter(u => u.active !== false);
   },
-  async addUser({username,full_name,role,password,jabatan,lokasi_kerja}){
+  async addUser({username,full_name,role,password,jabatan,lokasi_kerja,allowed_pages}){
     if(!SUPA_CONFIGURED){
       if(demo.users.find(u=>u.username===username)) throw new Error('Username sudah dipakai');
       const u = { id:'u'+(demo.users.length+1), username, full_name, role, active:true,
-                  jabatan:jabatan||null, lokasi_kerja:lokasi_kerja||null, password };
+                  jabatan:jabatan||null, lokasi_kerja:lokasi_kerja||null, allowed_pages:allowed_pages||null, password };
       demo.users.push(u); return u;
     }
     // Try the SQL helper that bcrypt-hashes the password server-side.
@@ -2403,13 +2443,18 @@ const db = {
         p_full_name: full_name, p_role: role,
         p_jabatan: jabatan||null, p_lokasi_kerja: lokasi_kerja||null
       });
-      if(!error && data) return Array.isArray(data) ? data[0] : data;
+      if(!error && data){
+        const row = Array.isArray(data) ? data[0] : data;
+        if(allowed_pages && row?.id){ try{ await supa.from('app_users').update({ allowed_pages }).eq('id', row.id); }catch(_){} }
+        return row;
+      }
     }catch(_){}
     // Fallback (less secure): plaintext store, used only if fn_create_user
     // hasn't been added to the database yet.
     const ins = await supa.from('app_users').insert({
       username, full_name, role,
       jabatan: jabatan||null, lokasi_kerja: lokasi_kerja||null,
+      allowed_pages: allowed_pages||null,
       password_hash: password
     }).select().single();
     if(ins.error) throw ins.error; return ins.data;
@@ -2467,7 +2512,7 @@ const db = {
     if(!SUPA_CONFIGURED){
       const u = demo.users.find(x=>x.username===username && x.password===password && x.active);
       if(!u) throw new Error('Username atau password salah');
-      return { id:u.id, username:u.username, full_name:u.full_name, role:u.role };
+      return { id:u.id, username:u.username, full_name:u.full_name, role:u.role, allowed_pages:u.allowed_pages||null };
     }
     // 1) Preferred: bcrypt-checked match via SQL helper function
     try{
@@ -2494,12 +2539,12 @@ const db = {
     // 2) Fallback: direct query (works only for plaintext-stored passwords)
     try{
       const { data, error } = await supa.from('app_users')
-        .select('id,username,full_name,role,active,password_hash')
+        .select('id,username,full_name,role,active,allowed_pages,password_hash')
         .eq('username',username).maybeSingle();
       if(error) throw error;
       if(!data || !data.active) throw new Error('Username atau password salah');
       if(data.password_hash !== password) throw new Error('Username atau password salah');
-      return { id:data.id, username:data.username, full_name:data.full_name, role:data.role };
+      return { id:data.id, username:data.username, full_name:data.full_name, role:data.role, allowed_pages:data.allowed_pages||null };
     }catch(e){
       if(/Failed to fetch/i.test(e.message||'')){
         throw new Error('Tidak dapat terhubung ke Supabase. Periksa URL & ANON_KEY di index.html atau koneksi internet Anda.');
@@ -3247,9 +3292,9 @@ function setupRequestForm(){
       let lampiran_url = null;
       if(fileInput && fileInput.files.length){
         const f = fileInput.files[0];
-        if(f.size > 2*1024*1024) throw new Error('Lampiran melebihi 2 MB');
-        const okType = ['application/pdf','image/png','image/jpeg'].includes(f.type);
-        if(!okType) throw new Error('Tipe lampiran harus PDF/PNG/JPG');
+        const okType = ['application/pdf','image/png'].includes(f.type) || /\.(pdf|png)$/i.test(f.name);
+        if(!okType) throw new Error('Tipe lampiran harus PDF atau PNG');
+        if(f.size > 1*1024*1024) throw new Error('Lampiran melebihi 1 MB');
         try{ lampiran_url = await db.uploadAttachment(f); }
         catch(uerr){ console.warn('Upload skipped:', uerr); }
       }
@@ -3433,35 +3478,37 @@ async function renderAdmin(page){
   $('#logout-btn-top').onclick  = doLogout;
 
   // Sidebar nav
-  // v2.1: gate whole groups by role, then gate individual items
-  $$('#admin-nav .nav-group').forEach(g => {
-    const allowed = g.dataset.allowedRoles ? g.dataset.allowedRoles.split(',').map(s=>s.trim()) : null;
-    if(allowed && !allowed.includes(u.role)) g.style.display = 'none';
-  });
-  $$('#admin-nav .sidebar-section-label').forEach(lab => {
-    const allowed = lab.dataset.allowedRoles ? lab.dataset.allowedRoles.split(',').map(s=>s.trim()) : null;
-    if(allowed && !allowed.includes(u.role)) lab.style.display = 'none';
-  });
-  $$('#admin-nav .nav-item').forEach(it => {
-    // Role gating: hide items the user isn't allowed to access
-    // - ROUTE_ROLES[route] → authoritative per-route allow list
-    // - data-requires-role="superadmin" → only that role
-    // - data-allowed-roles="superadmin,admin" → comma-separated list
-    const rr = ROUTE_ROLES[it.dataset.route];
-    if(rr && !rr.includes(u.role)){ it.style.display = 'none'; return; }
-    const reqRole = it.dataset.requiresRole;
-    const allowed = it.dataset.allowedRoles ? it.dataset.allowedRoles.split(',').map(s => s.trim()) : null;
-    if(reqRole && u.role !== reqRole){
-      it.style.display = 'none';
-      return;
-    }
-    if(allowed && !allowed.includes(u.role)){
-      it.style.display = 'none';
-      return;
-    }
-    it.classList.toggle('active', it.dataset.route===page);
-    it.addEventListener('click', e => { e.preventDefault(); navigate('/admin/'+it.dataset.route); });
-  });
+  // v2.0.1: per-user page-access override takes precedence over role defaults.
+  const _ap = getAllowedPages(u); // array of allowed routes, or null = use role default
+  if(_ap){
+    // explicit access list: gate purely by it (dashboard always allowed)
+    $$('#admin-nav .nav-item').forEach(it => {
+      const route = it.dataset.route;
+      if(route !== 'dashboard' && !_ap.includes(route)){ it.style.display = 'none'; return; }
+      it.classList.toggle('active', route===page);
+      it.addEventListener('click', e => { e.preventDefault(); navigate('/admin/'+route); });
+    });
+  } else {
+    // v2.1: gate whole groups by role, then gate individual items
+    $$('#admin-nav .nav-group').forEach(g => {
+      const allowed = g.dataset.allowedRoles ? g.dataset.allowedRoles.split(',').map(s=>s.trim()) : null;
+      if(allowed && !allowed.includes(u.role)) g.style.display = 'none';
+    });
+    $$('#admin-nav .sidebar-section-label').forEach(lab => {
+      const allowed = lab.dataset.allowedRoles ? lab.dataset.allowedRoles.split(',').map(s=>s.trim()) : null;
+      if(allowed && !allowed.includes(u.role)) lab.style.display = 'none';
+    });
+    $$('#admin-nav .nav-item').forEach(it => {
+      const rr = ROUTE_ROLES[it.dataset.route];
+      if(rr && !rr.includes(u.role)){ it.style.display = 'none'; return; }
+      const reqRole = it.dataset.requiresRole;
+      const allowed = it.dataset.allowedRoles ? it.dataset.allowedRoles.split(',').map(s => s.trim()) : null;
+      if(reqRole && u.role !== reqRole){ it.style.display = 'none'; return; }
+      if(allowed && !allowed.includes(u.role)){ it.style.display = 'none'; return; }
+      it.classList.toggle('active', it.dataset.route===page);
+      it.addEventListener('click', e => { e.preventDefault(); navigate('/admin/'+it.dataset.route); });
+    });
+  }
 
   // v2.1: hide any group whose items are all hidden; collapse/expand wiring
   let collapsedGroups = {};
@@ -3534,16 +3581,16 @@ async function renderAdmin(page){
 
   const c = $('#admin-content');
 
-  // Role-based access control for direct URL navigation (mirrors sidebar gating)
-  const access = ROUTE_ROLES;
-  const allowed = access[page];
-  if(allowed && !allowed.includes(u.role)){
-    const roleStr  = allowed.map(r => ROLE_LABEL[r] || r).join(' / ');
+  // Access control for direct URL navigation (mirrors sidebar gating; honors per-user allowed_pages)
+  if(!userCanAccess(u, page)){
+    const ap = getAllowedPages(u);
+    const who = ap ? 'akun Anda (akses telah dibatasi oleh Super Admin)'
+                   : (ROUTE_ROLES[page]||[]).map(r => ROLE_LABEL[r] || r).join(' / ');
     c.innerHTML = `
       <div class="card card-pad center" style="background:#FEF3C7;border-color:#FCD34D">
         <span class="material-symbols-rounded" style="font-size:48px;color:#92400E">lock</span>
         <h3 style="margin:8px 0;color:#92400E">Akses Ditolak</h3>
-        <p class="muted">Halaman <strong>${titles[page]||page}</strong> hanya dapat diakses oleh <strong>${roleStr}</strong>.</p>
+        <p class="muted">Halaman <strong>${titles[page]||page}</strong> tidak dapat diakses oleh ${who}.</p>
         <a class="btn btn-primary" href="#/admin/dashboard" style="margin-top:8px">Kembali ke Dashboard</a>
       </div>`;
     return;
@@ -4915,7 +4962,7 @@ let _payMerged = [];
 let _fundsCache = [];
 let _payState = { page:1, pageSize:15, search:'', filterStatus:'', filterCategory:'', sort:'created_at', dir:'desc' };
 
-function fundName(id){ const f = _fundsCache.find(x => x.id === id); return f ? f.name : ''; }
+function fundName(idOrName){ const f = _fundsCache.find(x => x.id === idOrName || x.name === idOrName); return f ? f.name : (idOrName||''); }
 
 function payCellHtml(m, f){
   const v = m[f.key];
@@ -4923,7 +4970,7 @@ function payCellHtml(m, f){
     const sv = v || 'Not Complete Yet';
     return `<span class="badge ${GA_PAYMENT_STATUS_CLASS[sv]||'pay-belum'}">${escapeHtml(sv)}</span>`;
   }
-  if(f.type === 'fundselect'){ const n = fundName(v); return n ? escapeHtml(n) : '—'; }
+  if(f.type === 'mataselect'){ return v ? escapeHtml(v) : '—'; }
   if(f.type === 'date')  return v ? fmtDate(v) : '—';
   if(f.type === 'money') return (v!=null && v!=='' && Number(v)>0) ? fmtRupiah(v) : '—';
   if(f.type === 'number')return (v!=null && v!=='') ? escapeHtml(v) : '—';
@@ -4978,7 +5025,7 @@ async function viewAdminPayments(c){
       const [reqs, pays, funds] = await Promise.all([
         db.listRequests(),
         db.listPayments().catch(()=>[]),
-        db.listFunds().catch(()=>[])
+        db.listMataAnggaran().catch(()=>[])
       ]);
       _fundsCache = funds || [];
       const byReq = {}; (pays||[]).forEach(p => { byReq[p.request_id] = p; });
@@ -5034,7 +5081,7 @@ function filterPayments(){
     if(key === 'created_at') return new Date(m._req.created_at).getTime();
     if(key === 'kode') return (m._req.kode_permintaan||'').toLowerCase();
     if(key === 'pemesan') return (m._req.nama_pemesan||'').toLowerCase();
-    if(key === 'fund_id') return fundName(m.fund_id).toLowerCase();
+    if(key === 'mata_anggaran') return String(m.mata_anggaran||'').toLowerCase();
     const f = PAYMENT_FIELDS.find(x => x.key === key);
     let v = m[key];
     if(f && (f.type==='money'||f.type==='number')) return Number(v)||0;
@@ -5118,22 +5165,31 @@ function openPaymentEdit(requestId){
   const me = session.get();
   // Only Admin Payment (and Superadmin) may edit the GA payment workflow status.
   const canGA = !!me && (me.role === 'admin_payment' || me.role === 'superadmin');
+  const isSuper = !!me && me.role === 'superadmin';
+  // v2.0.1: once a payment is "Paid", it is locked for everyone except Superadmin.
+  const paidLock = (m.ga_payment_status === 'Paid') && !isSuper;
 
   const fieldHtml = (f) => {
-    const syncedTag = (f.synced||f.syncedDate||f.syncedPrice||f.syncedFund||f.syncedActivity) ? '<span class="synced-tag">sinkron</span>' : '';
+    const locked = payFieldLocked(f);              // synced → edit via Data Permintaan only
     const lockGA = f.adminPaymentOnly && !canGA;
-    const disAttr = lockGA ? ' disabled' : '';
-    const lockHint = lockGA ? ' <span class="hint" style="color:var(--text-mut)">(hanya Admin Payment)</span>' : '';
+    const dis = (locked || lockGA || paidLock);
+    const disAttr = dis ? ' disabled' : '';
+    const reqStar = f.req ? '<span style="color:#DC2626">*</span>' : '';
+    const syncedTag = locked ? '<span class="synced-tag">sinkron</span>' : '';
+    const lockHint = locked ? '<div class="hint" style="color:var(--text-mut)">Diubah via Data Permintaan</div>'
+                    : (lockGA ? '<div class="hint" style="color:var(--text-mut)">Hanya Admin Payment</div>' : '');
     let val = m[f.key];
     if(f.type === 'date' && val) val = String(val).slice(0,10);
     const full = f.type === 'textarea' ? ' full' : '';
     let control;
     if(f.type === 'select'){
-      const opts = ['<option value=""></option>'].concat((f.options||[]).map(o => `<option ${String(val)===o?'selected':''}>${escapeHtml(o)}</option>`)).join('');
+      const ph = `<option value="" disabled ${(!val||val==='')?'selected':''}>— pilih —</option>`;
+      const opts = ph + (f.options||[]).map(o => `<option ${String(val)===o?'selected':''}>${escapeHtml(o)}</option>`).join('');
       control = `<select class="select" data-pf="${f.key}"${disAttr}>${opts}</select>`;
-    } else if(f.type === 'fundselect'){
-      const opts = ['<option value="">— pilih sumber anggaran —</option>'].concat(
-        _fundsCache.filter(x=>x.active!==false).map(o => `<option value="${escapeHtml(o.id)}" ${String(val)===String(o.id)?'selected':''}>${escapeHtml(o.name)}</option>`)).join('');
+    } else if(f.type === 'mataselect'){
+      // Number Fund — dropdown dari master Mata Anggaran (stores the NAME, synced with budgeting)
+      const ph = `<option value="" disabled ${(!val||val==='')?'selected':''}>— pilih mata anggaran —</option>`;
+      const opts = ph + (_fundsCache||[]).map(o => `<option value="${escapeHtml(o.name)}" ${String(val)===String(o.name)?'selected':''}>${escapeHtml(o.name)}${o.kode?` (${escapeHtml(o.kode)})`:''}</option>`).join('');
       control = `<select class="select" data-pf="${f.key}"${disAttr}>${opts}</select>`;
     } else if(f.type === 'textarea'){
       control = `<textarea class="textarea" data-pf="${f.key}" style="min-height:70px"${disAttr}>${escapeHtml(val||'')}</textarea>`;
@@ -5147,10 +5203,16 @@ function openPaymentEdit(requestId){
     } else {
       control = `<input type="text" class="input" data-pf="${f.key}" value="${escapeHtml(val||'')}"${disAttr} />`;
     }
-    return `<div class="field${full}"><label>${escapeHtml(f.label)}${syncedTag}${lockHint}</label>${control}</div>`;
+    return `<div class="field${full}${dis?' field-locked':''}"><label>${escapeHtml(f.label)} ${reqStar}${syncedTag}</label>${control}${lockHint}</div>`;
   };
 
   const group = (keys) => PAYMENT_FIELDS.filter(f => keys.includes(f.key)).map(fieldHtml).join('');
+
+  const paidBanner = paidLock ? `
+      <div style="margin-bottom:14px;padding:10px 12px;background:#FEF2F2;border:1px solid #FECACA;border-radius:10px;font-size:13px;color:#991B1B">
+        <span class="material-symbols-rounded" style="vertical-align:-5px;font-size:18px">lock</span>
+        Pembayaran ini berstatus <strong>Paid</strong> dan terkunci. Hanya <strong>Super Admin</strong> yang dapat mengubahnya.
+      </div>` : '';
 
   openModal(`
     <div class="modal-head">
@@ -5158,25 +5220,28 @@ function openPaymentEdit(requestId){
       <button class="btn-icon" onclick="closeModal()"><span class="material-symbols-rounded">close</span></button>
     </div>
     <div class="modal-body">
+      ${paidBanner}
       <div style="margin-bottom:14px;padding:10px 12px;background:var(--mrt-blue-soft);border-radius:10px;font-size:13px">
         <strong>${escapeHtml(req.kode_permintaan)}</strong> · ${escapeHtml(req.kategori)} · Pemesan: ${escapeHtml(req.nama_pemesan)}
-        <div class="muted text-sm" style="margin-top:2px">Field bertanda <span class="synced-tag">sinkron</span> terisi otomatis dari Detail Permintaan dan tetap bisa diubah.</div>
+        <div class="muted text-sm" style="margin-top:2px">Tanda <span style="color:#DC2626">*</span> wajib diisi. Field <span class="synced-tag">sinkron</span> hanya bisa diubah melalui <strong>Data Permintaan</strong>.</div>
       </div>
       <div class="pay-form-grid">
         <div class="pay-section-title">Identitas & Organisasi</div>
-        ${group(['activity_name','fund','fund_id','vendor_name','pic_user_name','fund_owner','tanggal_permintaan','tanggal_kebutuhan','location','sub_location','directorate','division','department','category','sub_category','administrator','user_sap'])}
+        ${group(['activity_name','fund','mata_anggaran','vendor_name','pic_user_name','fund_owner','tanggal_permintaan','tanggal_kebutuhan','location','sub_location','directorate','division','department','category','sub_category','administrator','user_sap'])}
         <div class="pay-section-title">Dokumen Pengadaan</div>
         ${group(['proforma_number','proforma_date','pr_number','pr_date','po_number','po_date','gr_number','gr_date','invoice_number','invoice_date','description_fund','submit_date'])}
         <div class="pay-section-title">Pembayaran</div>
-        ${group(['cost_type','cost_purpose','jenis_pembayaran','quantity','price','grand_total','ga_payment_status'])}
+        ${group(['cost_type','cost_purpose','subsidi','jenis_pembayaran','quantity','price','grand_total','ga_payment_status'])}
         ${group(['note'])}
       </div>
     </div>
     <div class="modal-foot">
-      <button class="btn btn-ghost" onclick="closeModal()">Batal</button>
-      <button class="btn btn-primary" id="pay-save"><span class="material-symbols-rounded">save</span>Simpan</button>
+      <button class="btn btn-ghost" onclick="closeModal()">${paidLock?'Tutup':'Batal'}</button>
+      ${paidLock?'':'<button class="btn btn-primary" id="pay-save"><span class="material-symbols-rounded">save</span>Simpan</button>'}
     </div>
   `, 'xl');
+
+  if(paidLock) return; // locked: nothing editable to wire
 
   // Rupiah formatter for money inputs
   $$('.pf-money').forEach(inp => inp.addEventListener('input', e => {
@@ -5197,12 +5262,37 @@ function openPaymentEdit(requestId){
   $('[data-pf="grand_total"]')?.addEventListener('input', e => { e.target.dataset.touched = '1'; });
 
   $('#pay-save').addEventListener('click', async () => {
+    // --- v2.0.1: validate required fields before saving ---
+    const readVal = (f) => {
+      const el = $(`[data-pf="${f.key}"]`);
+      if(!el) return m[f.key]; // locked/synced field not in DOM-editable form → use current value
+      let v = el.value;
+      if(f.type === 'money')  return v ? Number(v.replace(/\D/g,'')) : 0;
+      if(f.type === 'number') return v==='' ? null : Number(v);
+      return (v||'').trim();
+    };
+    const missing = [];
+    PAYMENT_FIELDS.forEach(f => {
+      if(!f.req) return;
+      const v = payFieldLocked(f) ? m[f.key] : readVal(f); // locked fields inherit from request
+      const empty = (v==null) || v==='' || (f.type==='money' && Number(v)<=0);
+      if(empty) missing.push({ f, locked: payFieldLocked(f) });
+    });
+    if(missing.length){
+      const lockedMissing = missing.filter(x=>x.locked).map(x=>x.f.label);
+      const openMissing = missing.filter(x=>!x.locked).map(x=>x.f.label);
+      let msg = 'Lengkapi field wajib: ' + [...openMissing, ...lockedMissing].slice(0,6).join(', ') + (missing.length>6?', …':'');
+      if(lockedMissing.length) msg += `. Field sinkron (${lockedMissing.slice(0,3).join(', ')}) diisi melalui Data Permintaan.`;
+      toast(msg, 'warn');
+      return;
+    }
     const btn = $('#pay-save'); btn.disabled = true;
     btn.innerHTML = '<span class="material-symbols-rounded">hourglass_top</span>Menyimpan…';
     try{
       const patch = {};
       PAYMENT_FIELDS.forEach(f => {
-        if(f.adminPaymentOnly && !canGA) return; // do not let non-Admin-Payment touch GA status
+        if(f.adminPaymentOnly && !canGA) return;  // non-Admin-Payment can't touch GA status
+        if(payFieldLocked(f)) return;             // synced fields are owned by the request — never overwrite here
         const el = $(`[data-pf="${f.key}"]`);
         if(!el) return;
         let v = el.value;
@@ -5211,11 +5301,10 @@ function openPaymentEdit(requestId){
         else v = (v||'').trim() || null;
         patch[f.key] = v;
       });
-      if(!patch.status) patch.status = 'Belum Diproses';
       if(canGA && !patch.ga_payment_status) patch.ga_payment_status = 'Not Complete Yet';
       await db.upsertPayment(requestId, patch);
       db.logActivity({ action:'payment.update', target_type:'payment', target_id:requestId,
-                       detail:`Update payment ${req.kode_permintaan} (status: ${patch.status})` });
+                       detail:`Update payment ${req.kode_permintaan} (status: ${patch.ga_payment_status||m.ga_payment_status})` });
       // update local cache (preserve fields the current user could not edit)
       const idx = _payMerged.findIndex(x => x.request_id === requestId);
       if(idx >= 0){
@@ -6063,7 +6152,7 @@ async function viewAdminAnggaran(c){
     const [reqs, pays, fundsL, topupsL, cdpL] = await Promise.all([
       db.listRequests().catch(()=>[]),
       db.listPayments().catch(()=>[]),
-      db.listFunds().catch(()=>[]),
+      db.listMataAnggaran().catch(()=>[]),   // v2.0.1: funds = Mata Anggaran (single source of truth)
       db.listFundTopups().catch(()=>[]),
       db.listCdpPlans().catch(()=>[])
     ]);
@@ -6075,14 +6164,17 @@ async function viewAdminAnggaran(c){
     return;
   }
 
-  // ---- computations ----
+  // ---- computations (keyed by Mata Anggaran id; realisasi matched by name) ----
+  const nameById = {}; funds.forEach(f => { nameById[f.id] = f.name; });
+  const idByName = {}; funds.forEach(f => { idByName[f.name] = f.id; });
   const anggaranByFund = {}; funds.forEach(f => anggaranByFund[f.id] = 0);
-  topups.forEach(t => { anggaranByFund[t.fund_id] = (anggaranByFund[t.fund_id]||0) + (Number(t.nominal)||0); });
+  topups.forEach(t => { if(anggaranByFund[t.fund_id]!==undefined) anggaranByFund[t.fund_id] += (Number(t.nominal)||0); });
   const realisasiByFund = {}; funds.forEach(f => realisasiByFund[f.id] = 0);
   let unassignedRealisasi = 0;
   merged.forEach(m => {
     const gt = payGrandTotal(m);
-    if(m.fund_id && realisasiByFund[m.fund_id] !== undefined) realisasiByFund[m.fund_id] += gt;
+    const fid = idByName[m.mata_anggaran];   // payment stores the Mata Anggaran NAME
+    if(fid && realisasiByFund[fid] !== undefined) realisasiByFund[fid] += gt;
     else unassignedRealisasi += gt;
   });
   const totalAnggaran = Object.values(anggaranByFund).reduce((a,b)=>a+b,0);
@@ -6116,8 +6208,8 @@ async function viewAdminAnggaran(c){
 
     <div class="card" style="margin-top:14px">
       <div class="card-head">
-        <h3>Fund &amp; Anggaran</h3>
-        <button class="btn btn-primary btn-sm" id="ang-add-fund"><span class="material-symbols-rounded">add</span>Tambah Fund</button>
+        <h3>Fund / Mata Anggaran &amp; Realisasi</h3>
+        <a class="btn btn-ghost btn-sm" href="#/admin/masterdata"><span class="material-symbols-rounded">settings</span>Kelola Mata Anggaran</a>
       </div>
       <div class="card-body">
         <div class="table-wrap"><table class="t t-dense">
@@ -6138,12 +6230,10 @@ async function viewAdminAnggaran(c){
               <td><div style="height:8px;border-radius:6px;background:#EDF1F7;overflow:hidden"><div style="height:100%;width:${p}%;background:${barColor}"></div></div><span class="text-sm muted">${p}%</span></td>
               <td style="text-align:right;white-space:nowrap">
                 <button class="btn-icon" data-ang-topup="${f.id}" title="Top-up anggaran" style="color:var(--mrt-green)"><span class="material-symbols-rounded">add_card</span></button>
-                <button class="btn-icon" data-ang-edit="${f.id}" title="Edit"><span class="material-symbols-rounded">edit</span></button>
-                <button class="btn-icon" data-ang-del="${f.id}" title="Hapus"><span class="material-symbols-rounded">delete</span></button>
               </td>
             </tr>`;
-          }).join('') : `<tr><td colspan="6" class="empty-row">Belum ada fund. Klik "Tambah Fund".</td></tr>`}
-          ${unassignedRealisasi>0?`<tr style="background:#FEF9F2"><td><em>Tanpa fund (belum ditautkan)</em></td><td style="text-align:right">—</td><td style="text-align:right">${fmtRupiah(unassignedRealisasi)}</td><td colspan="3" class="muted text-sm">Tautkan pembayaran ke fund via menu Payment → kolom "Sumber Anggaran".</td></tr>`:''}
+          }).join('') : `<tr><td colspan="6" class="empty-row">Belum ada Mata Anggaran. Tambahkan di Master Data → Anggaran.</td></tr>`}
+          ${unassignedRealisasi>0?`<tr style="background:#FEF9F2"><td><em>Tanpa mata anggaran</em></td><td style="text-align:right">—</td><td style="text-align:right">${fmtRupiah(unassignedRealisasi)}</td><td colspan="3" class="muted text-sm">Tetapkan "Number Fund (Mata Anggaran)" pada pembayaran terkait via menu Payment.</td></tr>`:''}
           </tbody></table></div>
       </div>
     </div>
@@ -6241,48 +6331,6 @@ async function viewAdminAnggaran(c){
       options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{font:{size:10},boxWidth:12}},tooltip:{callbacks:{label:(x)=>x.label+': '+fmtRupiah(x.parsed)}}},cutout:'55%'}
     });
   }
-
-  // ---- fund add/edit ----
-  function fundModal(item){
-    const v = item||{};
-    return `
-      <div class="modal-head"><h3><span class="material-symbols-rounded" style="vertical-align:-6px;color:var(--mrt-blue)">savings</span> ${item?'Edit':'Tambah'} Fund</h3>
-        <button class="btn-icon" onclick="closeModal()"><span class="material-symbols-rounded">close</span></button></div>
-      <div class="modal-body">
-        <div class="field field-required"><label>Nama Fund</label><input class="input" id="f-name" value="${escapeHtml(v.name||'')}" placeholder="mis. Penyedia Jasa Outsourcing"/></div>
-        <div class="field"><label>Keterangan</label><input class="input" id="f-ket" value="${escapeHtml(v.keterangan||'')}"/></div>
-        <div class="field"><label>Status</label><select class="select" id="f-active"><option value="true" ${v.active!==false?'selected':''}>Aktif</option><option value="false" ${v.active===false?'selected':''}>Nonaktif</option></select></div>
-      </div>
-      <div class="modal-foot"><button class="btn btn-ghost" onclick="closeModal()">Batal</button><button class="btn btn-primary" id="f-save"><span class="material-symbols-rounded">save</span>Simpan</button></div>`;
-  }
-  $('#ang-add-fund').addEventListener('click', ()=>{
-    openModal(fundModal(null),'md');
-    $('#f-save').addEventListener('click', async ()=>{
-      const name=$('#f-name').value.trim(); if(!name){ toast('Nama wajib','warn'); return; }
-      try{ await db.addFund({ name, keterangan:$('#f-ket').value.trim()||null, active:$('#f-active').value!=='false' });
-        db.logActivity({action:'anggaran.create',target_type:'fund',detail:`Tambah fund: ${name}`});
-        closeModal(); toast('Fund ditambahkan','success'); viewAdminAnggaran(c);
-      }catch(err){ toast('Gagal: '+(err.message||''),'error'); }
-    });
-  });
-  $$('button[data-ang-edit]', c).forEach(b=>b.addEventListener('click', ()=>{
-    const f=funds.find(x=>x.id===b.dataset.angEdit); openModal(fundModal(f),'md');
-    $('#f-save').addEventListener('click', async ()=>{
-      const name=$('#f-name').value.trim(); if(!name){ toast('Nama wajib','warn'); return; }
-      try{ await db.updateFund(f.id,{ name, keterangan:$('#f-ket').value.trim()||null, active:$('#f-active').value!=='false' });
-        db.logActivity({action:'anggaran.update',target_type:'fund',target_id:f.id,detail:`Edit fund: ${name}`});
-        closeModal(); toast('Fund diperbarui','success'); viewAdminAnggaran(c);
-      }catch(err){ toast('Gagal: '+(err.message||''),'error'); }
-    });
-  }));
-  $$('button[data-ang-del]', c).forEach(b=>b.addEventListener('click', async ()=>{
-    const f=funds.find(x=>x.id===b.dataset.angDel);
-    if(!confirm(`Hapus fund "${f?.name}" beserta riwayat top-up-nya?`)) return;
-    try{ await db.deleteFund(f.id);
-      db.logActivity({action:'anggaran.delete',target_type:'fund',target_id:f.id,detail:`Hapus fund: ${f?.name}`});
-      toast('Fund dihapus','success'); viewAdminAnggaran(c);
-    }catch(err){ toast('Gagal: '+(err.message||''),'error'); }
-  }));
 
   // ---- top-up ----
   $$('button[data-ang-topup]', c).forEach(b=>b.addEventListener('click', ()=>{
@@ -6579,6 +6627,20 @@ async function openUserModal(user, onDone){
               <input class="input" type="password" name="password" required/></div>
           `}
         </div>
+        <div class="field full" style="margin-top:6px">
+          <label style="display:flex;align-items:center;justify-content:space-between">
+            <span>Hak Akses Halaman</span>
+            <span style="font-weight:500"><label class="chk-inline"><input type="checkbox" id="ap-default" ${getAllowedPages(user)?'':'checked'}/> Ikuti default role</label></span>
+          </label>
+          <div id="ap-list" class="ap-grid">
+            ${ALL_PAGES.map(p=>{
+              const ap=getAllowedPages(user);
+              const checked = ap ? ap.includes(p) : (ROUTE_ROLES[p]||[]).includes(user?.role||'admin');
+              return `<label class="ap-item"><input type="checkbox" class="ap-chk" value="${p}" ${checked?'checked':''}/> ${escapeHtml(PAGE_LABELS[p])}</label>`;
+            }).join('')}
+          </div>
+          <span class="hint">Centang halaman yang boleh dibuka akun ini. Jika "Ikuti default role" aktif, akses mengikuti peran. <em>Super Admin selalu punya akses penuh.</em></span>
+        </div>
       </form>
     </div>
     <div class="modal-foot">
@@ -6586,8 +6648,24 @@ async function openUserModal(user, onDone){
       <button class="btn btn-primary" id="u-save"><span class="material-symbols-rounded">save</span>Simpan</button>
     </div>
   `, 'lg');
+  // --- page-access checklist behaviour ---
+  const apDefault = $('#ap-default');
+  const roleSel = $('#user-form select[name="role"]');
+  const syncApFromRole = () => { const role = roleSel.value; $$('.ap-chk').forEach(ch => { ch.checked = (ROUTE_ROLES[ch.value]||[]).includes(role); }); };
+  const applyDefaultMode = () => {
+    const def = apDefault.checked;
+    if(def) syncApFromRole();
+    $$('.ap-chk').forEach(ch => ch.disabled = def);
+    const list = $('#ap-list'); if(list) list.style.opacity = def ? '0.55' : '1';
+  };
+  apDefault.addEventListener('change', applyDefaultMode);
+  roleSel.addEventListener('change', () => { if(apDefault.checked) syncApFromRole(); });
+  applyDefaultMode();
+
   $('#u-save').addEventListener('click', async () => {
     const fd = new FormData($('#user-form'));
+    const useDefault = $('#ap-default').checked;
+    const allowed_pages = useDefault ? null : $$('.ap-chk').filter(c=>c.checked).map(c=>c.value);
     try{
       if(isEdit){
         await db.updateUser(user.id, {
@@ -6595,7 +6673,8 @@ async function openUserModal(user, onDone){
           role: fd.get('role'),
           jabatan: fd.get('jabatan') || null,
           lokasi_kerja: fd.get('lokasi_kerja') || null,
-          active: fd.get('active')==='true'
+          active: fd.get('active')==='true',
+          allowed_pages
         });
         db.logActivity({ action:'user.update', target_type:'user', target_id:user.id,
                          detail:`Update user ${user.username}` });
@@ -6606,7 +6685,8 @@ async function openUserModal(user, onDone){
             full_name: fd.get('full_name'),
             role: fd.get('role'),
             jabatan: fd.get('jabatan')||null,
-            lokasi_kerja: fd.get('lokasi_kerja')||null});
+            lokasi_kerja: fd.get('lokasi_kerja')||null,
+            allowed_pages});
         }
         toast('User diperbarui','success');
       } else {
@@ -6616,7 +6696,8 @@ async function openUserModal(user, onDone){
           role: fd.get('role'),
           jabatan: fd.get('jabatan') || null,
           lokasi_kerja: fd.get('lokasi_kerja') || null,
-          password: fd.get('password')
+          password: fd.get('password'),
+          allowed_pages
         });
         db.logActivity({ action:'user.create', target_type:'user', target_id:created?.id,
                          detail:`Tambah user ${fd.get('username').trim()} (${fd.get('role')})` });
