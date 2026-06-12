@@ -146,6 +146,7 @@ button{font-family:inherit;cursor:pointer}
 .badge.status-tersedia{background:#CFFAFE;color:#155E75}
 .badge.status-selesai{background:var(--mrt-green-soft);color:#065F46}
 .badge.status-ditolak{background:#FEE2E2;color:#991B1B}
+.badge.gray{background:#EEF2F7;color:#475569}
 
 /* type-search combobox (Divisi/Departemen) */
 .combo{position:relative}
@@ -397,13 +398,53 @@ button{font-family:inherit;cursor:pointer}
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .form-grid .full{grid-column:1/-1}
 
-/* footer */
-.public-footer{
-  margin-top:40px;padding:32px 24px;
-  background:#0B1A30;color:#9FB1CC;font-size:13px;
+/* ============================================================
+   PUBLIC FOOTER (v2.2) — kartu gelap membulat ala referensi
+   ============================================================ */
+.public-footer{ margin:48px auto 28px; padding:0 18px; max-width:1240px; }
+.footer-card{
+  position:relative; overflow:hidden; border-radius:28px; color:#fff;
+  padding:48px 52px 26px;
+  background:
+    radial-gradient(420px 320px at 88% 16%, rgba(15,76,156,.55), transparent 70%),
+    radial-gradient(360px 300px at 104% 96%, rgba(0,168,89,.18), transparent 70%),
+    linear-gradient(160deg, #003D7E 0%, #002A57 100%);
+  box-shadow:0 24px 60px rgba(2,32,71,.28);
 }
-.public-footer-inner{max-width:1240px;margin:0 auto;display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
-.public-footer a{color:#CBD5E1}
+.footer-card::before,.footer-card::after{
+  content:""; position:absolute; border-radius:50%; pointer-events:none;
+  background:radial-gradient(circle at 30% 30%, rgba(255,255,255,.10), rgba(255,255,255,0) 70%);
+}
+.footer-card::before{ width:340px; height:340px; right:-40px; top:-90px; }
+.footer-card::after{ width:280px; height:280px; right:130px; bottom:-130px;
+  background:radial-gradient(circle at 30% 30%, rgba(0,168,89,.18), rgba(0,168,89,0) 70%); }
+.footer-main{ position:relative; z-index:1; display:flex; justify-content:space-between; gap:40px; flex-wrap:wrap; }
+.footer-brand{ max-width:440px; }
+.footer-brand .fb-logo{ display:flex; align-items:center; gap:12px; margin-bottom:18px; }
+.footer-brand .fb-logo img{ width:44px; height:44px; border-radius:10px; background:#fff; padding:5px; object-fit:contain; }
+.footer-brand .fb-logo .ft{ font-weight:800; font-size:18px; letter-spacing:.4px; color:#fff; }
+.footer-brand .fb-logo .ft span{ color:var(--mrt-green-2); }
+.footer-brand p{ color:rgba(255,255,255,.72); font-size:14px; line-height:1.6; margin:0 0 22px; }
+.footer-social{ display:inline-flex; align-items:center; justify-content:center;
+  width:42px; height:42px; border-radius:50%; border:1px solid rgba(255,255,255,.35); color:#fff; transition:.18s; }
+.footer-social:hover{ background:var(--mrt-green); border-color:var(--mrt-green); text-decoration:none; }
+.footer-links{ display:flex; flex-direction:column; gap:14px; min-width:190px; }
+.footer-links a{ position:relative; color:#fff; font-size:20px; font-weight:500; width:max-content;
+  display:inline-flex; align-items:center; gap:9px; transition:.16s; text-decoration:none; }
+.footer-links a .material-symbols-rounded{ font-size:19px; opacity:.7; }
+.footer-links a:first-child::before{ content:""; width:7px; height:7px; border-radius:50%; background:var(--mrt-green-2);
+  position:absolute; left:-16px; top:50%; transform:translateY(-50%); }
+.footer-links a:hover{ color:var(--mrt-green-2); text-decoration:none; }
+.footer-divider{ position:relative; z-index:1; height:1px; background:rgba(255,255,255,.16); margin:34px 0 18px; }
+.footer-bottom{ position:relative; z-index:1; display:flex; justify-content:space-between; align-items:center;
+  gap:12px; flex-wrap:wrap; font-size:12.5px; color:rgba(255,255,255,.6); }
+.footer-bottom a{ color:rgba(255,255,255,.82); text-decoration:none; }
+.footer-bottom a:hover{ color:#fff; text-decoration:underline; }
+@media(max-width:640px){
+  .footer-card{ padding:34px 24px 22px; border-radius:22px; }
+  .footer-links a{ font-size:18px; }
+  .footer-main{ gap:26px; }
+}
 
 /* ============================================================
    ADMIN LAYOUT
@@ -1136,8 +1177,29 @@ table.t{
   </section>
 
   <footer class="public-footer">
-    <div class="public-footer-inner">
-      <div>© 2026 General Affairs · PT MRT Jakarta. All rights reserved.</div>
+    <div class="footer-card">
+      <div class="footer-main">
+        <div class="footer-brand">
+          <div class="fb-logo">
+            <img src="logo.png" alt="GASS CRM" onerror="this.style.display='none'"/>
+            <div class="ft">GASS <span>CRM</span></div>
+          </div>
+          <p>Portal internal General Affairs PT MRT Jakarta untuk permintaan operasional, pelacakan status, pembayaran, dan petty cash — dalam satu tempat.</p>
+          <a class="footer-social" href="mailto:ga.services@jakartamrt.co.id" title="Email GA Department" aria-label="Email GA Department">
+            <span class="material-symbols-rounded">mail</span>
+          </a>
+        </div>
+        <nav class="footer-links" aria-label="Tautan">
+          <a href="mailto:ga.services@jakartamrt.co.id"><span class="material-symbols-rounded">mail</span>Contact Us</a>
+          <a href="https://bit.ly/gassway" target="_blank" rel="noopener">GASSWay!</a>
+          <a href="https://marti-id.web.app" target="_blank" rel="noopener">Marti</a>
+        </nav>
+      </div>
+      <div class="footer-divider"></div>
+      <div class="footer-bottom">
+        <div>© <span id="footer-year">2026</span> General Affairs · PT MRT Jakarta (Perseroda). All rights reserved.</div>
+        <a href="cektiket.html">Cek Status Tiket</a>
+      </div>
     </div>
   </footer>
 </template>
@@ -1437,6 +1499,13 @@ const GA_PAYMENT_STATUS_CLASS = {
   'Revision':'pay-batal',
   'Paid':'pay-lunas'
 };
+// v2.2: Non-GA payment workflow — status sederhana (Admin Payment / Superadmin saja)
+const NON_GA_STATUSES = ['On Progress','Paid','Revision'];
+const NON_GA_STATUS_CLASS = {
+  'On Progress':'pay-proses',   // biru
+  'Paid':'pay-lunas',           // hijau
+  'Revision':'pay-batal'        // merah
+};
 const FUND_OPTIONS = ['General Affairs','Non General Affairs'];
 const COST_TYPES = ['CAPEX','OPEX'];
 const SUBSIDI_OPTIONS = ['Subsidi','Non Subsidi'];
@@ -1513,6 +1582,11 @@ function mergePayment(req, pay){
   if(pay){ out.id = pay.id; out._exists = true; } else { out._exists = false; }
   if(!out.status) out.status = 'Belum Diproses';
   if(!out.ga_payment_status) out.ga_payment_status = 'Not Complete Yet';
+  // v2.2: non-GA workflow fields (disimpan apa adanya, bukan bagian PAYMENT_FIELDS)
+  out.non_ga_status            = (pay && pay.non_ga_status) || 'On Progress';
+  out.non_ga_note              = (pay && pay.non_ga_note) || '';
+  out.non_ga_last_changed_at   = (pay && pay.non_ga_last_changed_at) || null;
+  out.non_ga_last_changed_by   = (pay && pay.non_ga_last_changed_by) || null;
   out._req = req;
   out._isGA = reqUsesGABudget(req);
   return out;
@@ -1567,7 +1641,7 @@ const demo = (() => {
       kode_smartoffice:'SO-DP-2026-0307', sumber_pemesanan:'WhatsApp', nama_pemesan:'Maya Sari',
       lokasi_kebutuhan:'Lantai 12 - Pantry', tujuan_kebutuhan:'Operasional Harian',
       tanggal_kebutuhan:addDays(1), detail_kebutuhan:'Pembelian galon air + dispenser pantry',
-      estimasi_harga:1200000, status:'Tersedia',
+      estimasi_harga:1200000, status:'Tersedia', pakai_anggaran_ga:false,
       nama_pic_ga:'Rian Pratama', pic_user_id:'u4',
       created_at:iso(today) },
     { id:'r6', kode_permintaan:nextCode('FAC'), kategori:'Fasilitas Kantor dan Identitas Karyawan',
@@ -1641,7 +1715,8 @@ const demo = (() => {
     {id:'v11',version:'1.9.0',release_date:'2026-06-08',changes:'Kolom Divisi & Departemen di formulir kini berupa type-search (cari sambil mengetik). Kategori "Kendaraan Operasional" (form GA-08) dengan master Armada Kendaraan yang dapat di-CRUD. Dropdown "Menggunakan/Bukan Anggaran GA" di Edit Permintaan — hanya yang ber-anggaran GA yang masuk Payment. Status pembayaran GA (Not Complete Yet/Submitted/Verified/Revision/Paid) yang hanya bisa diubah Admin Payment. Role baru "Admin Payment". Dashboard menampilkan daftar Payment anggaran GA. Modul Payment diselaraskan dengan Report Payment (Fund, Nama Kegiatan, Description Fund). Halaman publik /cektiket. Riwayat Versi kini menampilkan estimasi penyimpanan & Download Backup CSV format Supabase (per tabel).'},
     {id:'v12',version:'2.0.0',release_date:'2026-06-10',changes:'Modul Manajemen Anggaran: total anggaran per fund, realisasi otomatis dari pembayaran, top-up anggaran (nominal/tanggal/sumber/keterangan), perencanaan CDP bulanan, serta laporan (Anggaran vs Realisasi, by Fund, CDP Rencana vs Realisasi, distribusi Invoice/Kas Kecil, by Lokasi). Payment kini punya kolom Sumber Anggaran (fund) dan status tunggal "Status" (khusus Admin Payment) + sort kolom. Kategori Pemesanan kini bisa di-edit penuh. Daftar Permintaan hanya bisa diubah Superadmin (PIC hanya tiket miliknya). Form Kendaraan Operasional: Prioritas & Jenis Layanan dropdown, tambah Titik Jemput & Tujuan, hapus Jenis Kendaraan. Riwayat Versi khusus Superadmin. Tulisan "Dashboard" di halaman publik dihapus.'},
     {id:'v13',version:'2.1.0',release_date:'2026-06-10',changes:'Sidebar kini berkelompok dan dapat di-collapse/expand per modul (Utama, Keuangan, Master Data, Admin) dengan status tersimpan. Font diganti ke Inter agar lebih luwes & mudah dibaca. Halaman landing ditata ulang: hero → (Cek Status + Cara Penggunaan berdampingan) → Formulir (collapsed) → footer. Grafik Manajemen Anggaran diperbaiki agar tidak memanjang tak terbatas. Penyesuaian responsif untuk berbagai perangkat.'},
-    {id:'v14',version:'2.0.1',release_date:'2026-06-11',changes:'Manajemen Anggaran kini SINKRON dengan Mata Anggaran (satu sumber data) — Fund = Mata Anggaran, realisasi dihitung dari pembayaran. Update Payment: field wajib lengkap (deskripsi, vendor, fund, PIC, proforma/PR/PO/GR/invoice, description fund, Number Fund/Mata Anggaran, location, cost type, cost purpose, subsidi, jenis pembayaran, qty/price/grand total, status); field sinkron dikunci (hanya via Data Permintaan); dropdown tidak lagi punya pilihan kosong; status "Paid" mengunci pembayaran kecuali untuk Super Admin. Modul edit hak akses halaman per akun (Super Admin). Lampiran dibatasi maksimal 1 MB dan hanya PDF/PNG.'}
+    {id:'v14',version:'2.0.1',release_date:'2026-06-11',changes:'Manajemen Anggaran kini SINKRON dengan Mata Anggaran (satu sumber data) — Fund = Mata Anggaran, realisasi dihitung dari pembayaran. Update Payment: field wajib lengkap (deskripsi, vendor, fund, PIC, proforma/PR/PO/GR/invoice, description fund, Number Fund/Mata Anggaran, location, cost type, cost purpose, subsidi, jenis pembayaran, qty/price/grand total, status); field sinkron dikunci (hanya via Data Permintaan); dropdown tidak lagi punya pilihan kosong; status "Paid" mengunci pembayaran kecuali untuk Super Admin. Modul edit hak akses halaman per akun (Super Admin). Lampiran dibatasi maksimal 1 MB dan hanya PDF/PNG.'},
+    {id:'v15',version:'2.2.0',release_date:'2026-06-12',changes:'Payment kini menampilkan SEMUA permintaan, termasuk yang "Bukan Anggaran GA". Baris Non-GA punya badge Sumber, popup status sederhana (On Progress / Paid / Revision) + keterangan + jejak "Terakhir diubah" (tanggal & nama), hanya bisa diubah Admin Payment/Super Admin. Filter Sumber (GA / Non-GA) & filter status digabung pada modul Payment; CSV Payment menyertakan kolom Sumber, Status Pembayaran, Keterangan & jejak perubahan. Realisasi Anggaran GA dan statistik Dashboard tetap mengecualikan Non-GA. Footer halaman publik didesain ulang (kartu gelap membulat) dengan tautan Contact Us (email GA), GASSWay!, dan Marti.'}
   ];
 
   // Mata Anggaran options
@@ -2967,6 +3042,7 @@ window.addEventListener('hashchange', route);
    ============================================================ */
 async function renderLanding(){
   mount('tpl-landing');
+  const _fy = $('#footer-year'); if(_fy) _fy.textContent = new Date().getFullYear();
 
   // --- Session-aware nav (Admin button OR user chip + Dashboard + Logout) ---
   const u = session.get();
@@ -4960,13 +5036,26 @@ async function viewAdminRatings(c){
    remain overridable. */
 let _payMerged = [];
 let _fundsCache = [];
-let _payState = { page:1, pageSize:15, search:'', filterStatus:'', filterCategory:'', sort:'created_at', dir:'desc' };
+let _payState = { page:1, pageSize:15, search:'', filterStatus:'', filterCategory:'', filterSource:'', sort:'created_at', dir:'desc' };
+
+// v2.2: ringkas "Terakhir diubah: <tgl> oleh <nama>" untuk payment non-GA
+function nonGaLastChangeHtml(m){
+  if(!m.non_ga_last_changed_at) return '<span class="muted text-sm">Belum pernah diubah</span>';
+  const when = fmtDateTime(m.non_ga_last_changed_at);
+  const who  = m.non_ga_last_changed_by ? ' oleh '+escapeHtml(m.non_ga_last_changed_by) : '';
+  return `<span class="muted text-sm">Terakhir diubah: ${when}${who}</span>`;
+}
 
 function fundName(idOrName){ const f = _fundsCache.find(x => x.id === idOrName || x.name === idOrName); return f ? f.name : (idOrName||''); }
 
 function payCellHtml(m, f){
   const v = m[f.key];
   if(f.key === 'ga_payment_status'){
+    // v2.2: baris Non-GA memakai status sederhana (On Progress / Paid / Revision)
+    if(m._isGA === false){
+      const nv = m.non_ga_status || 'On Progress';
+      return `<span class="badge ${NON_GA_STATUS_CLASS[nv]||'pay-proses'}">${escapeHtml(nv)}</span>`;
+    }
     const sv = v || 'Not Complete Yet';
     return `<span class="badge ${GA_PAYMENT_STATUS_CLASS[sv]||'pay-belum'}">${escapeHtml(sv)}</span>`;
   }
@@ -4995,7 +5084,7 @@ async function viewAdminPayments(c){
       </div>
       <div class="card-body">
         <p class="muted text-sm" style="margin:-6px 0 12px">
-          Hanya permintaan yang <strong>Menggunakan Anggaran GA</strong> yang muncul di sini. Klik <strong>Edit</strong> pada baris untuk mengisi/memperbarui data pembayaran sesuai alur <em>Report Payment</em> (Identifikasi → Proforma/PR → PO/GR → Invoice/Fund).
+          Semua permintaan muncul di sini. Baris <strong>Menggunakan Anggaran GA</strong> diisi mengikuti alur <em>Report Payment</em> (Identifikasi → Proforma/PR → PO/GR → Invoice/Fund). Baris <strong>Bukan Anggaran GA</strong> cukup diperbarui status-nya (On Progress / Paid / Revision). Klik <strong>Edit</strong> pada baris untuk memperbarui.
           Geser tabel ke kanan untuk melihat seluruh kolom.
         </p>
         <div class="toolbar" style="flex-wrap:wrap">
@@ -5003,9 +5092,15 @@ async function viewAdminPayments(c){
             <span class="material-symbols-rounded">search</span>
             <input type="text" class="input" id="pay-search" placeholder="Cari kode, pemesan, vendor..." />
           </div>
+          <select class="select" id="pay-filter-source" style="max-width:200px">
+            <option value="">Semua Sumber</option>
+            <option value="ga">Menggunakan Anggaran GA</option>
+            <option value="nonga">Bukan Anggaran GA</option>
+          </select>
           <select class="select" id="pay-filter-status" style="max-width:220px">
             <option value="">Semua Status</option>
-            ${GA_PAYMENT_STATUSES.map(s=>`<option>${s}</option>`).join('')}
+            <optgroup label="Anggaran GA">${GA_PAYMENT_STATUSES.map(s=>`<option>${s}</option>`).join('')}</optgroup>
+            <optgroup label="Bukan Anggaran GA">${NON_GA_STATUSES.map(s=>`<option>${s}</option>`).join('')}</optgroup>
           </select>
           <select class="select" id="pay-filter-category" style="max-width:220px">
             <option value="">Semua Kategori</option>
@@ -5029,8 +5124,8 @@ async function viewAdminPayments(c){
       ]);
       _fundsCache = funds || [];
       const byReq = {}; (pays||[]).forEach(p => { byReq[p.request_id] = p; });
-      // v1.9: only requests that use the GA budget flow into Payment
-      _payMerged = reqs.filter(r => reqUsesGABudget(r)).map(r => mergePayment(r, byReq[r.id]));
+      // v2.2: SEMUA permintaan mengalir ke Payment (GA + Non-GA). Pembedaan via m._isGA.
+      _payMerged = reqs.map(r => mergePayment(r, byReq[r.id]));
       renderPaymentsTable(host);
     }catch(err){
       console.error('[payments]', err);
@@ -5042,17 +5137,31 @@ async function viewAdminPayments(c){
   }
 
   $('#pay-search').addEventListener('input', e => { _payState.search = e.target.value.toLowerCase(); _payState.page = 1; renderPaymentsTable(host); });
+  $('#pay-filter-source').addEventListener('change', e => { _payState.filterSource = e.target.value; _payState.page = 1; renderPaymentsTable(host); });
   $('#pay-filter-status').addEventListener('change', e => { _payState.filterStatus = e.target.value; _payState.page = 1; renderPaymentsTable(host); });
   $('#pay-filter-category').addEventListener('change', e => { _payState.filterCategory = e.target.value; _payState.page = 1; renderPaymentsTable(host); });
   $('#pay-refresh').addEventListener('click', () => load());
   $('#pay-csv').addEventListener('click', () => {
     const rows = filterPayments().map(m => {
-      const row = { Kode_Permintaan: m._req.kode_permintaan, Pemesan: m._req.nama_pemesan, Status_Permintaan: m._req.status };
+      const isNonGA = m._isGA === false;
+      const row = {
+        Kode_Permintaan: m._req.kode_permintaan,
+        Pemesan: m._req.nama_pemesan,
+        Status_Permintaan: m._req.status,
+        Sumber_Anggaran: isNonGA ? 'Bukan Anggaran GA' : 'Anggaran GA',
+        Status_Pembayaran: isNonGA ? (m.non_ga_status||'On Progress') : (m.ga_payment_status||'Not Complete Yet')
+      };
       PAYMENT_FIELDS.forEach(f => {
+        if(f.key === 'ga_payment_status') return; // sudah diwakili Status_Pembayaran
         let v = m[f.key];
         if(f.type === 'date' && v) v = String(v).slice(0,10);
         row[f.label.replace(/\s+/g,'_')] = (v==null ? '' : v);
       });
+      if(isNonGA){
+        row.Keterangan_NonGA = m.non_ga_note || '';
+        row.Terakhir_Diubah = m.non_ga_last_changed_at ? String(m.non_ga_last_changed_at).slice(0,19).replace('T',' ') : '';
+        row.Diubah_Oleh = m.non_ga_last_changed_by || '';
+      }
       return row;
     });
     csvDownload('payment-'+new Date().toISOString().slice(0,10)+'.csv', rows);
@@ -5072,7 +5181,12 @@ function filterPayments(){
       (m._req.kode_smartoffice||'').toLowerCase().includes(s.search)
     );
   }
-  if(s.filterStatus)   rows = rows.filter(m => (m.ga_payment_status||'Not Complete Yet') === s.filterStatus);
+  if(s.filterSource === 'ga')    rows = rows.filter(m => m._isGA !== false);
+  if(s.filterSource === 'nonga') rows = rows.filter(m => m._isGA === false);
+  if(s.filterStatus)   rows = rows.filter(m => {
+    const cur = (m._isGA === false) ? (m.non_ga_status||'On Progress') : (m.ga_payment_status||'Not Complete Yet');
+    return cur === s.filterStatus;
+  });
   if(s.filterCategory) rows = rows.filter(m => m._req.kategori === s.filterCategory);
 
   // Sorting: 'created_at' (default) or any payment column key, plus 'kode'/'pemesan'
@@ -5115,6 +5229,7 @@ function renderPaymentsTable(host){
           <tr>
             <th class="sticky-col pay-sort" data-sort="kode" style="min-width:170px;cursor:pointer">Permintaan${arrow('kode')}</th>
             <th class="pay-sort" data-sort="pemesan" style="cursor:pointer">Pemesan${arrow('pemesan')}</th>
+            <th>Sumber</th>
             ${headCells}
           </tr>
         </thead>
@@ -5123,7 +5238,7 @@ function renderPaymentsTable(host){
             <tr>
               <td class="sticky-col">
                 <div style="display:flex;align-items:center;gap:6px">
-                  <button class="btn-icon" data-edit="${m.request_id}" title="Edit pembayaran" style="color:var(--mrt-blue)"><span class="material-symbols-rounded" style="font-size:18px">edit</span></button>
+                  <button class="btn-icon" data-edit="${m.request_id}" data-ga="${m._isGA===false?'0':'1'}" title="Edit pembayaran" style="color:var(--mrt-blue)"><span class="material-symbols-rounded" style="font-size:18px">edit</span></button>
                   <div>
                     <span class="code-pill">${escapeHtml(m._req.kode_permintaan)}</span>
                     <div style="margin-top:2px"><span class="tag">${escapeHtml(m._req.kategori_kode||'')}</span></div>
@@ -5131,9 +5246,10 @@ function renderPaymentsTable(host){
                 </div>
               </td>
               <td>${escapeHtml(m._req.nama_pemesan||'—')}</td>
+              <td>${m._isGA===false?'<span class="badge gray">Bukan Anggaran GA</span>':'<span class="badge status-selesai">Anggaran GA</span>'}</td>
               ${cols.map(f => `<td${(f.type==='money'||f.type==='number')?' class="num"':''}>${payCellHtml(m,f)}</td>`).join('')}
             </tr>
-          `).join('') : `<tr><td colspan="${cols.length+2}" class="empty-row">Belum ada permintaan</td></tr>`}
+          `).join('') : `<tr><td colspan="${cols.length+3}" class="empty-row">Belum ada permintaan</td></tr>`}
         </tbody>
       </table>
     </div>
@@ -5149,7 +5265,10 @@ function renderPaymentsTable(host){
 
   $('#pay-prev', host)?.addEventListener('click', () => { if(s.page>1){ s.page--; renderPaymentsTable(host); } });
   $('#pay-next', host)?.addEventListener('click', () => { if(s.page<totalPages){ s.page++; renderPaymentsTable(host); } });
-  $$('button[data-edit]', host).forEach(b => b.addEventListener('click', () => openPaymentEdit(b.dataset.edit)));
+  $$('button[data-edit]', host).forEach(b => b.addEventListener('click', () => {
+    if(b.dataset.ga === '0') openPaymentEditNonGA(b.dataset.edit);
+    else openPaymentEdit(b.dataset.edit);
+  }));
   $$('th.pay-sort', host).forEach(th => th.addEventListener('click', () => {
     const col = th.dataset.sort;
     if(s.sort === col) s.dir = s.dir === 'asc' ? 'desc' : 'asc';
@@ -5314,6 +5433,84 @@ function openPaymentEdit(requestId){
       closeModal();
       const host = $('#pay-table-host'); if(host) renderPaymentsTable(host);
       toast('Data pembayaran tersimpan','success');
+    }catch(err){
+      console.error(err);
+      toast('Gagal menyimpan: '+(err.message||''),'error');
+      btn.disabled = false;
+      btn.innerHTML = '<span class="material-symbols-rounded">save</span>Simpan';
+    }
+  });
+}
+
+/* ----------- PAYMENT (NON-GA) — popup status sederhana (v2.2) -----------
+   Permintaan "Bukan Anggaran GA" cukup diperbarui status-nya:
+   On Progress / Paid / Revision + satu keterangan + jejak "terakhir diubah".
+   Hanya Admin Payment / Super Admin yang boleh mengubah. */
+function openPaymentEditNonGA(requestId){
+  const m = _payMerged.find(x => x.request_id === requestId);
+  if(!m){ toast('Data tidak ditemukan','error'); return; }
+  const req = m._req;
+  const me = session.get();
+  const canEdit = !!me && (me.role === 'admin_payment' || me.role === 'superadmin');
+  const cur = m.non_ga_status || 'On Progress';
+  const dis = canEdit ? '' : ' disabled';
+
+  openModal(`
+    <div class="modal-head">
+      <h3><span class="material-symbols-rounded" style="vertical-align:-6px;color:var(--mrt-blue)">payments</span> Update Status Pembayaran</h3>
+      <button class="btn-icon" onclick="closeModal()"><span class="material-symbols-rounded">close</span></button>
+    </div>
+    <div class="modal-body">
+      <div style="margin-bottom:14px;padding:10px 12px;background:var(--mrt-blue-soft);border-radius:10px;font-size:13px">
+        <strong>${escapeHtml(req.kode_permintaan)}</strong> · ${escapeHtml(req.kategori)} · Pemesan: ${escapeHtml(req.nama_pemesan)}
+        <div style="margin-top:4px"><span class="badge gray">Bukan Anggaran GA</span></div>
+      </div>
+      ${canEdit ? '' : `<div style="margin-bottom:14px;padding:10px 12px;background:#FEF3C7;border:1px solid #FCD34D;border-radius:10px;font-size:13px;color:#92400E">
+        <span class="material-symbols-rounded" style="vertical-align:-5px;font-size:18px">lock</span>
+        Hanya <strong>Admin Payment</strong> yang dapat mengubah status. Anda hanya dapat melihat.
+      </div>`}
+      <div class="field">
+        <label>Status <span style="color:#DC2626">*</span></label>
+        <select class="select" id="nonga-status"${dis}>
+          ${NON_GA_STATUSES.map(s => `<option ${cur===s?'selected':''}>${s}</option>`).join('')}
+        </select>
+      </div>
+      <div class="field full" style="margin-top:10px">
+        <label>Keterangan</label>
+        <textarea class="textarea" id="nonga-note" style="min-height:80px"${dis} placeholder="Catatan singkat (opsional)…">${escapeHtml(m.non_ga_note||'')}</textarea>
+      </div>
+      <div style="margin-top:10px">${nonGaLastChangeHtml(m)}</div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal()">${canEdit?'Batal':'Tutup'}</button>
+      ${canEdit ? '<button class="btn btn-primary" id="nonga-save"><span class="material-symbols-rounded">save</span>Simpan</button>' : ''}
+    </div>
+  `);
+
+  if(!canEdit) return;
+
+  $('#nonga-save').addEventListener('click', async () => {
+    const btn = $('#nonga-save'); btn.disabled = true;
+    btn.innerHTML = '<span class="material-symbols-rounded">hourglass_top</span>Menyimpan…';
+    try{
+      const patch = {
+        non_ga_status: $('#nonga-status').value,
+        non_ga_note: ($('#nonga-note').value||'').trim() || null,
+        non_ga_last_changed_at: new Date().toISOString(),
+        non_ga_last_changed_by: me.full_name || me.username || 'Admin'
+      };
+      await db.upsertPayment(requestId, patch);
+      db.logActivity({ action:'payment.update_nonga', target_type:'payment', target_id:requestId,
+                       detail:`Update status Non-GA ${req.kode_permintaan} → ${patch.non_ga_status}` });
+      // sinkron cache lokal
+      const idx = _payMerged.findIndex(x => x.request_id === requestId);
+      if(idx >= 0){
+        const base = {}; PAYMENT_FIELDS.forEach(f => { base[f.key] = m[f.key]; });
+        _payMerged[idx] = mergePayment(req, { request_id:requestId, ...base, ...patch });
+      }
+      closeModal();
+      const host = $('#pay-table-host'); if(host) renderPaymentsTable(host);
+      toast('Status pembayaran tersimpan','success');
     }catch(err){
       console.error(err);
       toast('Gagal menyimpan: '+(err.message||''),'error');
