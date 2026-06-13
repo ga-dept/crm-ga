@@ -156,6 +156,7 @@ button{font-family:inherit;cursor:pointer}
 .se-menu{display:none;position:absolute;z-index:60;left:0;right:0;top:calc(100% + 4px);max-height:240px;overflow:auto;
   background:#fff;border:1px solid var(--border);border-radius:10px;box-shadow:0 12px 30px rgba(2,32,71,.16);padding:4px}
 .se-menu.open{display:block}
+.se-menu.up{top:auto;bottom:calc(100% + 4px)}
 .se-item{padding:8px 10px;border-radius:7px;font-size:13.5px;cursor:pointer;white-space:normal;overflow:visible;line-height:1.35;word-break:break-word}
 .se-item:hover,.se-item.on{background:var(--mrt-blue-soft);color:var(--mrt-blue)}
 .se-empty{padding:9px 10px;font-size:13px;color:var(--text-mut)}
@@ -202,7 +203,7 @@ button{font-family:inherit;cursor:pointer}
   width:100%;max-width:820px;
   box-shadow:var(--shadow-lg);
   margin:auto;
-  overflow:hidden;
+  overflow:visible;
   animation:modalIn .25s ease;
 }
 .modal.lg{max-width:1140px}
@@ -216,6 +217,7 @@ button{font-family:inherit;cursor:pointer}
 .modal-foot{
   padding:14px 22px;border-top:1px solid var(--border-2);
   display:flex;gap:10px;justify-content:flex-end;background:var(--surface-2);
+  border-bottom-left-radius:18px;border-bottom-right-radius:18px;
 }
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 @keyframes modalIn{from{opacity:0;transform:translateY(-10px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
@@ -2890,12 +2892,21 @@ function enhanceSearchable(scope){
         : '<div class="se-empty">Tidak ada hasil</div>';
       menu._list = list;
     }
-    function open(){ build(''); menu.classList.add('open'); }
-    function close(){ menu.classList.remove('open'); showSel(); }
+    function place(){
+      menu.classList.remove('up');
+      requestAnimationFrame(()=>{
+        const r=input.getBoundingClientRect();
+        const below=window.innerHeight-r.bottom, above=r.top;
+        const h=Math.min(menu.scrollHeight||0,240);
+        if(below < h+16 && above > below) menu.classList.add('up'); else menu.classList.remove('up');
+      });
+    }
+    function open(){ build(''); menu.classList.add('open'); place(); }
+    function close(){ menu.classList.remove('open'); menu.classList.remove('up'); showSel(); }
     function pick(optIndex){ sel.selectedIndex = optIndex; sel.dispatchEvent(new Event('change',{bubbles:true})); showSel(); menu.classList.remove('open'); }
 
     input.addEventListener('focus', () => { open(); input.select(); });
-    input.addEventListener('input', () => { build(input.value); menu.classList.add('open'); });
+    input.addEventListener('input', () => { build(input.value); menu.classList.add('open'); place(); });
     input.addEventListener('keydown', (e) => {
       const items = Array.from(menu.querySelectorAll('.se-item'));
       if(e.key === 'ArrowDown'){ e.preventDefault(); active = Math.min(active+1, items.length-1); items.forEach((it,i)=>it.classList.toggle('on',i===active)); items[active]?.scrollIntoView({block:'nearest'}); }
