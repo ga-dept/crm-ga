@@ -114,6 +114,8 @@ button{font-family:inherit;cursor:pointer}
 
 .input,.select,.textarea{
   width:100%;
+  min-width:0;
+  max-width:100%;
   padding:10px 12px;
   font-family:inherit;font-size:14px;color:var(--text);
   background:#fff;
@@ -128,7 +130,8 @@ button{font-family:inherit;cursor:pointer}
   box-shadow:0 0 0 4px rgba(25,118,210,.12);
 }
 .input:disabled,.select:disabled{background:var(--surface-2);color:var(--text-mut)}
-.field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;min-width:0}
+.field .input,.field .select,.field .textarea,.field .se-wrap{width:100%;min-width:0}
 .field label{font-size:13px;font-weight:600;color:var(--text-2)}
 .field .hint{font-size:12px;color:var(--text-soft)}
 .field-required label::after{content:' *';color:var(--danger)}
@@ -1281,7 +1284,7 @@ table.t{
             <a class="nav-item" data-route="divisi"      data-allowed-roles="superadmin,admin"><span class="material-symbols-rounded">account_tree</span><span class="nav-label">Divisi</span></a>
             <a class="nav-item" data-route="departemen"  data-allowed-roles="superadmin,admin"><span class="material-symbols-rounded">groups</span><span class="nav-label">Departemen</span></a>
             <a class="nav-item" data-route="karyawan"    data-allowed-roles="superadmin,admin"><span class="material-symbols-rounded">badge</span><span class="nav-label">Master Karyawan</span></a>
-            <a class="nav-item" data-route="pettydropdown" data-allowed-roles="superadmin,admin"><span class="material-symbols-rounded">tune</span><span class="nav-label">Petty Cash — Kategori & Relasi</span></a>
+            <a class="nav-item" data-route="pettydropdown" data-allowed-roles="superadmin,admin"><span class="material-symbols-rounded">category</span><span class="nav-label">Petty Cash — Kategori</span></a>
             <a class="nav-item" data-route="kendaraan"    data-allowed-roles="superadmin,admin"><span class="material-symbols-rounded">directions_car</span><span class="nav-label">Armada Kendaraan</span></a>
           </div>
         </div>
@@ -1456,7 +1459,7 @@ const PAGE_LABELS = {
   recurring:'Pembayaran Rutin',
   petty:'Petty Cash (izin CRUD)',
   karyawan:'Master Karyawan',
-  pettydropdown:'Petty Cash — Kategori & Relasi',
+  pettydropdown:'Petty Cash — Kategori',
   masterdata:'Master Data (Lokasi/Tujuan/Anggaran)', kategori:'Kategori Pemesanan', divisi:'Divisi',
   departemen:'Departemen', kendaraan:'Armada Kendaraan', users:'Manajemen User',
   slatargets:'SLA Target', activity:'Log Aktivitas', version:'Riwayat Versi'
@@ -1750,7 +1753,8 @@ const demo = (() => {
     {id:'v17',version:'2.4.0',release_date:'2026-06-13',changes:'Modul Petty Cash (satu menu, sub-modul sebagai tab): Dashboard, Reimbursement (Kerumahtanggaan/KRT & Kendaraan/KND) dengan workflow Input→Diverifikasi→Permintaan Transfer→Ditransfer→SPP Terbit→Selesai, Form Input, Master Data (KRT/KND), SPP dengan cetak/Export PDF berformat identik (A4 portrait), Report realisasi (per kategori & lokasi) + export, Kelola Dropdown + Tabel Relasi Akun (autofill GL/Fund/Cost Center), Posisi Kas (jurnal kas kecil + saldo berjalan + pencocokan saldo brankas), dan Log History. Lokasi: Wisma Nusantara, Transport Hub, Depo Lebak Bulus. Petty Cash dapat dibuka semua user; izin CRUD diatur via Hak Akses Halaman. Nominal Fund GA menambah realisasi anggaran (dilaporkan terpisah sebagai "Petty Cash").'},
     {id:'v18',version:'2.5.0',release_date:'2026-06-13',changes:'Modul baru Master Karyawan: CRUD nama karyawan beserta penempatan Divisi & Departemen (Departemen mengikuti Divisi terpilih), lengkap dengan pencarian, filter, dan ekspor CSV. Fitur Typesearch: seluruh dropdown panjang (≥ 8 opsi) di aplikasi kini bisa diketik untuk mencari (combobox), termasuk pemilihan Divisi/Departemen/PIC/Mata Anggaran dan dropdown master Petty Cash.'},
     {id:'v19',version:'2.6.0',release_date:'2026-06-13',changes:'Pop-up/modal diperlebar agar lebih nyaman. Dropdown "Jenis" pada Pembayaran Rutin tidak lagi hardcoded — kini combobox bebas-ketik dengan saran (default + jenis yang pernah dipakai). Dropdown Wilayah/Loket & Kategori Petty Cash kini bersumber dari menu "Kelola Dropdown" (bisa ditambah/diubah sendiri). Master Karyawan: disediakan template CSV (berbasis nama divisi/departemen) + skrip SQL staging untuk mass-upload ke Supabase. Hapus Massal (khusus Super Admin): kolom centang di kiri Daftar Permintaan & Payment Non-GA dengan aksi "Hapus Terpilih" dan opsi pilih semua hasil filter — memudahkan membersihkan data percobaan.'},
-    {id:'v20',version:'2.7.0',release_date:'2026-06-13',changes:'Petty Cash kini SINKRON penuh dengan Master Data: Wilayah/Loket mengikuti master Lokasi Kerja, Divisi/Departemen mengikuti masternya, Pengguna/Penerima mengikuti Master Karyawan, Kategori & Mata Anggaran dari master. Tab "Kelola Dropdown" dihapus dari Petty Cash; pengelolaan kategori & relasi akun (autofill) dipindah ke menu Master Data ("Petty Cash — Kategori & Relasi"). Label "KRT/KND" diganti menjadi "Kerumahtanggaan/Kendaraan". Modal master diperlebar. Tambahan: Kalkulator mengambang — tombol bulat di pojok kanan-bawah yang membuka pop-up kalkulator lengkap (+ − × ÷, kurung, pangkat, kuadrat, akar, persen, ubah tanda), bisa via klik maupun keyboard, dengan tombol salin hasil.'}
+    {id:'v20',version:'2.7.0',release_date:'2026-06-13',changes:'Petty Cash kini SINKRON penuh dengan Master Data: Wilayah/Loket mengikuti master Lokasi Kerja, Divisi/Departemen mengikuti masternya, Pengguna/Penerima mengikuti Master Karyawan, Kategori & Mata Anggaran dari master. Tab "Kelola Dropdown" dihapus dari Petty Cash; pengelolaan kategori & relasi akun (autofill) dipindah ke menu Master Data ("Petty Cash — Kategori & Relasi"). Label "KRT/KND" diganti menjadi "Kerumahtanggaan/Kendaraan". Modal master diperlebar. Tambahan: Kalkulator mengambang — tombol bulat di pojok kanan-bawah yang membuka pop-up kalkulator lengkap (+ − × ÷, kurung, pangkat, kuadrat, akar, persen, ubah tanda), bisa via klik maupun keyboard, dengan tombol salin hasil.'},
+    {id:'v21',version:'2.8.0',release_date:'2026-06-13',changes:'Revisi modul Petty Cash: (1) Report Rekap ditambahkan pada tab Report — dokumen "Rekap Penggunaan Kas Kecil" (Kerumahtanggaan/Kendaraan Operasional) dengan filter Tipe/Lokasi/Periode, blok PENGESAHAN (Pembantu Kas, Pemegang Kas, Section Head, Dept Head) yang namanya dapat disunting, tabel No/Tanggal/No SAP/Cost Center/Deskripsi/Total + Terbilang, serta tombol Cetak/Export PDF dan Create SPP (data diambil dari Master Data). (2) Kolom tanda tangan pada dokumen SPP diperlebar (lebih tinggi) agar tidak sempit. (3) Nomor SPP kini bisa diketik langsung di tab SPP dan otomatis sinkron ke dokumen, dilengkapi generator nomor otomatis (NNN/SPP/GA-MRT/<bulan romawi>/<tahun>) serta tombol Simpan No. ke transaksi terpilih. (4) Field Form Input dirapikan agar lebar seragam & isi tidak terpotong. (5) Halaman "Petty Cash — Kategori & Relasi" dirampingkan menjadi "Petty Cash — Kategori" — daftar inilah sumber dropdown "Kategori / Jenis Biaya" pada Form Input & Master Data; Tabel Relasi Akun (autofill) yang tidak tersinkron ke mana pun dihapus.'}
   ];
 
   // Mata Anggaran options
@@ -3847,7 +3851,7 @@ async function renderAdmin(page){
     divisi:'Divisi',
     departemen:'Departemen',
     karyawan:'Master Karyawan',
-    pettydropdown:'Petty Cash — Kategori & Relasi',
+    pettydropdown:'Petty Cash — Kategori',
     kendaraan:'Armada Kendaraan',
     anggaran:'Manajemen Anggaran',
     users:'Manajemen User',
@@ -6512,6 +6516,12 @@ let _pcTab = 'dashboard';
 let _pcReimTipe = 'KRT';     // sub-tab KRT/KND di Reimbursement & Master
 let _pcMasterTipe = 'KRT';
 let _pcSppData = null;       // reimbursement terpilih untuk SPP
+// v2.8: state Report Rekap (port dari index-pettycash)
+let _pcRekapTipe = 'KRT';
+let _pcRekapLokasi = '';
+let _pcRekapDari = '';
+let _pcRekapSampai = '';
+let _pcRekapNama = { ppk:'Annisa Mayangsari', pk:'Siti Zahratus Sholihat', sh:'Waziruddin', dh:'M. Ardhan Rafsanjani' };
 
 async function pcLoadAll(){
   const [reimburse, master, dropdown, relasi, log, cash] = await Promise.all([
@@ -6766,7 +6776,8 @@ function pcRenderForm(host){
         <div class="field field-required"><label>Penerima</label><input class="input" name="penerima" list="pc-form-penerima" placeholder="Pilih dari Master Karyawan atau ketik" autocomplete="off"/><datalist id="pc-form-penerima">${karList.map(n=>`<option value="${escapeHtml(n)}"></option>`).join('')}</datalist></div>
         <div class="field"><label>Rekening</label><input class="input" name="rekening" placeholder="Bank & no. rekening"/></div>
         <div class="field"><label>Departemen</label><select class="select sel-search" name="departemen"><option value="">— pilih —</option>${depList.map(d=>`<option ${d==='General Affairs'?'selected':''}>${escapeHtml(d)}</option>`).join('')}</select></div>
-        <div class="field field-required"><label>Kategori / Jenis Biaya</label><select class="select sel-search" name="kategori" id="pc-form-kat"><option value="">— pilih —</option>${kats.map(k=>`<option>${escapeHtml(k)}</option>`).join('')}</select></div>
+        <div class="field field-required"><label>Kategori / Jenis Biaya</label><select class="select sel-search" name="kategori" id="pc-form-kat"><option value="">— pilih —</option>${kats.map(k=>`<option>${escapeHtml(k)}</option>`).join('')}</select>
+          <span class="hint">Pilihan diambil dari <strong>Master Data → Petty Cash — Kategori</strong> (grup ${tipe==='KRT'?'"Kategori KRT"':'"Kategori KND"'}).</span></div>
         ${tipe==='KRT' ? `
           <div class="field full"><label>Kegiatan</label><input class="input" name="kegiatan" placeholder="Uraian kegiatan/pengeluaran"/></div>
           <div class="field field-required"><label>Nominal</label><input class="input pc-money" name="nominal" inputmode="numeric" placeholder="Rp 0"/></div>
@@ -6934,40 +6945,154 @@ function pcSppDocHtml(d){
     <table style="width:100%;font-size:9px;margin-bottom:2px;table-layout:fixed;"><tr><td style="width:50%;">Permohonan Pembayaran:</td><td style="width:50%;text-align:right;">Jakarta, ${tgl}</td></tr></table>
     <table style="border-collapse:collapse;width:100%;font-size:9px;margin-bottom:5px;table-layout:fixed;">
       <tr><th style="border:1px solid #000;border-bottom:none;padding:2px;text-align:center;width:50%;">Disetujui oleh</th><th style="border:1px solid #000;border-bottom:none;padding:2px;text-align:center;width:50%;">Diajukan oleh</th></tr>
-      <tr><td style="border:1px solid #000;border-top:none;border-bottom:none;height:35px;vertical-align:bottom;"><div style="border-bottom:1px solid #000;width:70%;margin:0 auto;"></div></td><td style="border:1px solid #000;border-top:none;border-bottom:none;height:35px;vertical-align:bottom;"><div style="border-bottom:1px solid #000;width:70%;margin:0 auto;"></div></td></tr>
+      <tr><td style="border:1px solid #000;border-top:none;border-bottom:none;height:64px;vertical-align:bottom;padding:4px 10px 6px;"><div style="border-bottom:1px solid #000;width:70%;margin:0 auto;"></div></td><td style="border:1px solid #000;border-top:none;border-bottom:none;height:64px;vertical-align:bottom;padding:4px 10px 6px;"><div style="border-bottom:1px solid #000;width:70%;margin:0 auto;"></div></td></tr>
       <tr><td style="border:1px solid #000;border-top:none;text-align:center;padding:2px;"><div style="font-size:8px;font-style:italic;">General Affair Department Head</div><div style="font-weight:600;">M. Ardhan Rafsanjani</div></td><td style="border:1px solid #000;border-top:none;text-align:center;padding:2px;"><div style="font-weight:600;">${escapeHtml(d.pic||'Siti Zahratus Sholihat')}</div></td></tr></table>
     <div style="font-size:9px;margin-bottom:2px;">Persetujuan Permintaan Pembayaran :</div>
     <table style="border-collapse:collapse;width:100%;font-size:9px;table-layout:fixed;">
       <tr><th style="border:1px solid #000;border-bottom:none;padding:2px;text-align:center;width:50%;">Disetujui oleh</th><th style="border:1px solid #000;border-bottom:none;padding:2px;text-align:center;width:50%;">Diverifikasi oleh</th></tr>
-      <tr><td style="border:1px solid #000;border-top:none;border-bottom:none;height:35px;vertical-align:bottom;"><div style="border-bottom:1px solid #000;width:70%;margin:0 auto;"></div></td><td style="border:1px solid #000;border-top:none;border-bottom:none;height:35px;vertical-align:bottom;"><div style="border-bottom:1px solid #000;width:70%;margin:0 auto;"></div></td></tr>
+      <tr><td style="border:1px solid #000;border-top:none;border-bottom:none;height:64px;vertical-align:bottom;padding:4px 10px 6px;"><div style="border-bottom:1px solid #000;width:70%;margin:0 auto;"></div></td><td style="border:1px solid #000;border-top:none;border-bottom:none;height:64px;vertical-align:bottom;padding:4px 10px 6px;"><div style="border-bottom:1px solid #000;width:70%;margin:0 auto;"></div></td></tr>
       <tr><td style="border:1px solid #000;border-top:none;text-align:center;padding:2px;">&nbsp;</td><td style="border:1px solid #000;border-top:none;text-align:center;padding:2px;">&nbsp;</td></tr></table>
   </div>`;
 }
+/* v2.8: generator nomor SPP berurutan — format NNN/SPP/GA-MRT/<bulan romawi>/<tahun> */
+function pcGenSppNo(){
+  const roman=['','I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII'];
+  const now=new Date(); let max=0;
+  (_pcCache.reimburse||[]).forEach(r=>{ const m=String(r.no_spp||'').match(/^\s*(\d+)/); if(m){ const n=parseInt(m[1],10); if(n>max) max=n; } });
+  return String(max+1).padStart(3,'0')+'/SPP/GA-MRT/'+roman[now.getMonth()+1]+'/'+now.getFullYear();
+}
 function pcRenderSPP(host){
   const opts = _pcCache.reimburse;
-  const d = _pcSppData || opts[0] || {};
+  let cur = _pcSppData || opts[0] || {};
+  let noSpp = (cur.no_spp||'').trim() || pcGenSppNo();
   host.innerHTML = `
     <div class="card"><div class="card-body">
       <div class="flex gap-2 mb-3" style="flex-wrap:wrap;align-items:center">
         <label class="text-sm fw-700">Sumber data SPP:</label>
-        <select class="select" id="pc-spp-pick" style="max-width:360px"><option value="">— Manual / kosong —</option>${opts.map(r=>`<option value="${r.id}" ${d&&d.id===r.id?'selected':''}>${escapeHtml(r.kode)} · ${escapeHtml(r.penerima||'')} · ${fmtRupiah(r.nominal)}</option>`).join('')}</select>
+        <select class="select" id="pc-spp-pick" style="max-width:320px"><option value="">— Manual / kosong —</option>${opts.map(r=>`<option value="${r.id}" ${cur&&cur.id===r.id?'selected':''}>${escapeHtml(r.kode)} · ${escapeHtml(r.penerima||'')} · ${fmtRupiah(r.nominal)}</option>`).join('')}</select>
+        <label class="text-sm fw-700" style="margin-left:6px">Nomor SPP:</label>
+        <input class="input" id="pc-spp-no" value="${escapeHtml(noSpp)}" placeholder="022/SPP/GA-MRT/III/2026" style="max-width:240px"/>
+        <button class="btn btn-sm" id="pc-spp-save" title="Simpan nomor SPP ke transaksi terpilih"><span class="material-symbols-rounded" style="font-size:18px">save</span>Simpan No.</button>
         <button class="btn btn-sm" style="background:#475569;color:#fff" id="pc-spp-print"><span class="material-symbols-rounded" style="font-size:18px">print</span>Print / Export PDF</button>
       </div>
-      <div style="background:#eef1f6;padding:14px;border-radius:10px;overflow:auto"><div id="pc-spp-mount" style="box-shadow:0 4px 18px rgba(0,0,0,.12)">${pcSppDocHtml(d)}</div></div>
+      <p class="muted text-sm" style="margin:-6px 0 10px"><span class="material-symbols-rounded" style="font-size:16px;vertical-align:-3px">info</span> Ketik <strong>Nomor SPP</strong> di atas — dokumen di bawah otomatis mengikuti. Klik <strong>Simpan No.</strong> untuk menyimpannya ke transaksi terpilih (muncul juga di Reimbursement &amp; workflow).</p>
+      <div style="background:#eef1f6;padding:14px;border-radius:10px;overflow:auto"><div id="pc-spp-mount" style="box-shadow:0 4px 18px rgba(0,0,0,.12)">${pcSppDocHtml(Object.assign({}, cur, {no_spp:noSpp}))}</div></div>
     </div></div>`;
-  $('#pc-spp-pick').addEventListener('change', e=>{ _pcSppData = _pcCache.reimburse.find(x=>x.id===e.target.value)||{}; $('#pc-spp-mount').innerHTML = pcSppDocHtml(_pcSppData); });
-  $('#pc-spp-print').addEventListener('click', ()=>{
+  const renderDoc = ()=>{ const m=$('#pc-spp-mount'); if(m) m.innerHTML = pcSppDocHtml(Object.assign({}, cur, {no_spp:noSpp})); };
+  $('#pc-spp-pick').addEventListener('change', e=>{
+    cur = _pcCache.reimburse.find(x=>x.id===e.target.value) || {};
+    _pcSppData = cur;
+    noSpp = (cur.no_spp||'').trim() || pcGenSppNo();
+    const noInp=$('#pc-spp-no'); if(noInp) noInp.value = noSpp;
+    renderDoc();
+  });
+  $('#pc-spp-no').addEventListener('input', e=>{ noSpp = e.target.value; renderDoc(); });
+  $('#pc-spp-save').addEventListener('click', async ()=>{
+    if(!cur || !cur.id){ toast('Pilih "Sumber data SPP" dulu untuk menyimpan nomor','warn'); return; }
+    if(!pcCanManage()){ toast('Anda tidak punya izin mengubah data petty cash','warn'); return; }
+    try{
+      await pcdb.update('reimburse', cur.id, { no_spp: noSpp });
+      pcdb.log('spp.no', `${cur.kode} → ${noSpp}`);
+      await pcLoadAll();
+      cur = _pcCache.reimburse.find(x=>x.id===cur.id) || cur; _pcSppData = cur;
+      toast('Nomor SPP tersimpan: '+noSpp,'success');
+    }catch(err){ toast('Gagal menyimpan: '+(err.message||''),'error'); }
+  });
+  $('#pc-spp-print').addEventListener('click', async ()=>{
+    // simpan nomor ke transaksi (best-effort) agar dokumen tercetak konsisten dengan data
+    if(cur && cur.id && pcCanManage() && (cur.no_spp||'')!==noSpp){
+      try{ await pcdb.update('reimburse', cur.id, { no_spp: noSpp }); await pcLoadAll(); cur = _pcCache.reimburse.find(x=>x.id===cur.id)||cur; }catch(e){}
+    }
     const html = $('#pc-spp-mount').innerHTML;
     const w = window.open('', '_blank');
     w.document.write(`<!DOCTYPE html><html><head><title>SPP</title><meta charset="utf-8"><style>@page{size:A4 portrait;margin:0}body{margin:0}@media print{body{-webkit-print-color-adjust:exact}}</style></head><body onload="window.print()">${html}</body></html>`);
     w.document.close();
-    pcdb.log('spp.print', d?.kode||'');
+    pcdb.log('spp.print', (cur&&cur.kode)||'');
   });
 }
 
 /* ============================================================
    TAB: REPORT — realisasi kas kecil (gaya laporan) + integrasi anggaran
    ============================================================ */
+/* v2.8: REKAP PENGGUNAAN KAS KECIL — dokumen laporan (port dari index-pettycash) */
+function pcFmtTgl(d){ if(!d) return '—'; try{ return new Date(d).toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'}); }catch(e){ return String(d); } }
+function pcRekapRows(){
+  const tipe=_pcRekapTipe;
+  return (_pcCache.master||[]).filter(m=>{
+    if(m.tipe!==tipe) return false;
+    if(_pcRekapLokasi && (m.wilayah||'')!==_pcRekapLokasi) return false;
+    const t=(m.tanggal||'').slice(0,10);
+    if(_pcRekapDari && t && t<_pcRekapDari) return false;
+    if(_pcRekapSampai && t && t>_pcRekapSampai) return false;
+    return true;
+  }).sort((a,b)=>String(a.tanggal||'').localeCompare(String(b.tanggal||'')));
+}
+function pcRekapDocHtml(){
+  const tipe=_pcRekapTipe;
+  const rows=pcRekapRows();
+  const total=rows.reduce((a,m)=>a+(Number(m.total_biaya)||0),0);
+  const judul = tipe==='KRT' ? 'REKAP PENGGUNAAN KAS KECIL KERUMAHTANGGAAN' : 'REKAP PENGGUNAAN KAS KECIL KENDARAAN OPERASIONAL';
+  let dari=_pcRekapDari, sampai=_pcRekapSampai;
+  if(!dari || !sampai){ const ts=rows.map(m=>(m.tanggal||'').slice(0,10)).filter(Boolean).sort(); if(ts.length){ dari=dari||ts[0]; sampai=sampai||ts[ts.length-1]; } }
+  const periode = (dari||sampai) ? `${pcFmtTgl(dari)} – ${pcFmtTgl(sampai)}` : 'Semua tanggal';
+  const cetak = new Date().toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'});
+  const N=_pcRekapNama;
+  const sigCell=(nama)=>`<td style="border:1px solid #cbd5e1;padding:6px 8px;text-align:center;vertical-align:bottom;width:25%;"><div style="height:42px"></div><div style="font-weight:700;font-size:11px;">${escapeHtml(nama||'—')}</div></td>`;
+  const bodyRows = rows.length ? rows.map((m,i)=>`<tr>
+      <td style="border:1px solid #e2e8f0;padding:6px 8px;text-align:center;">${i+1}</td>
+      <td style="border:1px solid #e2e8f0;padding:6px 8px;text-align:center;white-space:nowrap;">${pcFmtTgl(m.tanggal)}</td>
+      <td style="border:1px solid #e2e8f0;padding:6px 8px;">${escapeHtml(m.no_sap||'—')}</td>
+      <td style="border:1px solid #e2e8f0;padding:6px 8px;">${escapeHtml(m.cost_center||'—')}</td>
+      <td style="border:1px solid #e2e8f0;padding:6px 8px;">${escapeHtml(m.deskripsi||'—')}</td>
+      <td style="border:1px solid #e2e8f0;padding:6px 8px;text-align:right;white-space:nowrap;">Rp ${(Number(m.total_biaya)||0).toLocaleString('id-ID')}</td></tr>`).join('')
+    : `<tr><td colspan="6" style="border:1px solid #e2e8f0;padding:14px;text-align:center;color:#64748b;">Tidak ada transaksi pada filter ini</td></tr>`;
+  return `<div id="pc-rekap-doc" style="background:#fff;padding:22px 26px;font-family:'Inter',Arial,sans-serif;color:#0F1B2D;min-width:680px;">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:6px;">
+      <img src="https://raw.githubusercontent.com/aleasmir76/logo_mrt/main/MRT_Jakarta_logo_vertical.svg.png" height="48" onerror="this.style.display='none'">
+      <div style="text-align:right;">
+        <div style="font-weight:800;font-size:17px;color:#003D7E;line-height:1.25;">${judul.replace(/ (KERUMAHTANGGAAN|KENDARAAN OPERASIONAL)$/,'<br>$1')}</div>
+        <div style="font-size:11px;color:#64748b;margin-top:2px;">Tanggal Cetak: ${cetak}</div>
+      </div>
+    </div>
+    <hr style="border:none;border-top:2px solid #003D7E;margin:8px 0 14px;">
+    <div style="display:grid;grid-template-columns:1fr auto;gap:20px;align-items:start;margin-bottom:16px;">
+      <div style="font-size:13px;line-height:1.9;">
+        <div><strong>Lokasi</strong> &nbsp;: ${escapeHtml(_pcRekapLokasi||'Semua Lokasi')}</div>
+        <div><strong>Periode</strong> &nbsp;: ${escapeHtml(periode)}</div>
+        <div><strong>Jumlah Transaksi</strong> &nbsp;: ${rows.length}</div>
+        <div style="margin-top:4px;"><strong>Total Biaya</strong> &nbsp;: <strong style="color:#003D7E;font-size:14px;">Rp ${total.toLocaleString('id-ID')}</strong></div>
+      </div>
+      <table style="border-collapse:collapse;font-size:11px;min-width:430px;">
+        <thead>
+          <tr><th colspan="4" style="background:#003D7E;color:#fff;padding:7px;text-align:center;letter-spacing:.06em;font-size:12px;">PENGESAHAN</th></tr>
+          <tr style="background:#EEF4FC;">
+            <th style="padding:6px;border:1px solid #cbd5e1;font-size:11px;">Pembantu Kas</th>
+            <th style="padding:6px;border:1px solid #cbd5e1;font-size:11px;">Pemegang Kas</th>
+            <th style="padding:6px;border:1px solid #cbd5e1;font-size:11px;">Section Head</th>
+            <th style="padding:6px;border:1px solid #cbd5e1;font-size:11px;">Dept Head</th>
+          </tr>
+        </thead>
+        <tbody><tr>${sigCell(N.ppk)}${sigCell(N.pk)}${sigCell(N.sh)}${sigCell(N.dh)}</tr></tbody>
+      </table>
+    </div>
+    <table style="width:100%;border-collapse:collapse;font-size:12.5px;">
+      <thead><tr style="background:#003D7E;color:#fff;">
+        <th style="border:1px solid #1e56c5;padding:8px;width:42px;">No</th>
+        <th style="border:1px solid #1e56c5;padding:8px;">Tanggal</th>
+        <th style="border:1px solid #1e56c5;padding:8px;">No SAP</th>
+        <th style="border:1px solid #1e56c5;padding:8px;">Cost Center</th>
+        <th style="border:1px solid #1e56c5;padding:8px;">Deskripsi</th>
+        <th style="border:1px solid #1e56c5;padding:8px;text-align:right;">Total</th>
+      </tr></thead>
+      <tbody>${bodyRows}</tbody>
+      <tfoot><tr style="background:#EEF4FC;font-weight:700;">
+        <td colspan="5" style="border:1px solid #bfdbfe;padding:8px;text-align:right;color:#475569;">TOTAL</td>
+        <td style="border:1px solid #bfdbfe;padding:8px;text-align:right;color:#003D7E;white-space:nowrap;">Rp ${total.toLocaleString('id-ID')}</td>
+      </tr></tfoot>
+    </table>
+    <div style="margin-top:12px;padding:8px 12px;background:#F8FAFC;border-radius:6px;font-size:12px;font-style:italic;color:#334155;">Terbilang: <strong>${escapeHtml(pcTerbilang(total))}</strong></div>
+  </div>`;
+}
 function pcRenderReport(host){
   const all=_pcCache.reimburse;
   const total=all.reduce((a,r)=>a+(Number(r.nominal)||0),0);
@@ -6993,12 +7118,53 @@ function pcRenderReport(host){
         <div class="card" style="margin-top:14px"><div class="card-body"><div class="table-wrap"><table class="t t-dense"><thead><tr><th>Kategori</th><th style="text-align:right">Nominal</th><th style="text-align:right">%</th></tr></thead>
           <tbody>${katArr.length?katArr.map(([k,v])=>`<tr><td>${escapeHtml(k)}</td><td class="mono" style="text-align:right">${fmtRupiah(v)}</td><td style="text-align:right">${total?Math.round(v/total*100):0}%</td></tr>`).join(''):'<tr><td colspan="3" class="empty-row">Belum ada data</td></tr>'}</tbody></table></div></div></div>
         <p class="muted text-sm" style="margin-top:10px"><span class="material-symbols-rounded" style="font-size:16px;vertical-align:-3px">info</span> Nominal <strong>Fund GA</strong> juga terhitung pada realisasi <strong>Manajemen Anggaran</strong> (per Mata Anggaran), namun dilaporkan terpisah sebagai "Petty Cash".</p>
+      </div></div>
+    <div class="card" style="margin-top:18px"><div class="card-head"><h3>Report Rekap — Penggunaan Kas Kecil</h3>
+      <div class="flex gap-2" style="flex-wrap:wrap">
+        <button class="btn btn-sm" style="background:#dc2626;color:#fff" id="pc-rekap-print"><span class="material-symbols-rounded" style="font-size:18px">article</span>Cetak / Export PDF</button>
+        <button class="btn btn-primary btn-sm" id="pc-rekap-spp"><span class="material-symbols-rounded" style="font-size:18px">mail</span>Create SPP</button>
+      </div></div>
+      <div class="card-body">
+        <div class="flex gap-2 mb-3" style="flex-wrap:wrap">
+          <button class="btn btn-sm pc-rkt" data-rt="KRT" style="${_pcRekapTipe==='KRT'?'background:var(--mrt-blue);color:#fff':'background:#fff;border:1px solid var(--border);color:var(--text-2)'}">Kerumahtanggaan</button>
+          <button class="btn btn-sm pc-rkt" data-rt="KND" style="${_pcRekapTipe==='KND'?'background:var(--mrt-blue);color:#fff':'background:#fff;border:1px solid var(--border);color:var(--text-2)'}">Kendaraan</button>
+        </div>
+        <div class="form-grid" style="margin-bottom:8px">
+          <div class="field"><label>Lokasi</label><select class="select sel-search" id="pc-rekap-lok"><option value="">— Semua Lokasi —</option>${pcWilayah().map(w=>`<option ${_pcRekapLokasi===w?'selected':''}>${escapeHtml(w)}</option>`).join('')}</select></div>
+          <div class="field"><label>Periode (Dari — Sampai)</label><div class="flex gap-2"><input class="input" type="date" id="pc-rekap-dari" value="${escapeHtml(_pcRekapDari)}"/><input class="input" type="date" id="pc-rekap-sampai" value="${escapeHtml(_pcRekapSampai)}"/></div></div>
+          <div class="field"><label>Pembantu Kas</label><input class="input" id="pc-rk-ppk" value="${escapeHtml(_pcRekapNama.ppk)}"/></div>
+          <div class="field"><label>Pemegang Kas</label><input class="input" id="pc-rk-pk" value="${escapeHtml(_pcRekapNama.pk)}"/></div>
+          <div class="field"><label>Section Head</label><input class="input" id="pc-rk-sh" value="${escapeHtml(_pcRekapNama.sh)}"/></div>
+          <div class="field"><label>Dept Head</label><input class="input" id="pc-rk-dh" value="${escapeHtml(_pcRekapNama.dh)}"/></div>
+        </div>
+        <p class="muted text-sm" style="margin:-2px 0 10px"><span class="material-symbols-rounded" style="font-size:16px;vertical-align:-3px">info</span> Data rekap diambil dari <strong>Master Data</strong> Petty Cash (No SAP, Cost Center, Deskripsi, Total) sesuai Tipe, Lokasi &amp; Periode di atas. Nama pengesahan dapat disunting.</p>
+        <div style="background:#eef1f6;padding:14px;border-radius:10px;overflow:auto"><div id="pc-rekap-mount" style="box-shadow:0 4px 18px rgba(0,0,0,.12)">${pcRekapDocHtml()}</div></div>
       </div></div>`;
   if(typeof Chart!=='undefined'){
     const kc=$('#pc-rep-kat'); if(kc) new Chart(kc.getContext('2d'),{type:'bar',data:{labels:katArr.map(k=>k[0].length>22?k[0].slice(0,20)+'…':k[0]),datasets:[{data:katArr.map(k=>k[1]),backgroundColor:'#C9A24B',borderRadius:6,maxBarThickness:36}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>fmtRupiah(c.parsed.x)}}},scales:{x:{ticks:{callback:v=>'Rp '+Number(v).toLocaleString('id-ID'),font:{size:9}}}}}});
     const wc=$('#pc-rep-wil'); if(wc){ const _wpal=['#0F4C9C','#C9622B','#6B7280','#00A859','#7C3AED','#0EA5E9']; const _wl=pcWilayah(); new Chart(wc.getContext('2d'),{type:'doughnut',data:{labels:_wl.map(w=>w.replace('GA - ','')),datasets:[{data:_wl.map(w=>byWil[w]||0),backgroundColor:_wl.map((_,i)=>_wpal[i%_wpal.length]),borderColor:'#fff',borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'},tooltip:{callbacks:{label:c=>c.label+': '+fmtRupiah(c.parsed)}}},cutout:'55%'}}); }
   }
   $('#pc-rep-csv').addEventListener('click',()=>{ csvDownload('report-pettycash-'+new Date().toISOString().slice(0,10)+'.csv', katArr.map(([k,v])=>({Kategori:k,Nominal:v,Persen:(total?Math.round(v/total*100):0)+'%'}))); });
+
+  /* --- Report Rekap (v2.8) --- */
+  const remountRekap=()=>{ const m=$('#pc-rekap-mount'); if(m) m.innerHTML=pcRekapDocHtml(); };
+  $$('.pc-rkt',host).forEach(b=>b.addEventListener('click',()=>{ _pcRekapTipe=b.dataset.rt; pcRenderReport(host); }));
+  $('#pc-rekap-lok')?.addEventListener('change',e=>{ _pcRekapLokasi=e.target.value; remountRekap(); });
+  $('#pc-rekap-dari')?.addEventListener('change',e=>{ _pcRekapDari=e.target.value; remountRekap(); });
+  $('#pc-rekap-sampai')?.addEventListener('change',e=>{ _pcRekapSampai=e.target.value; remountRekap(); });
+  $('#pc-rk-ppk')?.addEventListener('input',e=>{ _pcRekapNama.ppk=e.target.value; remountRekap(); });
+  $('#pc-rk-pk')?.addEventListener('input',e=>{ _pcRekapNama.pk=e.target.value; remountRekap(); });
+  $('#pc-rk-sh')?.addEventListener('input',e=>{ _pcRekapNama.sh=e.target.value; remountRekap(); });
+  $('#pc-rk-dh')?.addEventListener('input',e=>{ _pcRekapNama.dh=e.target.value; remountRekap(); });
+  $('#pc-rekap-print')?.addEventListener('click',()=>{
+    const html=$('#pc-rekap-mount').innerHTML;
+    const w=window.open('','_blank');
+    w.document.write(`<!DOCTYPE html><html><head><title>Rekap Kas Kecil</title><meta charset="utf-8"><style>@page{size:A4 landscape;margin:10mm}body{margin:0;font-family:Arial,sans-serif}@media print{body{-webkit-print-color-adjust:exact}}</style></head><body onload="window.print()">${html}</body></html>`);
+    w.document.close();
+    pcdb.log('rekap.print', _pcRekapTipe);
+  });
+  $('#pc-rekap-spp')?.addEventListener('click',()=>{ _pcTab='spp'; renderPettyTab(); $$('#pc-tabs .pc-tab-btn').forEach(x=>{ const on=x.dataset.tab==='spp'; x.style.cssText=on?'background:var(--mrt-blue);color:#fff':'background:#fff;color:var(--text-2);border:1px solid var(--border)'; }); });
+  try{ enhanceSearchable(host); }catch(e){}
 }
 
 /* ============================================================
@@ -7015,32 +7181,22 @@ function pcRenderDropdown(host){
   const manage=pcCanManage();
   const groups=[...new Set(_pcCache.dropdown.map(d=>d.grup))].filter(g => g !== 'Wilayah/Loket');
   host.innerHTML=`
-    <div class="card"><div class="card-head"><h3>Petty Cash — Kategori &amp; Relasi Akun</h3>
+    <div class="card"><div class="card-head"><h3>Petty Cash — Kategori</h3>
       ${manage?`<div class="flex gap-2"><input class="input" id="pc-newgrp" placeholder="Nama list baru..." style="max-width:200px"/><button class="btn btn-primary btn-sm" id="pc-addgrp">+ Buat List</button></div>`:''}</div>
       <div class="card-body">
-      <p class="muted text-sm" style="margin:-4px 0 12px"><span class="material-symbols-rounded" style="font-size:16px;vertical-align:-3px">info</span> <strong>Wilayah/Loket</strong> petty cash mengikuti master <strong>Lokasi Kerja</strong>, <strong>Divisi/Departemen</strong> mengikuti masternya, dan <strong>Pengguna</strong> mengikuti <strong>Master Karyawan</strong> — kelola di menu masing-masing. Di sini hanya opsi khas petty cash: kategori &amp; relasi akun (autofill).</p>
+      <p class="muted text-sm" style="margin:-4px 0 12px"><span class="material-symbols-rounded" style="font-size:16px;vertical-align:-3px">info</span> Daftar di bawah ini menjadi <strong>sumber dropdown "Kategori / Jenis Biaya"</strong> pada <strong>Form Input</strong> &amp; <strong>Master Data</strong> Petty Cash (grup <em>Kategori KRT</em> untuk Kerumahtanggaan, <em>Kategori KND</em> untuk Kendaraan). <strong>Wilayah/Loket</strong> mengikuti master <strong>Lokasi Kerja</strong>, <strong>Divisi/Departemen</strong> mengikuti masternya, dan <strong>Pengguna</strong> mengikuti <strong>Master Karyawan</strong> — kelola di menu masing-masing.</p>
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1rem">
         ${groups.map(g=>`<div class="card" style="margin:0"><div class="card-head" style="padding:10px 14px"><h3 style="font-size:13px">${escapeHtml(g)}</h3></div>
           <div class="card-body" style="padding:12px">
             ${_pcCache.dropdown.filter(d=>d.grup===g).map(d=>`<div class="flex between items-center" style="padding:4px 0;border-bottom:1px dashed var(--border-2)"><span class="text-sm">${escapeHtml(d.nilai)}</span>${manage?`<button class="btn-icon" data-deldd="${d.id}" style="padding:3px"><span class="material-symbols-rounded" style="font-size:15px">close</span></button>`:''}</div>`).join('')||'<div class="muted text-sm">kosong</div>'}
             ${manage?`<div class="flex gap-2 mt-2"><input class="input" data-addto="${escapeHtml(g)}" placeholder="Tambah nilai..." style="font-size:12px;padding:6px 8px"/><button class="btn-icon" data-addval="${escapeHtml(g)}"><span class="material-symbols-rounded" style="font-size:16px">add</span></button></div>`:''}
-          </div></div>`).join('')}
-      </div></div></div>
-    <div class="card" style="margin-top:14px"><div class="card-head"><h3>Tabel Relasi Akun (Autofill)</h3>${manage?'<button class="btn btn-primary btn-sm" id="pc-rel-add">+ Tambah Baris</button>':''}</div>
-      <div class="card-body"><div class="table-wrap"><table class="t t-dense"><thead><tr><th>Jenis Biaya</th><th>GL Account</th><th>No. Fund</th><th>Cost Center</th>${manage?'<th></th>':''}</tr></thead>
-        <tbody>${_pcCache.relasi.map(r=>`<tr><td>${escapeHtml(r.jenis_biaya)}</td><td>${escapeHtml(r.gl_account||'')}</td><td>${escapeHtml(r.no_fund||'')}</td><td>${escapeHtml(r.cost_center||'')}</td>${manage?`<td style="text-align:right"><button class="btn-icon" data-delrel="${r.id}"><span class="material-symbols-rounded" style="font-size:16px">delete</span></button></td>`:''}</tr>`).join('')||`<tr><td colspan="${manage?5:4}" class="empty-row">Belum ada relasi</td></tr>`}</tbody></table></div></div></div>`;
+          </div></div>`).join('')||'<div class="muted text-sm">Belum ada list kategori. Buat grup <strong>Kategori KRT</strong> / <strong>Kategori KND</strong> lalu tambahkan nilainya.</div>'}
+      </div></div></div>`;
 
   if(manage){
     $('#pc-addgrp')?.addEventListener('click',async()=>{ const v=$('#pc-newgrp').value.trim(); if(!v)return; await pcdb.insert('dropdown',{grup:v,nilai:'(contoh)'}); await pcLoadAll(); pcRenderDropdown(host); });
     $$('button[data-addval]',host).forEach(b=>b.addEventListener('click',async()=>{ const inp=host.querySelector(`input[data-addto="${b.dataset.addval}"]`); const v=(inp.value||'').trim(); if(!v)return; await pcdb.insert('dropdown',{grup:b.dataset.addval,nilai:v}); await pcLoadAll(); pcRenderDropdown(host); }));
     $$('button[data-deldd]',host).forEach(b=>b.addEventListener('click',async()=>{ await pcdb.remove('dropdown',b.dataset.deldd); await pcLoadAll(); pcRenderDropdown(host); }));
-    $('#pc-rel-add')?.addEventListener('click',()=>{
-      openModal(`<div class="modal-head"><h3>Tambah Relasi Akun</h3><button class="btn-icon" onclick="closeModal()"><span class="material-symbols-rounded">close</span></button></div>
-        <div class="modal-body"><form id="pc-rel-form"><div class="field"><label>Jenis Biaya</label><input class="input" name="jenis_biaya"/></div><div class="field"><label>GL Account</label><input class="input" name="gl_account"/></div><div class="field"><label>No. Fund</label><input class="input" name="no_fund"/></div><div class="field"><label>Cost Center</label><input class="input" name="cost_center"/></div></form></div>
-        <div class="modal-foot"><button class="btn btn-ghost" onclick="closeModal()">Batal</button><button class="btn btn-primary" id="pc-rel-save">Simpan</button></div>`);
-      $('#pc-rel-save').addEventListener('click',async()=>{ const fd=new FormData($('#pc-rel-form')); if(!(fd.get('jenis_biaya')||'').trim()){toast('Jenis biaya wajib','warn');return;} await pcdb.insert('relasi',{jenis_biaya:fd.get('jenis_biaya'),gl_account:fd.get('gl_account'),no_fund:fd.get('no_fund'),cost_center:fd.get('cost_center')}); await pcLoadAll(); closeModal(); pcRenderDropdown(host); });
-    });
-    $$('button[data-delrel]',host).forEach(b=>b.addEventListener('click',async()=>{ await pcdb.remove('relasi',b.dataset.delrel); await pcLoadAll(); pcRenderDropdown(host); }));
   }
 }
 
