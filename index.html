@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>GA Hotline Portal — General Affairs MRT</title>
+<title>GA CRM & Payment Portal</title>
 <link rel="icon" type="image/png" href="logo.png" />
 <link rel="apple-touch-icon" href="apple-touch-icon.png" />
 <!-- PWA -->
@@ -1227,8 +1227,8 @@ table.t{
           <div class="brand-mark"><img src="logo.png" alt="GA" onload="this.parentElement.classList.add('has-img')" onerror="this.parentElement.classList.remove('has-img');this.outerHTML='GA'" /></div>
           <div class="brand-name"><strong style="color:#fff">GA Hotline Portal</strong><span style="color:#CFDCEE">Admin Dashboard</span></div>
         </div>
-        <h2>Selamat datang kembali!</h2>
-        <p>Silakan masuk untuk melanjutkan.</p>
+        <h2>Eh, ketemu lagi!</h2>
+        <p>Tetap semangat walau rintangan menghadang, karena harga BBM semakin meradang!!! Saya akan lawan!!</p>
       </div>
     </div>
     <div class="login-right">
@@ -4834,7 +4834,7 @@ async function openRequestEdit(id){
           <div class="field"><label>Mata Anggaran</label>
             <select class="select" name="mata_anggaran">
               <option value="">(kosong)</option>
-              ${ma.map(m => `<option ${m.name===r.mata_anggaran?'selected':''}>${escapeHtml(m.name)}${m.kode?' — '+escapeHtml(m.kode):''}</option>`).join('')}
+              ${ma.map(m => `<option value="${escapeHtml(m.name)}" ${m.name===r.mata_anggaran?'selected':''}>${m.kode?escapeHtml(m.kode)+' - ':''}${escapeHtml(m.name)}</option>`).join('')}
             </select>
             <span class="hint">Daftar Mata Anggaran dikelola di menu Master Data.</span>
           </div>
@@ -5547,7 +5547,7 @@ function openPaymentEdit(requestId){
     } else if(f.type === 'mataselect'){
       // Number Fund — dropdown dari master Mata Anggaran (stores the NAME, synced with budgeting)
       const ph = `<option value="" disabled ${(!val||val==='')?'selected':''}>— pilih mata anggaran —</option>`;
-      const opts = ph + (_fundsCache||[]).map(o => `<option value="${escapeHtml(o.name)}" ${String(val)===String(o.name)?'selected':''}>${escapeHtml(o.name)}${o.kode?` (${escapeHtml(o.kode)})`:''}</option>`).join('');
+      const opts = ph + (_fundsCache||[]).map(o => `<option value="${escapeHtml(o.name)}" ${String(val)===String(o.name)?'selected':''}>${o.kode?escapeHtml(o.kode)+' - ':''}${escapeHtml(o.name)}</option>`).join('');
       control = `<select class="select" data-pf="${f.key}"${disAttr}>${opts}</select>`;
     } else if(f.type === 'textarea'){
       control = `<textarea class="textarea" data-pf="${f.key}" style="min-height:70px"${disAttr}>${escapeHtml(val||'')}</textarea>`;
@@ -6236,7 +6236,7 @@ async function openRecurringEdit(id, onDone){
           <div class="field" id="rp-mata-wrap"><label>Mata Anggaran</label>
             <select class="select" name="mata_anggaran" id="rp-mata">
               <option value="">(kosong)</option>
-              ${funds.map(f=>`<option ${cur.mata_anggaran===f.name?'selected':''}>${escapeHtml(f.name)}${f.kode?' — '+escapeHtml(f.kode):''}</option>`).join('')}
+              ${funds.map(f=>`<option value="${escapeHtml(f.name)}" ${cur.mata_anggaran===f.name?'selected':''}>${f.kode?escapeHtml(f.kode)+' - ':''}${escapeHtml(f.name)}</option>`).join('')}
             </select>
             <span class="hint">Untuk tagihan GA — nominal akan menambah realisasi pada mata anggaran ini.</span>
           </div>
@@ -6810,7 +6810,7 @@ function pcRenderForm(host){
 
   $$('.pc-ft', host).forEach(b=>b.addEventListener('click', ()=>{ _pcReimTipe=b.dataset.rt; pcRenderForm(host); }));
   // Mata anggaran options
-  db.listMataAnggaran().then(funds=>{ const sel=$('#pc-form-ma'); if(sel){ sel.innerHTML='<option value="">(kosong)</option>'+funds.map(f=>`<option>${escapeHtml(f.name)}</option>`).join(''); refreshSearchable(sel); } }).catch(()=>{});
+  db.listMataAnggaran().then(funds=>{ const sel=$('#pc-form-ma'); if(sel){ sel.innerHTML='<option value="">(kosong)</option>'+funds.map(f=>`<option value="${escapeHtml(f.name)}">${f.kode?escapeHtml(f.kode)+' - ':''}${escapeHtml(f.name)}</option>`).join(''); refreshSearchable(sel); } }).catch(()=>{});
   // Money formatter + KND total
   $$('.pc-money', host).forEach(inp=>inp.addEventListener('input', e=>{ const d=e.target.value.replace(/\D/g,''); e.target.value=d?'Rp '+Number(d).toLocaleString('id-ID'):''; pcKndTotal(host); }));
   function pcKndTotal(h){ const tot=$('#pc-knd-total',h); if(!tot) return; let s=0; $$('.pc-knd',h).forEach(i=>s+=Number((i.value||'').replace(/\D/g,''))||0); tot.value='Rp '+s.toLocaleString('id-ID'); }
