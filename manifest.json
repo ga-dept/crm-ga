@@ -45,6 +45,16 @@
       "url": "./index.html#/admin/payments"
     },
     {
+      "name": "Pembayaran Rutin",
+      "short_name": "Rutin",
+      "url": "./index.html#/admin/recurring"
+    },
+    {
+      "name": "Petty Cash",
+      "short_name": "Petty Cash",
+      "url": "./index.html#/admin/petty"
+    },
+    {
       "name": "Dashboard",
       "short_name": "Dashboard",
       "url": "./index.html#/admin/dashboard"

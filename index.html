@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>GA Hotline Portal — General Affairs MRT</title>
-<link rel="icon" type="image/png" href="logo.png" />
+<link rel="icon" type="image/png" href="MRTJ_compact_color.png" />
 <link rel="apple-touch-icon" href="apple-touch-icon.png" />
 <!-- PWA -->
 <link rel="manifest" href="manifest.json" />
@@ -147,6 +147,15 @@ button{font-family:inherit;cursor:pointer}
 .badge.status-selesai{background:var(--mrt-green-soft);color:#065F46}
 .badge.status-ditolak{background:#FEE2E2;color:#991B1B}
 .badge.gray{background:#EEF2F7;color:#475569}
+/* v2.5: typesearch combobox */
+.se-wrap{position:relative;width:100%}
+.se-input{cursor:text}
+.se-menu{display:none;position:absolute;z-index:60;left:0;right:0;top:calc(100% + 4px);max-height:240px;overflow:auto;
+  background:#fff;border:1px solid var(--border);border-radius:10px;box-shadow:0 12px 30px rgba(2,32,71,.16);padding:4px}
+.se-menu.open{display:block}
+.se-item{padding:8px 10px;border-radius:7px;font-size:13.5px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.se-item:hover,.se-item.on{background:var(--mrt-blue-soft);color:var(--mrt-blue)}
+.se-empty{padding:9px 10px;font-size:13px;color:var(--text-mut)}
 
 /* type-search combobox (Divisi/Departemen) */
 .combo{position:relative}
@@ -1184,12 +1193,13 @@ table.t{
             <img src="MRTJ_compact_color.png" alt="GASS CRM" onerror="this.style.display='none'"/>
             <div class="ft">GASS <span>CRM</span></div>
           </div>
-          <p>Portal internal General Affairs PT MRT Jakarta untuk permintaan operasional, pelacakan status, pembayaran, dan petty cash — all in one!</p>
+          <p>Portal internal General Affairs PT MRT Jakarta untuk permintaan operasional, pelacakan status, pembayaran, dan petty cash — dalam satu tempat.</p>
           <a class="footer-social" href="mailto:ga.services@jakartamrt.co.id" title="Email GA Department" aria-label="Email GA Department">
             <span class="material-symbols-rounded">mail</span>
           </a>
         </div>
         <nav class="footer-links" aria-label="Tautan">
+          <a href="mailto:ga.services@jakartamrt.co.id"><span class="material-symbols-rounded">mail</span>Contact Us</a>
           <a href="https://bit.ly/gassway" target="_blank" rel="noopener">GASSWay!</a>
           <a href="https://marti-id.web.app" target="_blank" rel="noopener">Marti</a>
         </nav>
@@ -1213,7 +1223,7 @@ table.t{
           <div class="brand-name"><strong style="color:#fff">GA Hotline Portal</strong><span style="color:#CFDCEE">Admin Dashboard</span></div>
         </div>
         <h2>Selamat datang kembali!</h2>
-        <p>Jangan pernah menyerah, walau kerjaanmu melimpah, ada keluarga yang butuh nafkah. :)</p>
+        <p>Silakan masuk untuk melanjutkan.</p>
       </div>
     </div>
     <div class="login-right">
@@ -1257,6 +1267,9 @@ table.t{
           <div class="nav-group-head"><span class="ng-label">Keuangan</span><span class="material-symbols-rounded chev">expand_more</span></div>
           <div class="nav-group-body">
             <a class="nav-item" data-route="payments"><span class="material-symbols-rounded">payments</span><span class="nav-label">Payment</span></a>
+            <a class="nav-item" data-route="payments_nonga"><span class="material-symbols-rounded">request_quote</span><span class="nav-label">Payment Non-GA</span></a>
+            <a class="nav-item" data-route="recurring"><span class="material-symbols-rounded">event_repeat</span><span class="nav-label">Pembayaran Rutin</span></a>
+            <a class="nav-item" data-route="petty"><span class="material-symbols-rounded">account_balance_wallet</span><span class="nav-label">Petty Cash</span></a>
             <a class="nav-item" data-route="anggaran" data-allowed-roles="superadmin,admin"><span class="material-symbols-rounded">savings</span><span class="nav-label">Manajemen Anggaran</span></a>
           </div>
         </div>
@@ -1267,6 +1280,7 @@ table.t{
             <a class="nav-item" data-route="kategori"    data-allowed-roles="superadmin,admin"><span class="material-symbols-rounded">category</span><span class="nav-label">Kategori Pemesanan</span></a>
             <a class="nav-item" data-route="divisi"      data-allowed-roles="superadmin,admin"><span class="material-symbols-rounded">account_tree</span><span class="nav-label">Divisi</span></a>
             <a class="nav-item" data-route="departemen"  data-allowed-roles="superadmin,admin"><span class="material-symbols-rounded">groups</span><span class="nav-label">Departemen</span></a>
+            <a class="nav-item" data-route="karyawan"    data-allowed-roles="superadmin,admin"><span class="material-symbols-rounded">badge</span><span class="nav-label">Master Karyawan</span></a>
             <a class="nav-item" data-route="kendaraan"    data-allowed-roles="superadmin,admin"><span class="material-symbols-rounded">directions_car</span><span class="nav-label">Armada Kendaraan</span></a>
           </div>
         </div>
@@ -1325,7 +1339,7 @@ table.t{
   <div class="rating-page">
     <div class="rating-card">
       <div class="flex items-center gap-3 mb-4">
-        <div class="brand-mark"><img src="logo.png" alt="GA" onload="this.parentElement.classList.add('has-img')" onerror="this.parentElement.classList.remove('has-img');this.outerHTML='GA'" /></div>
+        <div class="brand-mark"><img src="MRTJ_compact_color.png" alt="GA" onload="this.parentElement.classList.add('has-img')" onerror="this.parentElement.classList.remove('has-img');this.outerHTML='GA'" /></div>
         <div class="brand-name"><strong>Penilaian Pelayanan</strong><span style="font-size:11.5px;color:var(--text-mut)">GA Hotline Portal</span></div>
       </div>
       <div id="rating-body">
@@ -1340,7 +1354,7 @@ table.t{
   <nav class="public-nav">
     <div class="public-nav-inner">
       <div class="brand">
-        <div class="brand-mark"><img src="logo.png" alt="GA" onload="this.parentElement.classList.add('has-img')" onerror="this.parentElement.classList.remove('has-img');this.outerHTML='GA'" /></div>
+        <div class="brand-mark"><img src="MRTJ_compact_color.png" alt="GA" onload="this.parentElement.classList.add('has-img')" onerror="this.parentElement.classList.remove('has-img');this.outerHTML='GA'" /></div>
         <div class="brand-name"><strong>GA Hotline Portal</strong><span>Riwayat Versi</span></div>
       </div>
       <div class="nav-links">
@@ -1416,6 +1430,10 @@ const ROUTE_ROLES = {
   requests:   ['superadmin','admin','pic','admin_payment'],
   ratings:    ['superadmin','admin','pic'],
   payments:   ['superadmin','admin','pic','admin_payment'],
+  payments_nonga: ['superadmin','admin','pic','admin_payment'],
+  recurring:  ['superadmin','admin','pic','admin_payment'],
+  petty:      ['superadmin','admin','pic','admin_payment'],
+  karyawan:   ['superadmin','admin'],
   masterdata: ['superadmin','admin'],
   kategori:   ['superadmin','admin'],
   divisi:     ['superadmin','admin'],
@@ -1432,6 +1450,10 @@ const ROLE_LABEL = { superadmin:'Super Admin', admin:'Admin', pic:'PIC GA', admi
 const PAGE_LABELS = {
   dashboard:'Dashboard', myticket:'Tiket Saya', approvals:'Persetujuan', requests:'Daftar Permintaan',
   ratings:'Daftar Penilaian', payments:'Payment', anggaran:'Manajemen Anggaran',
+  payments_nonga:'Payment Non-GA',
+  recurring:'Pembayaran Rutin',
+  petty:'Petty Cash (izin CRUD)',
+  karyawan:'Master Karyawan',
   masterdata:'Master Data (Lokasi/Tujuan/Anggaran)', kategori:'Kategori Pemesanan', divisi:'Divisi',
   departemen:'Departemen', kendaraan:'Armada Kendaraan', users:'Manajemen User',
   slatargets:'SLA Target', activity:'Log Aktivitas', version:'Riwayat Versi'
@@ -1447,6 +1469,7 @@ function getAllowedPages(user){
 function userCanAccess(user, route){
   if(!user) return false;
   if(user.role === 'superadmin') return true;            // superadmin always has full access
+  if(route === 'petty') return true;                     // v2.4: Petty Cash dapat dibuka semua user (CRUD digate via Hak Akses)
   const ap = getAllowedPages(user);
   if(ap) return route === 'dashboard' || ap.includes(route);
   const rr = ROUTE_ROLES[route];
@@ -1506,6 +1529,10 @@ const NON_GA_STATUS_CLASS = {
   'Revision':'pay-batal'        // merah
 };
 const FUND_OPTIONS = ['General Affairs','Non General Affairs'];
+// v2.3: Pembayaran Rutin (tagihan berkala — pulsa, telepon, internet, dll.)
+const RECURRING_JENIS = ['Pulsa','Telepon','Internet','Listrik','Air','Sewa','Langganan Software','Iuran/Retribusi','Lainnya'];
+// Ambang reminder (hari sebelum jatuh tempo): H-14, H-7, lalu harian H-6 … H-0
+const RECURRING_THRESHOLDS = [14,7,6,5,4,3,2,1,0];
 const COST_TYPES = ['CAPEX','OPEX'];
 const SUBSIDI_OPTIONS = ['Subsidi','Non Subsidi'];
 const JENIS_PEMBAYARAN = ['Invoice','Kas Kecil','Transfer','Petty Cash','Reimbursement','Corporate Card','Lainnya'];
@@ -1715,7 +1742,10 @@ const demo = (() => {
     {id:'v12',version:'2.0.0',release_date:'2026-06-10',changes:'Modul Manajemen Anggaran: total anggaran per fund, realisasi otomatis dari pembayaran, top-up anggaran (nominal/tanggal/sumber/keterangan), perencanaan CDP bulanan, serta laporan (Anggaran vs Realisasi, by Fund, CDP Rencana vs Realisasi, distribusi Invoice/Kas Kecil, by Lokasi). Payment kini punya kolom Sumber Anggaran (fund) dan status tunggal "Status" (khusus Admin Payment) + sort kolom. Kategori Pemesanan kini bisa di-edit penuh. Daftar Permintaan hanya bisa diubah Superadmin (PIC hanya tiket miliknya). Form Kendaraan Operasional: Prioritas & Jenis Layanan dropdown, tambah Titik Jemput & Tujuan, hapus Jenis Kendaraan. Riwayat Versi khusus Superadmin. Tulisan "Dashboard" di halaman publik dihapus.'},
     {id:'v13',version:'2.1.0',release_date:'2026-06-10',changes:'Sidebar kini berkelompok dan dapat di-collapse/expand per modul (Utama, Keuangan, Master Data, Admin) dengan status tersimpan. Font diganti ke Inter agar lebih luwes & mudah dibaca. Halaman landing ditata ulang: hero → (Cek Status + Cara Penggunaan berdampingan) → Formulir (collapsed) → footer. Grafik Manajemen Anggaran diperbaiki agar tidak memanjang tak terbatas. Penyesuaian responsif untuk berbagai perangkat.'},
     {id:'v14',version:'2.0.1',release_date:'2026-06-11',changes:'Manajemen Anggaran kini SINKRON dengan Mata Anggaran (satu sumber data) — Fund = Mata Anggaran, realisasi dihitung dari pembayaran. Update Payment: field wajib lengkap (deskripsi, vendor, fund, PIC, proforma/PR/PO/GR/invoice, description fund, Number Fund/Mata Anggaran, location, cost type, cost purpose, subsidi, jenis pembayaran, qty/price/grand total, status); field sinkron dikunci (hanya via Data Permintaan); dropdown tidak lagi punya pilihan kosong; status "Paid" mengunci pembayaran kecuali untuk Super Admin. Modul edit hak akses halaman per akun (Super Admin). Lampiran dibatasi maksimal 1 MB dan hanya PDF/PNG.'},
-    {id:'v15',version:'2.2.0',release_date:'2026-06-12',changes:'Payment kini menampilkan SEMUA permintaan, termasuk yang "Bukan Anggaran GA". Baris Non-GA punya badge Sumber, popup status sederhana (On Progress / Paid / Revision) + keterangan + jejak "Terakhir diubah" (tanggal & nama), hanya bisa diubah Admin Payment/Super Admin. Filter Sumber (GA / Non-GA) & filter status digabung pada modul Payment; CSV Payment menyertakan kolom Sumber, Status Pembayaran, Keterangan & jejak perubahan. Realisasi Anggaran GA dan statistik Dashboard tetap mengecualikan Non-GA. Footer halaman publik didesain ulang (kartu gelap membulat) dengan tautan Contact Us (email GA), GASSWay!, dan Marti.'}
+    {id:'v15',version:'2.2.0',release_date:'2026-06-12',changes:'Payment kini menampilkan SEMUA permintaan, termasuk yang "Bukan Anggaran GA". Baris Non-GA punya badge Sumber, popup status sederhana (On Progress / Paid / Revision) + keterangan + jejak "Terakhir diubah" (tanggal & nama), hanya bisa diubah Admin Payment/Super Admin. Filter Sumber (GA / Non-GA) & filter status digabung pada modul Payment; CSV Payment menyertakan kolom Sumber, Status Pembayaran, Keterangan & jejak perubahan. Realisasi Anggaran GA dan statistik Dashboard tetap mengecualikan Non-GA. Footer halaman publik didesain ulang (kartu gelap membulat) dengan tautan Contact Us (email GA), GASSWay!, dan Marti.'},
+    {id:'v16',version:'2.3.0',release_date:'2026-06-13',changes:'Permintaan "Bukan Anggaran GA" dipindah ke halaman tersendiri (menu Payment Non-GA) agar Admin Payment lebih fokus; halaman Payment utama kembali khusus Anggaran GA. Modul baru Pembayaran Rutin: tagihan berkala (pulsa, telepon, internet, listrik, sewa, dll) di luar formulir permintaan, diajukan PIC & diproses Admin Payment, dengan tanggal jatuh tempo dan pengingat otomatis (pop-up yang bisa ditutup + lonceng) pada H-14, H-7, lalu setiap hari H-6 hingga jatuh tempo, memberi notifikasi ke PIC dan Admin Payment. Status mengikuti alur GA lengkap (bila Anggaran GA) atau sederhana On Progress/Paid/Revision (bila Non-GA). Nominal tagihan rutin GA menambah realisasi Manajemen Anggaran namun dilaporkan sebagai kategori terpisah ("Pembayaran Rutin").'},
+    {id:'v17',version:'2.4.0',release_date:'2026-06-13',changes:'Modul Petty Cash (satu menu, sub-modul sebagai tab): Dashboard, Reimbursement (Kerumahtanggaan/KRT & Kendaraan/KND) dengan workflow Input→Diverifikasi→Permintaan Transfer→Ditransfer→SPP Terbit→Selesai, Form Input, Master Data (KRT/KND), SPP dengan cetak/Export PDF berformat identik (A4 portrait), Report realisasi (per kategori & lokasi) + export, Kelola Dropdown + Tabel Relasi Akun (autofill GL/Fund/Cost Center), Posisi Kas (jurnal kas kecil + saldo berjalan + pencocokan saldo brankas), dan Log History. Lokasi: Wisma Nusantara, Transport Hub, Depo Lebak Bulus. Petty Cash dapat dibuka semua user; izin CRUD diatur via Hak Akses Halaman. Nominal Fund GA menambah realisasi anggaran (dilaporkan terpisah sebagai "Petty Cash").'},
+    {id:'v18',version:'2.5.0',release_date:'2026-06-13',changes:'Modul baru Master Karyawan: CRUD nama karyawan beserta penempatan Divisi & Departemen (Departemen mengikuti Divisi terpilih), lengkap dengan pencarian, filter, dan ekspor CSV. Fitur Typesearch: seluruh dropdown panjang (≥ 8 opsi) di aplikasi kini bisa diketik untuk mencari (combobox), termasuk pemilihan Divisi/Departemen/PIC/Mata Anggaran dan dropdown master Petty Cash.'}
   ];
 
   // Mata Anggaran options
@@ -1804,7 +1834,40 @@ const demo = (() => {
   // v1.8: Payment records — one per request (created lazily on first edit).
   const payments = [];
 
-  return { requests, ratings, notifications, lokasi, lokasiKerja, tujuan, users, version, activityLogs, slaTargets, mataAnggaran, divisi, departemen, kategori, kendaraan, anggaranFunds, anggaranTopups, cdpPlans, approvals, payments, seq, todayKey, nextCode };
+  // v2.3: Pembayaran Rutin — tagihan berkala (1 record per tagihan, 1 tanggal jatuh tempo)
+  const recurringPayments = [
+    { id:'rp1', nama:'Tagihan Pulsa & Paket Data Kantor', jenis:'Pulsa', vendor:'Telkomsel Halo',
+      nominal:2500000, pakai_anggaran_ga:true, mata_anggaran:'Operasional Harian',
+      pic_user_id:'u3', pic_user_name:'Siti Nurhaliza', tanggal_jatuh_tempo:addDays(5),
+      ga_status:'Not Complete Yet', non_ga_status:'On Progress', keterangan:'Tagihan bulanan korporat.',
+      last_changed_at:null, last_changed_by:null, last_warned_threshold:null, created_at:iso(today) },
+    { id:'rp2', nama:'Internet Dedicated Depo Lebak Bulus', jenis:'Internet', vendor:'PT Telkom Indonesia',
+      nominal:7800000, pakai_anggaran_ga:false, mata_anggaran:null,
+      pic_user_id:'u4', pic_user_name:'Rian Pratama', tanggal_jatuh_tempo:addDays(12),
+      ga_status:'Not Complete Yet', non_ga_status:'On Progress', keterangan:'',
+      last_changed_at:null, last_changed_by:null, last_warned_threshold:null, created_at:iso(today) },
+    { id:'rp3', nama:'Tagihan Listrik Wisma Nusantara', jenis:'Listrik', vendor:'PLN',
+      nominal:42000000, pakai_anggaran_ga:true, mata_anggaran:'Perawatan Fasilitas',
+      pic_user_id:'u3', pic_user_name:'Siti Nurhaliza', tanggal_jatuh_tempo:addDays(-2),
+      ga_status:'Submitted', non_ga_status:'On Progress', keterangan:'Sudah jatuh tempo — segera proses.',
+      last_changed_at:null, last_changed_by:null, last_warned_threshold:null, created_at:iso(today) },
+    { id:'rp4', nama:'Sewa Mesin Fotokopi', jenis:'Sewa', vendor:'PT Astragraphia',
+      nominal:3200000, pakai_anggaran_ga:false, mata_anggaran:null,
+      pic_user_id:'u4', pic_user_name:'Rian Pratama', tanggal_jatuh_tempo:addDays(20),
+      ga_status:'Not Complete Yet', non_ga_status:'On Progress', keterangan:'',
+      last_changed_at:null, last_changed_by:null, last_warned_threshold:null, created_at:iso(today) }
+  ];
+
+  // v2.5: Karyawan (master nama karyawan + divisi + departemen)
+  const karyawan = [
+    {id:'kar1', nama:'M. Ardhan Rafsanjani', divisi_id:'div2', departemen_id:'dep5', jabatan:'Department Head', active:true},
+    {id:'kar2', nama:'Siti Zahratus Sholihat', divisi_id:'div2', departemen_id:'dep5', jabatan:'Staff GA', active:true},
+    {id:'kar3', nama:'Andi Pratama', divisi_id:'div2', departemen_id:'dep5', jabatan:'Staff GA', active:true},
+    {id:'kar4', nama:'Maya Sari', divisi_id:'div2', departemen_id:'dep5', jabatan:'Admin', active:true},
+    {id:'kar5', nama:'Zamal Ardika', divisi_id:'div1', departemen_id:'dep1', jabatan:'Driver', active:true}
+  ];
+
+  return { requests, ratings, notifications, lokasi, lokasiKerja, tujuan, users, version, activityLogs, slaTargets, mataAnggaran, divisi, departemen, kategori, kendaraan, karyawan, anggaranFunds, anggaranTopups, cdpPlans, approvals, payments, recurringPayments, seq, todayKey, nextCode };
 })();
 
 /* ============================================================
@@ -1932,6 +1995,46 @@ const db = {
       .upsert({ request_id:requestId, ...clean, updated_at:new Date().toISOString() }, { onConflict:'request_id' })
       .select().single();
     if(error) throw error; return data;
+  },
+
+  /* ---- Pembayaran Rutin (v2.3) ---- */
+  async listRecurring(){
+    if(!SUPA_CONFIGURED) return [...demo.recurringPayments].sort((a,b)=> (a.tanggal_jatuh_tempo||'').localeCompare(b.tanggal_jatuh_tempo||''));
+    const { data, error } = await supa.from('recurring_payments').select('*').order('tanggal_jatuh_tempo',{ascending:true});
+    if(error) throw error; return data || [];
+  },
+  async insertRecurring(payload){
+    if(!SUPA_CONFIGURED){
+      const row = { id:'rp'+(demo.recurringPayments.length+1)+Date.now(), created_at:new Date().toISOString(), ...payload };
+      demo.recurringPayments.push(row); return row;
+    }
+    const { data, error } = await supa.from('recurring_payments').insert(payload).select().single();
+    if(error) throw error; return data;
+  },
+  async updateRecurring(id, patch){
+    if(!SUPA_CONFIGURED){
+      const i = demo.recurringPayments.findIndex(r => r.id === id);
+      if(i >= 0) demo.recurringPayments[i] = { ...demo.recurringPayments[i], ...patch };
+      return demo.recurringPayments[i];
+    }
+    const { data, error } = await supa.from('recurring_payments').update(patch).eq('id',id).select().single();
+    if(error) throw error; return data;
+  },
+  async deleteRecurring(id){
+    if(!SUPA_CONFIGURED){ demo.recurringPayments = demo.recurringPayments.filter(r => r.id !== id); return; }
+    const { error } = await supa.from('recurring_payments').delete().eq('id',id);
+    if(error) throw error;
+  },
+  // Generic notification insert (dipakai reminder Pembayaran Rutin → bell)
+  async pushNotification({ user_id, request_id, type, title, body }){
+    if(!user_id) return;
+    if(!SUPA_CONFIGURED){
+      demo.notifications.unshift({ id:'n'+(demo.notifications.length+1)+Date.now(), user_id, request_id:request_id||null,
+        type:type||'info', title, body, read_at:null, created_at:new Date().toISOString() });
+      return;
+    }
+    try{ await supa.from('notifications').insert({ user_id, request_id:request_id||null, type:type||'info', title, body }); }
+    catch(e){ console.warn('[pushNotification]', e); }
   },
 
   async listRatings(){
@@ -2205,6 +2308,28 @@ const db = {
     }
     const { data, error } = await supa.from('departemen_options').update(clean).eq('id',id).select().single();
     if(error) throw error; return data;
+  },
+
+  // ---- v2.5: Karyawan (nama + divisi + departemen) ----
+  async listKaryawan(){
+    if(!SUPA_CONFIGURED) return [...demo.karyawan];
+    const { data, error } = await supa.from('karyawan_options').select('*').order('nama');
+    if(error) throw error; return data || [];
+  },
+  async addKaryawan(row){
+    if(!SUPA_CONFIGURED){ const r = { id:'kar'+(demo.karyawan.length+Date.now()), active:true, created_at:new Date().toISOString(), ...row }; demo.karyawan.push(r); return r; }
+    const { data, error } = await supa.from('karyawan_options').insert(row).select().single();
+    if(error) throw error; return data;
+  },
+  async updateKaryawan(id, patch){
+    if(!SUPA_CONFIGURED){ const i = demo.karyawan.findIndex(k => k.id === id); if(i>=0) demo.karyawan[i] = { ...demo.karyawan[i], ...patch }; return demo.karyawan[i]; }
+    const { data, error } = await supa.from('karyawan_options').update(patch).eq('id',id).select().single();
+    if(error) throw error; return data;
+  },
+  async deleteKaryawan(id){
+    if(!SUPA_CONFIGURED){ demo.karyawan = demo.karyawan.filter(k => k.id !== id); return; }
+    const { error } = await supa.from('karyawan_options').delete().eq('id',id);
+    if(error) throw error;
   },
 
   // ---- v1.9: Kendaraan Operasional fleet master ----
@@ -2718,6 +2843,71 @@ function toast(msg, type='info', timeout=3200){
   setTimeout(()=>{ el.style.opacity='0'; el.style.transform='translateX(10px)'; el.style.transition='all .2s'; setTimeout(()=>el.remove(),220); }, timeout);
 }
 
+/* ============================================================
+   TYPESEARCH — ubah <select> panjang menjadi combobox yang bisa diketik.
+   Auto-aktif untuk select dengan class .sel-search ATAU ≥ 8 opsi.
+   Tambahkan class .no-search untuk mengecualikan sebuah select.
+   Native <select> tetap menjadi sumber nilai (FormData & .value tetap jalan).
+   ============================================================ */
+function enhanceSearchable(scope){
+  const root = scope || document;
+  const sels = root.querySelectorAll ? root.querySelectorAll('select') : [];
+  sels.forEach(sel => {
+    if(sel.dataset.seDone) return;
+    if(sel.classList.contains('no-search')) return;
+    const long = sel.options.length >= 8 || sel.classList.contains('sel-search');
+    if(!long) return;
+    sel.dataset.seDone = '1';
+
+    const wrap = document.createElement('div'); wrap.className = 'se-wrap';
+    sel.parentNode.insertBefore(wrap, sel); wrap.appendChild(sel);
+    sel.style.display = 'none';
+
+    const input = document.createElement('input');
+    input.type = 'text'; input.className = 'input se-input'; input.autocomplete = 'off';
+    input.placeholder = 'Ketik untuk mencari…';
+    const menu = document.createElement('div'); menu.className = 'se-menu';
+    wrap.appendChild(input); wrap.appendChild(menu);
+
+    const opts = () => Array.from(sel.options).map((o,i) => ({ v:o.value, t:o.textContent, i, dis:o.disabled }));
+    const showSel = () => { const o = sel.options[sel.selectedIndex]; input.value = o ? o.textContent : ''; };
+    let active = -1;
+    function build(filter){
+      const f = (filter||'').toLowerCase().trim();
+      const list = opts().filter(o => !o.dis && o.t.toLowerCase().includes(f));
+      active = list.length ? 0 : -1;
+      menu.innerHTML = list.length
+        ? list.map((o,idx) => `<div class="se-item${idx===active?' on':''}" data-i="${o.i}">${escapeHtml(o.t)}</div>`).join('')
+        : '<div class="se-empty">Tidak ada hasil</div>';
+      menu._list = list;
+    }
+    function open(){ build(''); menu.classList.add('open'); }
+    function close(){ menu.classList.remove('open'); showSel(); }
+    function pick(optIndex){ sel.selectedIndex = optIndex; sel.dispatchEvent(new Event('change',{bubbles:true})); showSel(); menu.classList.remove('open'); }
+
+    input.addEventListener('focus', () => { open(); input.select(); });
+    input.addEventListener('input', () => { build(input.value); menu.classList.add('open'); });
+    input.addEventListener('keydown', (e) => {
+      const items = Array.from(menu.querySelectorAll('.se-item'));
+      if(e.key === 'ArrowDown'){ e.preventDefault(); active = Math.min(active+1, items.length-1); items.forEach((it,i)=>it.classList.toggle('on',i===active)); items[active]?.scrollIntoView({block:'nearest'}); }
+      else if(e.key === 'ArrowUp'){ e.preventDefault(); active = Math.max(active-1, 0); items.forEach((it,i)=>it.classList.toggle('on',i===active)); items[active]?.scrollIntoView({block:'nearest'}); }
+      else if(e.key === 'Enter'){ e.preventDefault(); if(items[active]) pick(Number(items[active].dataset.i)); }
+      else if(e.key === 'Escape'){ close(); input.blur(); }
+    });
+    menu.addEventListener('mousedown', (e) => { const it = e.target.closest('.se-item'); if(!it) return; e.preventDefault(); pick(Number(it.dataset.i)); });
+    input.addEventListener('blur', () => setTimeout(close, 150));
+    showSel();
+  });
+}
+// Panggil setelah opsi sebuah select diganti via kode, agar tampilan combobox ikut sinkron.
+function refreshSearchable(sel){
+  if(!sel) return;
+  if(!sel.dataset.seDone){ enhanceSearchable(sel.parentNode || document); return; }
+  const wrap = sel.closest('.se-wrap'); if(!wrap) return;
+  const input = wrap.querySelector('.se-input'); const o = sel.options[sel.selectedIndex];
+  if(input) input.value = o ? o.textContent : '';
+}
+
 function openModal(html, size=''){
   const root = $('#modal-root');
   const content = $('#modal-content');
@@ -2726,6 +2916,7 @@ function openModal(html, size=''){
   // Close on backdrop click
   root.onclick = (e) => { if(e.target===root) closeModal(); };
   document.body.style.overflow = 'hidden';
+  try{ enhanceSearchable(content); }catch(e){}   // v2.5: typesearch di dalam modal
 }
 function closeModal(){
   $('#modal-root').classList.remove('show');
@@ -3633,6 +3824,9 @@ async function renderAdmin(page){
   // --- Notification bell ---
   setupBell(u);
 
+  // v2.3: cek reminder Pembayaran Rutin (pop-up + bell) — sekali per sesi halaman
+  checkRecurringReminders(u);
+
   const titles = {
     dashboard:'Dashboard',
     myticket:'Tiket Saya',
@@ -3640,10 +3834,14 @@ async function renderAdmin(page){
     requests:'Daftar Permintaan',
     ratings:'Daftar Penilaian',
     payments:'Payment',
+    payments_nonga:'Payment Non-GA',
+    recurring:'Pembayaran Rutin',
+    petty:'Petty Cash',
     masterdata:'Master Data',
     kategori:'Kategori Pemesanan',
     divisi:'Divisi',
     departemen:'Departemen',
+    karyawan:'Master Karyawan',
     kendaraan:'Armada Kendaraan',
     anggaran:'Manajemen Anggaran',
     users:'Manajemen User',
@@ -3677,17 +3875,22 @@ async function renderAdmin(page){
   else if(page==='requests')   await viewAdminRequests(c);
   else if(page==='ratings')    await viewAdminRatings(c);
   else if(page==='payments')   await viewAdminPayments(c);
+  else if(page==='payments_nonga') await viewAdminPaymentsNonGA(c);
+  else if(page==='recurring')  await viewAdminRecurring(c);
+  else if(page==='petty')      await viewAdminPetty(c);
   else if(page==='anggaran')   await viewAdminAnggaran(c);
   else if(page==='masterdata') await viewAdminMaster(c);
   else if(page==='kategori')   await viewAdminKategori(c);
   else if(page==='divisi')     await viewAdminDivisi(c);
   else if(page==='departemen') await viewAdminDepartemen(c);
+  else if(page==='karyawan')   await viewAdminKaryawan(c);
   else if(page==='kendaraan')  await viewAdminKendaraan(c);
   else if(page==='users')      await viewAdminUsers(c);
   else if(page==='slatargets') await viewAdminSlaTargets(c);
   else if(page==='activity')   await viewAdminActivity(c);
   else if(page==='version')    await viewAdminVersion(c);
   else { navigate('/admin/dashboard'); }
+  try{ enhanceSearchable(c); }catch(e){}   // v2.5: typesearch pada dropdown panjang
 }
 
 /* ----------- NOTIFICATION BELL ----------- */
@@ -5035,7 +5238,10 @@ async function viewAdminRatings(c){
    remain overridable. */
 let _payMerged = [];
 let _fundsCache = [];
-let _payState = { page:1, pageSize:15, search:'', filterStatus:'', filterCategory:'', filterSource:'', sort:'created_at', dir:'desc' };
+let _payState = { page:1, pageSize:15, search:'', filterStatus:'', filterCategory:'', sort:'created_at', dir:'desc' };
+// v2.2: state khusus halaman Payment Non-GA
+let _payNonGA = [];
+let _payNonGAState = { page:1, pageSize:15, search:'', filterStatus:'', sort:'created_at', dir:'desc' };
 
 // v2.2: ringkas "Terakhir diubah: <tgl> oleh <nama>" untuk payment non-GA
 function nonGaLastChangeHtml(m){
@@ -5050,11 +5256,6 @@ function fundName(idOrName){ const f = _fundsCache.find(x => x.id === idOrName |
 function payCellHtml(m, f){
   const v = m[f.key];
   if(f.key === 'ga_payment_status'){
-    // v2.2: baris Non-GA memakai status sederhana (On Progress / Paid / Revision)
-    if(m._isGA === false){
-      const nv = m.non_ga_status || 'On Progress';
-      return `<span class="badge ${NON_GA_STATUS_CLASS[nv]||'pay-proses'}">${escapeHtml(nv)}</span>`;
-    }
     const sv = v || 'Not Complete Yet';
     return `<span class="badge ${GA_PAYMENT_STATUS_CLASS[sv]||'pay-belum'}">${escapeHtml(sv)}</span>`;
   }
@@ -5083,7 +5284,7 @@ async function viewAdminPayments(c){
       </div>
       <div class="card-body">
         <p class="muted text-sm" style="margin:-6px 0 12px">
-          Semua permintaan muncul di sini. Baris <strong>Menggunakan Anggaran GA</strong> diisi mengikuti alur <em>Report Payment</em> (Identifikasi → Proforma/PR → PO/GR → Invoice/Fund). Baris <strong>Bukan Anggaran GA</strong> cukup diperbarui status-nya (On Progress / Paid / Revision). Klik <strong>Edit</strong> pada baris untuk memperbarui.
+          Hanya permintaan yang <strong>Menggunakan Anggaran GA</strong> yang muncul di sini. Klik <strong>Edit</strong> pada baris untuk mengisi/memperbarui data pembayaran sesuai alur <em>Report Payment</em> (Identifikasi → Proforma/PR → PO/GR → Invoice/Fund). Permintaan <strong>Bukan Anggaran GA</strong> dikelola di menu <strong>Payment Non-GA</strong>.
           Geser tabel ke kanan untuk melihat seluruh kolom.
         </p>
         <div class="toolbar" style="flex-wrap:wrap">
@@ -5091,15 +5292,9 @@ async function viewAdminPayments(c){
             <span class="material-symbols-rounded">search</span>
             <input type="text" class="input" id="pay-search" placeholder="Cari kode, pemesan, vendor..." />
           </div>
-          <select class="select" id="pay-filter-source" style="max-width:200px">
-            <option value="">Semua Sumber</option>
-            <option value="ga">Menggunakan Anggaran GA</option>
-            <option value="nonga">Bukan Anggaran GA</option>
-          </select>
           <select class="select" id="pay-filter-status" style="max-width:220px">
             <option value="">Semua Status</option>
-            <optgroup label="Anggaran GA">${GA_PAYMENT_STATUSES.map(s=>`<option>${s}</option>`).join('')}</optgroup>
-            <optgroup label="Bukan Anggaran GA">${NON_GA_STATUSES.map(s=>`<option>${s}</option>`).join('')}</optgroup>
+            ${GA_PAYMENT_STATUSES.map(s=>`<option>${s}</option>`).join('')}
           </select>
           <select class="select" id="pay-filter-category" style="max-width:220px">
             <option value="">Semua Kategori</option>
@@ -5123,8 +5318,8 @@ async function viewAdminPayments(c){
       ]);
       _fundsCache = funds || [];
       const byReq = {}; (pays||[]).forEach(p => { byReq[p.request_id] = p; });
-      // v2.2: SEMUA permintaan mengalir ke Payment (GA + Non-GA). Pembedaan via m._isGA.
-      _payMerged = reqs.map(r => mergePayment(r, byReq[r.id]));
+      // v2.2: modul Payment ini KHUSUS Anggaran GA. Permintaan Non-GA dikelola di halaman terpisah (Payment Non-GA).
+      _payMerged = reqs.filter(r => reqUsesGABudget(r)).map(r => mergePayment(r, byReq[r.id]));
       renderPaymentsTable(host);
     }catch(err){
       console.error('[payments]', err);
@@ -5136,31 +5331,17 @@ async function viewAdminPayments(c){
   }
 
   $('#pay-search').addEventListener('input', e => { _payState.search = e.target.value.toLowerCase(); _payState.page = 1; renderPaymentsTable(host); });
-  $('#pay-filter-source').addEventListener('change', e => { _payState.filterSource = e.target.value; _payState.page = 1; renderPaymentsTable(host); });
   $('#pay-filter-status').addEventListener('change', e => { _payState.filterStatus = e.target.value; _payState.page = 1; renderPaymentsTable(host); });
   $('#pay-filter-category').addEventListener('change', e => { _payState.filterCategory = e.target.value; _payState.page = 1; renderPaymentsTable(host); });
   $('#pay-refresh').addEventListener('click', () => load());
   $('#pay-csv').addEventListener('click', () => {
     const rows = filterPayments().map(m => {
-      const isNonGA = m._isGA === false;
-      const row = {
-        Kode_Permintaan: m._req.kode_permintaan,
-        Pemesan: m._req.nama_pemesan,
-        Status_Permintaan: m._req.status,
-        Sumber_Anggaran: isNonGA ? 'Bukan Anggaran GA' : 'Anggaran GA',
-        Status_Pembayaran: isNonGA ? (m.non_ga_status||'On Progress') : (m.ga_payment_status||'Not Complete Yet')
-      };
+      const row = { Kode_Permintaan: m._req.kode_permintaan, Pemesan: m._req.nama_pemesan, Status_Permintaan: m._req.status };
       PAYMENT_FIELDS.forEach(f => {
-        if(f.key === 'ga_payment_status') return; // sudah diwakili Status_Pembayaran
         let v = m[f.key];
         if(f.type === 'date' && v) v = String(v).slice(0,10);
         row[f.label.replace(/\s+/g,'_')] = (v==null ? '' : v);
       });
-      if(isNonGA){
-        row.Keterangan_NonGA = m.non_ga_note || '';
-        row.Terakhir_Diubah = m.non_ga_last_changed_at ? String(m.non_ga_last_changed_at).slice(0,19).replace('T',' ') : '';
-        row.Diubah_Oleh = m.non_ga_last_changed_by || '';
-      }
       return row;
     });
     csvDownload('payment-'+new Date().toISOString().slice(0,10)+'.csv', rows);
@@ -5180,12 +5361,7 @@ function filterPayments(){
       (m._req.kode_smartoffice||'').toLowerCase().includes(s.search)
     );
   }
-  if(s.filterSource === 'ga')    rows = rows.filter(m => m._isGA !== false);
-  if(s.filterSource === 'nonga') rows = rows.filter(m => m._isGA === false);
-  if(s.filterStatus)   rows = rows.filter(m => {
-    const cur = (m._isGA === false) ? (m.non_ga_status||'On Progress') : (m.ga_payment_status||'Not Complete Yet');
-    return cur === s.filterStatus;
-  });
+  if(s.filterStatus)   rows = rows.filter(m => (m.ga_payment_status||'Not Complete Yet') === s.filterStatus);
   if(s.filterCategory) rows = rows.filter(m => m._req.kategori === s.filterCategory);
 
   // Sorting: 'created_at' (default) or any payment column key, plus 'kode'/'pemesan'
@@ -5228,7 +5404,6 @@ function renderPaymentsTable(host){
           <tr>
             <th class="sticky-col pay-sort" data-sort="kode" style="min-width:170px;cursor:pointer">Permintaan${arrow('kode')}</th>
             <th class="pay-sort" data-sort="pemesan" style="cursor:pointer">Pemesan${arrow('pemesan')}</th>
-            <th>Sumber</th>
             ${headCells}
           </tr>
         </thead>
@@ -5237,7 +5412,7 @@ function renderPaymentsTable(host){
             <tr>
               <td class="sticky-col">
                 <div style="display:flex;align-items:center;gap:6px">
-                  <button class="btn-icon" data-edit="${m.request_id}" data-ga="${m._isGA===false?'0':'1'}" title="Edit pembayaran" style="color:var(--mrt-blue)"><span class="material-symbols-rounded" style="font-size:18px">edit</span></button>
+                  <button class="btn-icon" data-edit="${m.request_id}" title="Edit pembayaran" style="color:var(--mrt-blue)"><span class="material-symbols-rounded" style="font-size:18px">edit</span></button>
                   <div>
                     <span class="code-pill">${escapeHtml(m._req.kode_permintaan)}</span>
                     <div style="margin-top:2px"><span class="tag">${escapeHtml(m._req.kategori_kode||'')}</span></div>
@@ -5245,10 +5420,9 @@ function renderPaymentsTable(host){
                 </div>
               </td>
               <td>${escapeHtml(m._req.nama_pemesan||'—')}</td>
-              <td>${m._isGA===false?'<span class="badge gray">Bukan Anggaran GA</span>':'<span class="badge status-selesai">Anggaran GA</span>'}</td>
               ${cols.map(f => `<td${(f.type==='money'||f.type==='number')?' class="num"':''}>${payCellHtml(m,f)}</td>`).join('')}
             </tr>
-          `).join('') : `<tr><td colspan="${cols.length+3}" class="empty-row">Belum ada permintaan</td></tr>`}
+          `).join('') : `<tr><td colspan="${cols.length+2}" class="empty-row">Belum ada permintaan</td></tr>`}
         </tbody>
       </table>
     </div>
@@ -5264,10 +5438,7 @@ function renderPaymentsTable(host){
 
   $('#pay-prev', host)?.addEventListener('click', () => { if(s.page>1){ s.page--; renderPaymentsTable(host); } });
   $('#pay-next', host)?.addEventListener('click', () => { if(s.page<totalPages){ s.page++; renderPaymentsTable(host); } });
-  $$('button[data-edit]', host).forEach(b => b.addEventListener('click', () => {
-    if(b.dataset.ga === '0') openPaymentEditNonGA(b.dataset.edit);
-    else openPaymentEdit(b.dataset.edit);
-  }));
+  $$('button[data-edit]', host).forEach(b => b.addEventListener('click', () => openPaymentEdit(b.dataset.edit)));
   $$('th.pay-sort', host).forEach(th => th.addEventListener('click', () => {
     const col = th.dataset.sort;
     if(s.sort === col) s.dir = s.dir === 'asc' ? 'desc' : 'asc';
@@ -5446,7 +5617,7 @@ function openPaymentEdit(requestId){
    On Progress / Paid / Revision + satu keterangan + jejak "terakhir diubah".
    Hanya Admin Payment / Super Admin yang boleh mengubah. */
 function openPaymentEditNonGA(requestId){
-  const m = _payMerged.find(x => x.request_id === requestId);
+  const m = _payNonGA.find(x => x.request_id === requestId);
   if(!m){ toast('Data tidak ditemukan','error'); return; }
   const req = m._req;
   const me = session.get();
@@ -5501,14 +5672,14 @@ function openPaymentEditNonGA(requestId){
       await db.upsertPayment(requestId, patch);
       db.logActivity({ action:'payment.update_nonga', target_type:'payment', target_id:requestId,
                        detail:`Update status Non-GA ${req.kode_permintaan} → ${patch.non_ga_status}` });
-      // sinkron cache lokal
-      const idx = _payMerged.findIndex(x => x.request_id === requestId);
+      // sinkron cache lokal halaman Non-GA
+      const idx = _payNonGA.findIndex(x => x.request_id === requestId);
       if(idx >= 0){
         const base = {}; PAYMENT_FIELDS.forEach(f => { base[f.key] = m[f.key]; });
-        _payMerged[idx] = mergePayment(req, { request_id:requestId, ...base, ...patch });
+        _payNonGA[idx] = mergePayment(req, { request_id:requestId, ...base, ...patch });
       }
       closeModal();
-      const host = $('#pay-table-host'); if(host) renderPaymentsTable(host);
+      const host = $('#paynonga-table-host'); if(host) renderPaymentsNonGATable(host);
       toast('Status pembayaran tersimpan','success');
     }catch(err){
       console.error(err);
@@ -5518,6 +5689,1284 @@ function openPaymentEditNonGA(requestId){
     }
   });
 }
+
+/* ----------- ADMIN: PAYMENT NON-GA (v2.2) -----------
+   Halaman terpisah agar Admin Payment fokus — hanya permintaan \"Bukan Anggaran GA\".
+   Status sederhana (On Progress / Paid / Revision) via popup, + jejak \"terakhir diubah\". */
+async function viewAdminPaymentsNonGA(c){
+  c.innerHTML = `
+    <div class="card">
+      <div class="card-head">
+        <h3>Payment Non-GA</h3>
+        <div class="flex gap-2">
+          <button class="btn btn-ghost btn-sm" id="png-refresh"><span class="material-symbols-rounded" style="font-size:18px">refresh</span>Muat Ulang</button>
+          <button class="btn btn-ghost btn-sm" id="png-csv"><span class="material-symbols-rounded" style="font-size:18px">download</span>Download CSV</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <p class="muted text-sm" style="margin:-6px 0 12px">
+          Daftar permintaan <strong>Bukan Anggaran GA</strong>. Klik <strong>Edit</strong> untuk memperbarui status
+          (<em>On Progress / Paid / Revision</em>) beserta keterangan. Perubahan tercatat dengan jejak
+          <em>"Terakhir diubah"</em>. Nilai non-GA <strong>tidak</strong> dihitung pada realisasi Anggaran GA.
+        </p>
+        <div class="toolbar" style="flex-wrap:wrap">
+          <div class="search">
+            <span class="material-symbols-rounded">search</span>
+            <input type="text" class="input" id="png-search" placeholder="Cari kode, pemesan, vendor..." />
+          </div>
+          <select class="select" id="png-filter-status" style="max-width:220px">
+            <option value="">Semua Status</option>
+            ${NON_GA_STATUSES.map(s=>`<option>${s}</option>`).join('')}
+          </select>
+        </div>
+        <div id="paynonga-table-host"></div>
+      </div>
+    </div>
+  `;
+
+  const host = $('#paynonga-table-host');
+  host.innerHTML = '<div class="card-pad muted">Memuat data…</div>';
+
+  async function load(){
+    try{
+      const [reqs, pays] = await Promise.all([ db.listRequests(), db.listPayments().catch(()=>[]) ]);
+      const byReq = {}; (pays||[]).forEach(p => { byReq[p.request_id] = p; });
+      _payNonGA = reqs.filter(r => !reqUsesGABudget(r)).map(r => mergePayment(r, byReq[r.id]));
+      renderPaymentsNonGATable(host);
+    }catch(err){
+      console.error('[payments-nonga]', err);
+      const msg = /Failed to fetch/i.test(err.message||'')
+        ? 'Tidak dapat terhubung ke Supabase. Periksa URL & ANON_KEY atau koneksi internet.'
+        : ('Gagal memuat data: '+(err.message||''));
+      host.innerHTML = `<div class="card-pad" style="background:#FEF2F2;border:1px solid #FECACA;border-radius:10px;color:#991B1B"><strong>Gagal memuat data.</strong><br><span class="text-sm">${escapeHtml(msg)}</span></div>`;
+    }
+  }
+
+  $('#png-search').addEventListener('input', e => { _payNonGAState.search = e.target.value.toLowerCase(); _payNonGAState.page = 1; renderPaymentsNonGATable(host); });
+  $('#png-filter-status').addEventListener('change', e => { _payNonGAState.filterStatus = e.target.value; _payNonGAState.page = 1; renderPaymentsNonGATable(host); });
+  $('#png-refresh').addEventListener('click', () => load());
+  $('#png-csv').addEventListener('click', () => {
+    const rows = filterPaymentsNonGA().map(m => ({
+      Kode_Permintaan: m._req.kode_permintaan,
+      Pemesan: m._req.nama_pemesan,
+      Kategori: m._req.kategori,
+      Tanggal_Kebutuhan: m._req.tanggal_kebutuhan || '',
+      Estimasi_Harga: m._req.estimasi_harga || 0,
+      Status_Pembayaran: m.non_ga_status || 'On Progress',
+      Keterangan: m.non_ga_note || '',
+      Terakhir_Diubah: m.non_ga_last_changed_at ? String(m.non_ga_last_changed_at).slice(0,19).replace('T',' ') : '',
+      Diubah_Oleh: m.non_ga_last_changed_by || ''
+    }));
+    csvDownload('payment-nonga-'+new Date().toISOString().slice(0,10)+'.csv', rows);
+  });
+
+  await load();
+}
+
+function filterPaymentsNonGA(){
+  const s = _payNonGAState;
+  let rows = _payNonGA.slice();
+  if(s.search){
+    rows = rows.filter(m =>
+      (m._req.kode_permintaan||'').toLowerCase().includes(s.search) ||
+      (m._req.nama_pemesan||'').toLowerCase().includes(s.search) ||
+      (m.vendor_name||'').toLowerCase().includes(s.search) ||
+      (m._req.kode_smartoffice||'').toLowerCase().includes(s.search)
+    );
+  }
+  if(s.filterStatus) rows = rows.filter(m => (m.non_ga_status||'On Progress') === s.filterStatus);
+  const dir = s.dir === 'asc' ? 1 : -1;
+  const getVal = (m) => {
+    if(s.sort === 'kode') return (m._req.kode_permintaan||'').toLowerCase();
+    if(s.sort === 'pemesan') return (m._req.nama_pemesan||'').toLowerCase();
+    if(s.sort === 'status') return (m.non_ga_status||'').toLowerCase();
+    return new Date(m._req.created_at).getTime();
+  };
+  rows.sort((a,b) => { const va=getVal(a), vb=getVal(b); return va<vb?-1*dir:va>vb?1*dir:0; });
+  return rows;
+}
+
+function renderPaymentsNonGATable(host){
+  const s = _payNonGAState;
+  const rows = filterPaymentsNonGA();
+  const total = rows.length;
+  const totalPages = Math.max(1, Math.ceil(total / s.pageSize));
+  if(s.page > totalPages) s.page = totalPages;
+  const start = (s.page-1)*s.pageSize;
+  const pageRows = rows.slice(start, start + s.pageSize);
+  const arrow = (key) => s.sort===key ? (s.dir==='asc'?' ▲':' ▼') : '';
+
+  host.innerHTML = `
+    <div class="table-wrap">
+      <table class="t">
+        <thead>
+          <tr>
+            <th class="pay-sort" data-sort="kode" style="cursor:pointer">Permintaan${arrow('kode')}</th>
+            <th class="pay-sort" data-sort="pemesan" style="cursor:pointer">Pemesan${arrow('pemesan')}</th>
+            <th>Kategori</th>
+            <th>Tgl Kebutuhan</th>
+            <th style="text-align:right">Estimasi</th>
+            <th class="pay-sort" data-sort="status" style="cursor:pointer">Status${arrow('status')}</th>
+            <th>Terakhir Diubah</th>
+            <th style="text-align:right">Aksi</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${pageRows.length ? pageRows.map(m => {
+            const st = m.non_ga_status || 'On Progress';
+            const when = m.non_ga_last_changed_at
+              ? `${fmtDateTime(m.non_ga_last_changed_at)}${m.non_ga_last_changed_by?'<div class="text-sm muted">oleh '+escapeHtml(m.non_ga_last_changed_by)+'</div>':''}`
+              : '<span class="muted text-sm">—</span>';
+            return `
+            <tr>
+              <td><span class="code-pill">${escapeHtml(m._req.kode_permintaan)}</span><div style="margin-top:2px"><span class="tag">${escapeHtml(m._req.kategori_kode||'')}</span></div></td>
+              <td><div class="fw-700">${escapeHtml(m._req.nama_pemesan||'—')}</div><div class="text-sm muted">${escapeHtml(m._req.sumber_pemesanan||'')}</div></td>
+              <td>${escapeHtml(m._req.kategori||'—')}</td>
+              <td>${fmtDate(m._req.tanggal_kebutuhan)}</td>
+              <td class="mono" style="text-align:right">${m._req.estimasi_harga?fmtRupiah(m._req.estimasi_harga):'—'}</td>
+              <td><span class="badge ${NON_GA_STATUS_CLASS[st]||'pay-proses'}">${escapeHtml(st)}</span></td>
+              <td>${when}</td>
+              <td style="text-align:right">
+                <button class="btn-icon" data-edit="${m.request_id}" title="Update status"><span class="material-symbols-rounded" style="font-size:18px">edit</span></button>
+              </td>
+            </tr>`;
+          }).join('') : `<tr><td colspan="8" class="empty-row">Belum ada permintaan Non-GA</td></tr>`}
+        </tbody>
+      </table>
+    </div>
+    <div class="pagination">
+      <div>Menampilkan <strong>${pageRows.length}</strong> dari <strong>${total}</strong> permintaan</div>
+      <div class="pages">
+        <button class="page-btn" id="png-prev" ${s.page===1?'disabled':''}><span class="material-symbols-rounded" style="font-size:18px">chevron_left</span></button>
+        <span style="padding:0 10px;font-size:13px">Hal. ${s.page} / ${totalPages}</span>
+        <button class="page-btn" id="png-next" ${s.page===totalPages?'disabled':''}><span class="material-symbols-rounded" style="font-size:18px">chevron_right</span></button>
+      </div>
+    </div>
+  `;
+
+  $('#png-prev', host)?.addEventListener('click', () => { if(s.page>1){ s.page--; renderPaymentsNonGATable(host); } });
+  $('#png-next', host)?.addEventListener('click', () => { if(s.page<totalPages){ s.page++; renderPaymentsNonGATable(host); } });
+  $$('button[data-edit]', host).forEach(b => b.addEventListener('click', () => openPaymentEditNonGA(b.dataset.edit)));
+  $$('th.pay-sort', host).forEach(th => th.addEventListener('click', () => {
+    const col = th.dataset.sort;
+    if(s.sort === col) s.dir = s.dir === 'asc' ? 'desc' : 'asc';
+    else { s.sort = col; s.dir = 'asc'; }
+    renderPaymentsNonGATable(host);
+  }));
+}
+
+/* ============================================================
+   ADMIN: PEMBAYARAN RUTIN (v2.3)
+   Tagihan berkala (pulsa, telepon, internet, listrik, dll). 1 record = 1 tagihan
+   dengan 1 tanggal jatuh tempo. Diajukan PIC, diproses Admin Payment.
+   • GA  → status lengkap (Not Complete Yet … Paid)
+   • Non-GA → status sederhana (On Progress / Paid / Revision)
+   • Reminder otomatis: pop-up (bisa di-close) + lonceng pada H-14, H-7, H-6…H-0.
+   • Nominal GA menambah realisasi anggaran (lihat Manajemen Anggaran).
+   ============================================================ */
+let _recurringCache = [];
+let _recurringState = { page:1, pageSize:15, search:'', filterStatus:'', filterJenis:'', filterSource:'', filterDue:'', sort:'tanggal_jatuh_tempo', dir:'asc' };
+let _recurringChecked = false;   // pop-up reminder hanya sekali per sesi halaman
+
+// Selisih hari dari hari ini (00:00) ke tanggal jatuh tempo. Negatif = lewat tempo.
+function daysUntil(dateStr){
+  if(!dateStr) return null;
+  const today = new Date(); today.setHours(0,0,0,0);
+  const due = new Date(dateStr); due.setHours(0,0,0,0);
+  return Math.round((due - today) / 86400000);
+}
+function recurringEffStatus(rp){ return rp.pakai_anggaran_ga ? (rp.ga_status||'Not Complete Yet') : (rp.non_ga_status||'On Progress'); }
+function recurringIsPaid(rp){ return recurringEffStatus(rp) === 'Paid'; }
+function recurringDueBadge(rp){
+  if(recurringIsPaid(rp)) return '<span class="badge status-selesai">Lunas</span>';
+  const d = daysUntil(rp.tanggal_jatuh_tempo);
+  if(d === null) return '<span class="badge gray">—</span>';
+  if(d < 0)  return `<span class="badge status-ditolak">Terlambat ${Math.abs(d)} hari</span>`;
+  if(d === 0) return '<span class="badge status-ditolak">Jatuh tempo hari ini</span>';
+  if(d <= 7)  return `<span class="badge status-belum">H-${d}</span>`;
+  if(d <= 14) return `<span class="badge status-tersedia">H-${d}</span>`;
+  return `<span class="badge gray">H-${d}</span>`;
+}
+
+async function viewAdminRecurring(c){
+  const me = session.get();
+  const canManage = !!me && ['superadmin','admin','admin_payment','pic'].includes(me.role);
+  c.innerHTML = `
+    <div class="card">
+      <div class="card-head">
+        <h3>Pembayaran Rutin</h3>
+        <div class="flex gap-2">
+          ${canManage ? '<button class="btn btn-primary btn-sm" id="rp-add"><span class="material-symbols-rounded" style="font-size:18px">add</span>Tambah Tagihan</button>' : ''}
+          <button class="btn btn-ghost btn-sm" id="rp-csv"><span class="material-symbols-rounded" style="font-size:18px">download</span>Download CSV</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <p class="muted text-sm" style="margin:-6px 0 12px">
+          Tagihan berkala di luar formulir permintaan (pulsa, telepon, internet, listrik, sewa, dll). Atur <strong>tanggal jatuh tempo</strong>; sistem memunculkan <strong>peringatan otomatis</strong> (pop-up + lonceng) mulai H-14, H-7, lalu setiap hari H-6 hingga jatuh tempo. Status <strong>GA</strong> memakai alur lengkap, <strong>Non-GA</strong> memakai status sederhana.
+        </p>
+        <div class="toolbar" style="flex-wrap:wrap">
+          <div class="search"><span class="material-symbols-rounded">search</span>
+            <input type="text" class="input" id="rp-search" placeholder="Cari nama tagihan / vendor..." />
+          </div>
+          <select class="select" id="rp-filter-due" style="max-width:170px">
+            <option value="">Semua Jatuh Tempo</option>
+            <option value="overdue">Terlambat</option>
+            <option value="d7">≤ 7 hari</option>
+            <option value="d14">≤ 14 hari</option>
+            <option value="unpaid">Belum Lunas</option>
+          </select>
+          <select class="select" id="rp-filter-source" style="max-width:170px">
+            <option value="">Semua Sumber</option>
+            <option value="ga">Anggaran GA</option>
+            <option value="nonga">Bukan Anggaran GA</option>
+          </select>
+          <select class="select" id="rp-filter-jenis" style="max-width:170px">
+            <option value="">Semua Jenis</option>
+            ${RECURRING_JENIS.map(j=>`<option>${j}</option>`).join('')}
+          </select>
+        </div>
+        <div id="rp-table-host"></div>
+      </div>
+    </div>
+  `;
+  const host = $('#rp-table-host');
+  host.innerHTML = '<div class="card-pad muted">Memuat data…</div>';
+
+  async function load(){
+    try{
+      _recurringCache = await db.listRecurring();
+      renderRecurringTable(host);
+    }catch(err){
+      console.error('[recurring]', err);
+      host.innerHTML = `<div class="card-pad" style="background:#FEF2F2;border:1px solid #FECACA;border-radius:10px;color:#991B1B"><strong>Gagal memuat data.</strong><br><span class="text-sm">${escapeHtml(err.message||'')}</span></div>`;
+    }
+  }
+
+  $('#rp-search').addEventListener('input', e => { _recurringState.search = e.target.value.toLowerCase(); _recurringState.page = 1; renderRecurringTable(host); });
+  $('#rp-filter-due').addEventListener('change', e => { _recurringState.filterDue = e.target.value; _recurringState.page = 1; renderRecurringTable(host); });
+  $('#rp-filter-source').addEventListener('change', e => { _recurringState.filterSource = e.target.value; _recurringState.page = 1; renderRecurringTable(host); });
+  $('#rp-filter-jenis').addEventListener('change', e => { _recurringState.filterJenis = e.target.value; _recurringState.page = 1; renderRecurringTable(host); });
+  if($('#rp-add')) $('#rp-add').addEventListener('click', () => openRecurringEdit(null, load));
+  $('#rp-csv').addEventListener('click', () => {
+    const rows = filterRecurring().map(rp => ({
+      Nama: rp.nama, Jenis: rp.jenis, Vendor: rp.vendor||'',
+      Nominal: rp.nominal||0,
+      Sumber: rp.pakai_anggaran_ga ? 'Anggaran GA' : 'Bukan Anggaran GA',
+      Mata_Anggaran: rp.mata_anggaran||'',
+      Jatuh_Tempo: rp.tanggal_jatuh_tempo||'',
+      Status: recurringEffStatus(rp),
+      PIC: rp.pic_user_name||'',
+      Keterangan: rp.keterangan||'',
+      Terakhir_Diubah: rp.last_changed_at ? String(rp.last_changed_at).slice(0,19).replace('T',' ') : '',
+      Diubah_Oleh: rp.last_changed_by||''
+    }));
+    csvDownload('pembayaran-rutin-'+new Date().toISOString().slice(0,10)+'.csv', rows);
+  });
+
+  // simpan fungsi load agar bisa dipanggil ulang setelah CRUD
+  host._reload = load;
+  await load();
+}
+
+function filterRecurring(){
+  const s = _recurringState;
+  let rows = _recurringCache.slice();
+  if(s.search){
+    rows = rows.filter(rp =>
+      (rp.nama||'').toLowerCase().includes(s.search) ||
+      (rp.vendor||'').toLowerCase().includes(s.search) ||
+      (rp.jenis||'').toLowerCase().includes(s.search));
+  }
+  if(s.filterJenis)  rows = rows.filter(rp => rp.jenis === s.filterJenis);
+  if(s.filterSource === 'ga')    rows = rows.filter(rp => rp.pakai_anggaran_ga);
+  if(s.filterSource === 'nonga') rows = rows.filter(rp => !rp.pakai_anggaran_ga);
+  if(s.filterStatus) rows = rows.filter(rp => recurringEffStatus(rp) === s.filterStatus);
+  if(s.filterDue === 'overdue') rows = rows.filter(rp => !recurringIsPaid(rp) && (daysUntil(rp.tanggal_jatuh_tempo) ?? 99) < 0);
+  if(s.filterDue === 'd7')      rows = rows.filter(rp => !recurringIsPaid(rp) && (daysUntil(rp.tanggal_jatuh_tempo) ?? 99) <= 7);
+  if(s.filterDue === 'd14')     rows = rows.filter(rp => !recurringIsPaid(rp) && (daysUntil(rp.tanggal_jatuh_tempo) ?? 99) <= 14);
+  if(s.filterDue === 'unpaid')  rows = rows.filter(rp => !recurringIsPaid(rp));
+
+  const dir = s.dir === 'asc' ? 1 : -1;
+  const getVal = (rp) => {
+    if(s.sort === 'nama')    return (rp.nama||'').toLowerCase();
+    if(s.sort === 'nominal') return Number(rp.nominal)||0;
+    if(s.sort === 'status')  return recurringEffStatus(rp).toLowerCase();
+    return (rp.tanggal_jatuh_tempo||''); // default: jatuh tempo
+  };
+  rows.sort((a,b)=>{ const va=getVal(a), vb=getVal(b); return va<vb?-1*dir:va>vb?1*dir:0; });
+  return rows;
+}
+
+function renderRecurringTable(host){
+  const s = _recurringState;
+  const me = session.get();
+  const canManage = !!me && ['superadmin','admin','admin_payment','pic'].includes(me.role);
+  const canDelete = !!me && ['superadmin','admin_payment'].includes(me.role);
+  const rows = filterRecurring();
+  const total = rows.length;
+  const totalPages = Math.max(1, Math.ceil(total / s.pageSize));
+  if(s.page > totalPages) s.page = totalPages;
+  const start = (s.page-1)*s.pageSize;
+  const pageRows = rows.slice(start, start + s.pageSize);
+  const arrow = (key) => s.sort===key ? (s.dir==='asc'?' ▲':' ▼') : '';
+
+  host.innerHTML = `
+    <div class="table-wrap">
+      <table class="t">
+        <thead><tr>
+          <th class="pay-sort" data-sort="nama" style="cursor:pointer">Tagihan${arrow('nama')}</th>
+          <th>Jenis</th>
+          <th>Vendor</th>
+          <th class="pay-sort" data-sort="nominal" style="cursor:pointer;text-align:right">Nominal${arrow('nominal')}</th>
+          <th>Sumber</th>
+          <th class="pay-sort" data-sort="tanggal_jatuh_tempo" style="cursor:pointer">Jatuh Tempo${arrow('tanggal_jatuh_tempo')}</th>
+          <th class="pay-sort" data-sort="status" style="cursor:pointer">Status${arrow('status')}</th>
+          <th>PIC</th>
+          <th style="text-align:right">Aksi</th>
+        </tr></thead>
+        <tbody>
+          ${pageRows.length ? pageRows.map(rp => {
+            const st = recurringEffStatus(rp);
+            const stCls = rp.pakai_anggaran_ga ? (GA_PAYMENT_STATUS_CLASS[st]||'pay-belum') : (NON_GA_STATUS_CLASS[st]||'pay-proses');
+            const d = daysUntil(rp.tanggal_jatuh_tempo);
+            const rowStyle = (!recurringIsPaid(rp) && d!==null && d<0) ? ' style="background:#FEF2F2"' : '';
+            return `
+            <tr${rowStyle}>
+              <td><div class="fw-700">${escapeHtml(rp.nama)}</div>${rp.keterangan?`<div class="text-sm muted" style="max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${escapeHtml(rp.keterangan)}">${escapeHtml(rp.keterangan)}</div>`:''}</td>
+              <td><span class="tag">${escapeHtml(rp.jenis||'—')}</span></td>
+              <td>${escapeHtml(rp.vendor||'—')}</td>
+              <td class="mono" style="text-align:right">${rp.nominal?fmtRupiah(rp.nominal):'—'}</td>
+              <td>${rp.pakai_anggaran_ga?'<span class="badge status-selesai">GA</span>':'<span class="badge gray">Non-GA</span>'}</td>
+              <td>${fmtDate(rp.tanggal_jatuh_tempo)}<div style="margin-top:3px">${recurringDueBadge(rp)}</div></td>
+              <td><span class="badge ${stCls}">${escapeHtml(st)}</span></td>
+              <td>${escapeHtml(rp.pic_user_name||'—')}</td>
+              <td style="text-align:right"><div class="actions-compact">
+                <button class="btn-icon" data-edit="${rp.id}" title="Edit / Update"><span class="material-symbols-rounded" style="font-size:18px">edit</span></button>
+                ${canDelete?`<button class="btn-icon" data-del="${rp.id}" title="Hapus"><span class="material-symbols-rounded" style="font-size:18px">delete</span></button>`:''}
+              </div></td>
+            </tr>`;
+          }).join('') : `<tr><td colspan="9" class="empty-row">Belum ada tagihan rutin</td></tr>`}
+        </tbody>
+      </table>
+    </div>
+    <div class="pagination">
+      <div>Menampilkan <strong>${pageRows.length}</strong> dari <strong>${total}</strong> tagihan</div>
+      <div class="pages">
+        <button class="page-btn" id="rp-prev" ${s.page===1?'disabled':''}><span class="material-symbols-rounded" style="font-size:18px">chevron_left</span></button>
+        <span style="padding:0 10px;font-size:13px">Hal. ${s.page} / ${totalPages}</span>
+        <button class="page-btn" id="rp-next" ${s.page===totalPages?'disabled':''}><span class="material-symbols-rounded" style="font-size:18px">chevron_right</span></button>
+      </div>
+    </div>
+  `;
+
+  const reload = host._reload || (()=>renderRecurringTable(host));
+  $('#rp-prev', host)?.addEventListener('click', () => { if(s.page>1){ s.page--; renderRecurringTable(host); } });
+  $('#rp-next', host)?.addEventListener('click', () => { if(s.page<totalPages){ s.page++; renderRecurringTable(host); } });
+  $$('th.pay-sort', host).forEach(th => th.addEventListener('click', () => {
+    const col = th.dataset.sort;
+    if(s.sort === col) s.dir = s.dir === 'asc' ? 'desc' : 'asc';
+    else { s.sort = col; s.dir = 'asc'; }
+    renderRecurringTable(host);
+  }));
+  $$('button[data-edit]', host).forEach(b => b.addEventListener('click', () => openRecurringEdit(b.dataset.edit, reload)));
+  $$('button[data-del]', host).forEach(b => b.addEventListener('click', async () => {
+    const rp = _recurringCache.find(x => x.id === b.dataset.del);
+    if(!rp) return;
+    if(!confirm(`Hapus tagihan rutin "${rp.nama}"?`)) return;
+    try{
+      await db.deleteRecurring(rp.id);
+      db.logActivity({ action:'recurring.delete', target_type:'recurring', target_id:rp.id, detail:`Hapus tagihan rutin ${rp.nama}` });
+      toast('Tagihan dihapus','success');
+      reload();
+    }catch(err){ toast('Gagal menghapus: '+(err.message||''),'error'); }
+  }));
+}
+
+async function openRecurringEdit(id, onDone){
+  const me = session.get();
+  const isNew = !id;
+  const rp = isNew ? null : _recurringCache.find(x => x.id === id);
+  if(!isNew && !rp){ toast('Data tidak ditemukan','error'); return; }
+  const canStatus = !!me && ['admin_payment','superadmin'].includes(me.role);
+  const [funds, picUsers] = await Promise.all([ db.listMataAnggaran().catch(()=>[]), db.listPicUsers().catch(()=>[]) ]);
+
+  const cur = {
+    nama: rp?.nama || '', jenis: rp?.jenis || RECURRING_JENIS[0], vendor: rp?.vendor || '',
+    nominal: rp?.nominal || '', pakai_anggaran_ga: rp ? rp.pakai_anggaran_ga !== false : true,
+    mata_anggaran: rp?.mata_anggaran || '', pic_user_id: rp?.pic_user_id || (me?.role==='pic'? me.id : ''),
+    tanggal_jatuh_tempo: rp?.tanggal_jatuh_tempo || '',
+    ga_status: rp?.ga_status || 'Not Complete Yet', non_ga_status: rp?.non_ga_status || 'On Progress',
+    keterangan: rp?.keterangan || ''
+  };
+  const nominalDisp = cur.nominal ? 'Rp ' + Number(cur.nominal).toLocaleString('id-ID') : '';
+
+  openModal(`
+    <div class="modal-head">
+      <h3><span class="material-symbols-rounded" style="vertical-align:-6px;color:var(--mrt-blue)">event_repeat</span> ${isNew?'Tambah':'Edit'} Tagihan Rutin</h3>
+      <button class="btn-icon" onclick="closeModal()"><span class="material-symbols-rounded">close</span></button>
+    </div>
+    <div class="modal-body">
+      <form id="rp-form">
+        <div class="form-grid">
+          <div class="field full field-required"><label>Nama Tagihan</label>
+            <input class="input" name="nama" value="${escapeHtml(cur.nama)}" placeholder="Mis. Tagihan Pulsa Kantor" required/></div>
+          <div class="field field-required"><label>Jenis</label>
+            <select class="select" name="jenis">${RECURRING_JENIS.map(j=>`<option ${cur.jenis===j?'selected':''}>${j}</option>`).join('')}</select></div>
+          <div class="field"><label>Vendor / Penyedia</label>
+            <input class="input" name="vendor" value="${escapeHtml(cur.vendor)}" placeholder="Mis. Telkomsel"/></div>
+          <div class="field field-required"><label>Nominal (Rp)</label>
+            <input class="input" name="nominal" id="rp-nominal" inputmode="numeric" value="${escapeHtml(nominalDisp)}" placeholder="Rp 0"/></div>
+          <div class="field field-required"><label>Tanggal Jatuh Tempo (paling lambat)</label>
+            <input class="input" type="date" name="tanggal_jatuh_tempo" value="${escapeHtml(cur.tanggal_jatuh_tempo)}" required/></div>
+          <div class="field"><label>Sumber Anggaran</label>
+            <select class="select" name="pakai_anggaran_ga" id="rp-source">
+              <option value="true"  ${cur.pakai_anggaran_ga?'selected':''}>Menggunakan Anggaran GA</option>
+              <option value="false" ${!cur.pakai_anggaran_ga?'selected':''}>Bukan Anggaran GA</option>
+            </select></div>
+          <div class="field" id="rp-mata-wrap"><label>Mata Anggaran</label>
+            <select class="select" name="mata_anggaran" id="rp-mata">
+              <option value="">(kosong)</option>
+              ${funds.map(f=>`<option ${cur.mata_anggaran===f.name?'selected':''}>${escapeHtml(f.name)}${f.kode?' — '+escapeHtml(f.kode):''}</option>`).join('')}
+            </select>
+            <span class="hint">Untuk tagihan GA — nominal akan menambah realisasi pada mata anggaran ini.</span>
+          </div>
+          <div class="field"><label>PIC Pengaju</label>
+            <select class="select" name="pic_user_id">
+              <option value="">— Pilih PIC —</option>
+              ${picUsers.map(u=>`<option value="${u.id}" ${cur.pic_user_id===u.id?'selected':''}>${escapeHtml(u.full_name)} · ${escapeHtml(u.jabatan||u.role)}</option>`).join('')}
+            </select></div>
+          <div class="field"><label>Status ${canStatus?'':'<span class="hint" style="color:var(--text-mut)">(hanya Admin Payment)</span>'}</label>
+            <select class="select" name="status" id="rp-status" ${canStatus?'':'disabled'}>
+              ${(cur.pakai_anggaran_ga?GA_PAYMENT_STATUSES:NON_GA_STATUSES).map(o=>{
+                const sel = (cur.pakai_anggaran_ga?cur.ga_status:cur.non_ga_status)===o?'selected':''; return `<option ${sel}>${o}</option>`;
+              }).join('')}
+            </select></div>
+          <div class="field full"><label>Keterangan</label>
+            <textarea class="textarea" name="keterangan" style="min-height:64px">${escapeHtml(cur.keterangan)}</textarea></div>
+        </div>
+      </form>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal()">Batal</button>
+      <button class="btn btn-primary" id="rp-save"><span class="material-symbols-rounded">save</span>Simpan</button>
+    </div>
+  `, 'lg');
+
+  // Rupiah formatter
+  $('#rp-nominal').addEventListener('input', e => {
+    const d = e.target.value.replace(/\D/g,''); e.target.value = d ? 'Rp '+Number(d).toLocaleString('id-ID') : '';
+  });
+  // Toggle status options & Mata Anggaran visibility when source changes
+  const sourceSel = $('#rp-source'), statusSel = $('#rp-status'), mataWrap = $('#rp-mata-wrap');
+  function syncSource(){
+    const isGA = sourceSel.value === 'true';
+    mataWrap.style.display = isGA ? '' : 'none';
+    const opts = isGA ? GA_PAYMENT_STATUSES : NON_GA_STATUSES;
+    const keep = statusSel.value;
+    statusSel.innerHTML = opts.map(o=>`<option ${o===keep?'selected':''}>${o}</option>`).join('');
+    if(!opts.includes(statusSel.value)) statusSel.value = opts[0];
+  }
+  sourceSel.addEventListener('change', syncSource);
+  syncSource();
+
+  $('#rp-save').addEventListener('click', async () => {
+    const fd = new FormData($('#rp-form'));
+    const nama = (fd.get('nama')||'').toString().trim();
+    const nominal = Number((fd.get('nominal')||'').toString().replace(/\D/g,''))||0;
+    const due = fd.get('tanggal_jatuh_tempo');
+    if(!nama){ toast('Nama tagihan wajib diisi','warn'); return; }
+    if(nominal<=0){ toast('Nominal wajib diisi','warn'); return; }
+    if(!due){ toast('Tanggal jatuh tempo wajib diisi','warn'); return; }
+    const isGA = fd.get('pakai_anggaran_ga') === 'true';
+    const picUser = picUsers.find(u => u.id === fd.get('pic_user_id'));
+    const newStatus = canStatus ? fd.get('status') : (rp ? (isGA?rp.ga_status:rp.non_ga_status) : (isGA?'Not Complete Yet':'On Progress'));
+
+    const payload = {
+      nama, jenis: fd.get('jenis'), vendor: (fd.get('vendor')||'').toString().trim()||null,
+      nominal, pakai_anggaran_ga: isGA, mata_anggaran: isGA ? (fd.get('mata_anggaran')||null) : null,
+      pic_user_id: fd.get('pic_user_id')||null, pic_user_name: picUser ? picUser.full_name : (rp?.pic_user_name||null),
+      tanggal_jatuh_tempo: due,
+      ga_status: isGA ? newStatus : (rp?.ga_status||'Not Complete Yet'),
+      non_ga_status: !isGA ? newStatus : (rp?.non_ga_status||'On Progress'),
+      keterangan: (fd.get('keterangan')||'').toString().trim()||null
+    };
+    // jejak perubahan status
+    const prevStatus = rp ? (rp.pakai_anggaran_ga?rp.ga_status:rp.non_ga_status) : null;
+    if(isNew || prevStatus !== newStatus){
+      payload.last_changed_at = new Date().toISOString();
+      payload.last_changed_by = me.full_name || me.username || 'Admin';
+    }
+    // bila tanggal jatuh tempo berubah → reset reminder agar siklus baru memberi peringatan lagi
+    if(isNew || (rp && rp.tanggal_jatuh_tempo !== due)) payload.last_warned_threshold = null;
+
+    const btn = $('#rp-save'); btn.disabled = true; btn.innerHTML = '<span class="material-symbols-rounded">hourglass_top</span>Menyimpan…';
+    try{
+      if(isNew){
+        const ins = await db.insertRecurring(payload);
+        db.logActivity({ action:'recurring.create', target_type:'recurring', target_id:ins?.id, detail:`Tambah tagihan rutin ${nama} (${fmtRupiah(nominal)}, jatuh tempo ${due})` });
+      }else{
+        await db.updateRecurring(id, payload);
+        db.logActivity({ action:'recurring.update', target_type:'recurring', target_id:id, detail:`Update tagihan rutin ${nama} → status ${newStatus}` });
+      }
+      closeModal();
+      toast('Tagihan rutin tersimpan','success');
+      if(typeof onDone === 'function') onDone();
+    }catch(err){
+      console.error(err); toast('Gagal menyimpan: '+(err.message||''),'error');
+      btn.disabled = false; btn.innerHTML = '<span class="material-symbols-rounded">save</span>Simpan';
+    }
+  });
+}
+
+/* ----- Reminder Pembayaran Rutin: pop-up + lonceng ----- */
+async function checkRecurringReminders(user){
+  if(_recurringChecked) return;     // cukup sekali per sesi halaman
+  _recurringChecked = true;
+  try{
+    const list = await db.listRecurring();
+    const unpaid = list.filter(rp => !recurringIsPaid(rp) && rp.tanggal_jatuh_tempo);
+    if(!unpaid.length) return;
+
+    // Penerima lonceng: PIC tagihan + semua Admin Payment & Super Admin
+    let recipients = [];
+    try{
+      const users = await db.listUsers();
+      recipients = users.filter(u => u.active !== false && ['admin_payment','superadmin'].includes(u.role)).map(u => u.id);
+    }catch{}
+
+    const popupItems = [];
+    for(const rp of unpaid){
+      const d = daysUntil(rp.tanggal_jatuh_tempo);
+      const reached = RECURRING_THRESHOLDS.filter(T => d <= T);
+      if(!reached.length) continue;            // belum masuk ambang (mis. masih H-20)
+      const curT = Math.min(...reached);        // ambang paling mendesak yang sudah tercapai
+      const lastWarned = (rp.last_warned_threshold == null) ? 999 : rp.last_warned_threshold;
+
+      // tampil di pop-up untuk user terkait (PIC sendiri, atau Admin Payment/Admin/Superadmin lihat semua)
+      const seesAll = ['admin_payment','superadmin','admin'].includes(user.role);
+      if(seesAll || rp.pic_user_id === user.id) popupItems.push({ rp, d });
+
+      // lonceng: hanya saat melewati ambang baru (lebih mendesak) — sekali per ambang
+      if(curT < lastWarned){
+        const dueTxt = d < 0 ? `terlambat ${Math.abs(d)} hari` : (d === 0 ? 'jatuh tempo hari ini' : `tinggal ${d} hari lagi`);
+        const title = d < 0 ? 'Pembayaran rutin terlambat' : 'Pengingat pembayaran rutin';
+        const body  = `${rp.nama} (${fmtRupiah(rp.nominal)}) ${dueTxt} — jatuh tempo ${fmtDate(rp.tanggal_jatuh_tempo)}.`;
+        const targets = new Set(recipients);
+        if(rp.pic_user_id) targets.add(rp.pic_user_id);
+        for(const uid of targets){ db.pushNotification({ user_id:uid, type:'recurring_due', title, body }); }
+        try{ await db.updateRecurring(rp.id, { last_warned_threshold: curT }); }catch(e){ console.warn('[recurring warn update]', e); }
+      }
+    }
+    if(popupItems.length) showRecurringPopup(popupItems);
+  }catch(err){ console.warn('[recurring reminder]', err); }
+}
+
+function showRecurringPopup(items){
+  // urutkan paling mendesak dulu
+  items.sort((a,b) => a.d - b.d);
+  const rowHtml = items.slice(0,12).map(({rp,d}) => {
+    const badge = d < 0 ? `<span class="badge status-ditolak">Terlambat ${Math.abs(d)} hari</span>`
+                : d === 0 ? '<span class="badge status-ditolak">Hari ini</span>'
+                : `<span class="badge ${d<=7?'status-belum':'status-tersedia'}">H-${d}</span>`;
+    return `<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-bottom:1px dashed var(--border-2)">
+      <div style="min-width:0">
+        <div class="fw-700" style="font-size:13.5px">${escapeHtml(rp.nama)}</div>
+        <div class="text-sm muted">${escapeHtml(rp.jenis||'')} · ${fmtRupiah(rp.nominal)} · jatuh tempo ${fmtDate(rp.tanggal_jatuh_tempo)}${rp.pic_user_name?' · PIC '+escapeHtml(rp.pic_user_name):''}</div>
+      </div>${badge}
+    </div>`;
+  }).join('');
+  const more = items.length > 12 ? `<div class="text-sm muted mt-2">…dan ${items.length-12} tagihan lainnya.</div>` : '';
+  openModal(`
+    <div class="modal-head">
+      <h3><span class="material-symbols-rounded" style="vertical-align:-6px;color:var(--warning)">notification_important</span> Pengingat Pembayaran Rutin</h3>
+      <button class="btn-icon" onclick="closeModal()"><span class="material-symbols-rounded">close</span></button>
+    </div>
+    <div class="modal-body">
+      <p class="muted text-sm" style="margin:0 0 8px">Ada <strong>${items.length}</strong> tagihan rutin yang mendekati / melewati jatuh tempo:</p>
+      <div>${rowHtml}</div>
+      ${more}
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal()">Tutup</button>
+      <a class="btn btn-primary" href="#/admin/recurring" onclick="closeModal()"><span class="material-symbols-rounded">event_repeat</span>Buka Pembayaran Rutin</a>
+    </div>
+  `, 'lg');
+}
+
+/* ============================================================
+   MODUL PETTY CASH (v2.4) — port dari aplikasi GA Petty Cash
+   Satu menu "Petty Cash" dengan sub-modul sebagai TAB:
+   Dashboard · Reimbursement (KRT/KND) · Form Input · Master Data ·
+   SPP (cetak format identik) · Report · Kelola Dropdown · Log · Posisi Kas.
+   Terintegrasi anggaran (realisasi), CRUD digate via Hak Akses Halaman.
+   Self-contained: semua state & data-layer ada di blok ini agar mudah dirawat.
+   ============================================================ */
+const PC_WILAYAH = ['GA - Wisma Nusantara', 'GA - Transport Hub', 'GA - Depo Lebak Bulus'];
+const PC_STAGES = ['Input','Diverifikasi','Permintaan Transfer','Ditransfer','SPP Terbit','Selesai'];
+const PC_STAGE_CLASS = {
+  'Input':'pay-belum','Diverifikasi':'pay-proses','Permintaan Transfer':'pay-menunggu',
+  'Ditransfer':'status-tersedia','SPP Terbit':'status-disiapkan','Selesai':'pay-lunas','Revisi':'pay-batal'
+};
+const PC_SUMBER = ['Fund GA','Fund Non GA'];
+const PC_KND_KOMPONEN = ['bbm','listrik','nonbon','parkir','service','toll','lain'];
+
+/* ---------- DATA LAYER (Supabase jika dikonfigurasi, jika tidak: demo in-memory) ---------- */
+const _pcDemo = (() => {
+  const now = new Date(); const iso = (d)=>d.toISOString();
+  const dd = (n)=>{ const d=new Date(now); d.setDate(d.getDate()+n); return d.toISOString().slice(0,10); };
+  const reimburse = [
+    { id:'pcr1', tipe:'KRT', kode:'KRT-0001', loket:'GA - Wisma Nusantara', penerima:'Andi Pratama',
+      tanggal:dd(-6), kategori:'Penyedia ATK dan Percetakan', departemen:'General Affairs', kegiatan:'Pembelian ATK pantry Lt.5',
+      rekening:'BCA 1234567890', nominal:1850000, sumber:'Fund GA', mata_anggaran:'Operasional Harian',
+      status:'Diverifikasi', pic:'Bagus Payment', verif:true, tgl_verif:dd(-4),
+      no_spp:'', cash_stat:'', cash_tgl:'', keterangan:'', detail:null, created_at:iso(now) },
+    { id:'pcr2', tipe:'KRT', kode:'KRT-0002', loket:'GA - Depo Lebak Bulus', penerima:'Maya Sari',
+      tanggal:dd(-3), kategori:'Penyedia Fasilitas Konsumsi', departemen:'General Affairs', kegiatan:'Konsumsi rapat mendadak Depo',
+      rekening:'Mandiri 0987654321', nominal:1250000, sumber:'Fund GA', mata_anggaran:'Operasional Harian',
+      status:'Input', pic:'', verif:false, tgl_verif:'', no_spp:'', cash_stat:'', cash_tgl:'', keterangan:'', detail:null, created_at:iso(now) },
+    { id:'pck1', tipe:'KND', kode:'KND-0001', loket:'GA - Transport Hub', penerima:'Zamal Ardika',
+      tanggal:dd(-5), kategori:'Operasional Kendaraan', no_polisi:'B 1514 DZV', driver:'Zamal Ardika',
+      departemen:'General Affairs', rekening:'BNI 1122334455', nominal:1320000, sumber:'Fund Non GA', mata_anggaran:null,
+      status:'SPP Terbit', pic:'Bagus Payment', verif:true, tgl_verif:dd(-3), no_spp:'022/SPP/GA-MRT/III/2026',
+      cash_stat:'', cash_tgl:'', keterangan:'', km_awal:42010, km_akhir:42380,
+      detail:{ bbm:900000, listrik:0, nonbon:0, parkir:70000, service:0, toll:300000, lain:50000 }, created_at:iso(now) }
+  ];
+  const master = [
+    { id:'pcm1', tipe:'KRT', no_sap:'SAP-0001', wilayah:'GA - Wisma Nusantara', tanggal:dd(-30), deskripsi:'ATK & percetakan',
+      pengguna:'General Affairs', departemen:'General Affairs', divisi:'Corporate Services', sub_kategori:'ATK',
+      kategori:'Penyedia ATK dan Percetakan', gl_account:'610112004', no_fund:'F-001', desc_fund:'Operasional Harian',
+      no_formulir:'', cost_center:'MJ00053200', total_biaya:5000000 },
+    { id:'pcm2', tipe:'KND', no_trx:'TRX-0001', tanggal:dd(-30), wilayah:'GA - Transport Hub', no_sap:'SAP-0002',
+      deskripsi:'Operasional kendaraan', no_polisi:'B 1514 DZV', sub_kategori:'BBM', kategori:'Operasional Kendaraan',
+      gl_account:'6101120010', no_fund:'F-002', desc_fund:'Perawatan Fasilitas', cost_center:'MJ00053200', total_biaya:3000000 }
+  ];
+  const dropdown = [
+    { id:'d1', grup:'Wilayah/Loket', nilai:'GA - Wisma Nusantara' },
+    { id:'d2', grup:'Wilayah/Loket', nilai:'GA - Transport Hub' },
+    { id:'d3', grup:'Wilayah/Loket', nilai:'GA - Depo Lebak Bulus' },
+    { id:'d4', grup:'Kategori KRT', nilai:'Penyedia ATK dan Percetakan' },
+    { id:'d5', grup:'Kategori KRT', nilai:'Penyedia Fasilitas Konsumsi' },
+    { id:'d6', grup:'Kategori KRT', nilai:'Penyedia Barang Perlengkapan Kantor' },
+    { id:'d7', grup:'Kategori KRT', nilai:'Perjalanan Dinas' },
+    { id:'d8', grup:'Kategori KND', nilai:'Operasional Kendaraan' }
+  ];
+  const relasi = [
+    { id:'r1', jenis_biaya:'Penyedia ATK dan Percetakan', gl_account:'6101120004', no_fund:'F-001', cost_center:'MJ00053200' },
+    { id:'r2', jenis_biaya:'Penyedia Fasilitas Konsumsi', gl_account:'6101120010', no_fund:'F-001', cost_center:'MJ00053200' },
+    { id:'r3', jenis_biaya:'Operasional Kendaraan',        gl_account:'6101120010', no_fund:'F-002', cost_center:'MJ00053200' }
+  ];
+  const log = [];
+  const cash = [
+    { id:'c1', tanggal:dd(-30), tipe:'Masuk', uraian:'Pengisian dana kas kecil (top-up)', nominal:140000000, keterangan:'Saldo awal brankas' },
+    { id:'c2', tanggal:dd(-6),  tipe:'Keluar', uraian:'Reimbursement KRT-0001 (ATK)', nominal:1850000, keterangan:'' },
+    { id:'c3', tanggal:dd(-5),  tipe:'Keluar', uraian:'Reimbursement KND-0001 (kendaraan)', nominal:1320000, keterangan:'' }
+  ];
+  return { reimburse, master, dropdown, relasi, log, cash };
+})();
+
+const pcdb = {
+  _seq(arr, p){ return p + (arr.length+1) + Date.now(); },
+  async list(table){
+    if(!SUPA_CONFIGURED) return [..._pcDemo[table]];
+    const { data, error } = await supa.from('pc_'+table).select('*').order('created_at',{ascending:false});
+    if(error) throw error; return data || [];
+  },
+  async insert(table, row){
+    if(!SUPA_CONFIGURED){ const r = { id:this._seq(_pcDemo[table],table[0]), created_at:new Date().toISOString(), ...row }; _pcDemo[table].push(r); return r; }
+    const { data, error } = await supa.from('pc_'+table).insert(row).select().single();
+    if(error) throw error; return data;
+  },
+  async update(table, id, patch){
+    if(!SUPA_CONFIGURED){ const i=_pcDemo[table].findIndex(x=>x.id===id); if(i>=0) _pcDemo[table][i]={..._pcDemo[table][i],...patch}; return _pcDemo[table][i]; }
+    const { data, error } = await supa.from('pc_'+table).update(patch).eq('id',id).select().single();
+    if(error) throw error; return data;
+  },
+  async remove(table, id){
+    if(!SUPA_CONFIGURED){ _pcDemo[table]=_pcDemo[table].filter(x=>x.id!==id); return; }
+    const { error } = await supa.from('pc_'+table).delete().eq('id',id);
+    if(error) throw error;
+  },
+  async log(aksi, detail){
+    const u = session.get();
+    const row = { waktu:new Date().toISOString(), user:u?.full_name||'-', aksi, detail:detail||'' };
+    try{ await this.insert('log', row); }catch(e){ console.warn('[pc log]', e); }
+  }
+};
+
+/* ---------- helpers ---------- */
+function pcGenKode(tipe){
+  const arr = _pcCache.reimburse.filter(r => r.tipe === tipe);
+  let max = 0; arr.forEach(r => { const n = parseInt((r.kode||'').split('-')[1]||'0',10); if(n>max) max=n; });
+  return `${tipe}-${String(max+1).padStart(4,'0')}`;
+}
+function pcStageIndex(s){ return PC_STAGES.indexOf(s); }
+function pcCanManage(){
+  const u=session.get(); if(!u) return false;
+  if(u.role==='superadmin') return true;
+  const ap = getAllowedPages(u);                 // daftar halaman yang diizinkan per akun (Hak Akses Halaman)
+  if(ap) return ap.includes('petty');            // ada daftar eksplisit → harus memuat 'petty' untuk boleh CRUD
+  return ['admin','admin_payment','pic'].includes(u.role);  // tanpa daftar eksplisit → default per role
+}
+
+/* ---------- cache + state ---------- */
+let _pcCache = { reimburse:[], master:[], dropdown:[], relasi:[], log:[], cash:[] };
+let _pcTab = 'dashboard';
+let _pcReimTipe = 'KRT';     // sub-tab KRT/KND di Reimbursement & Master
+let _pcMasterTipe = 'KRT';
+let _pcSppData = null;       // reimbursement terpilih untuk SPP
+
+async function pcLoadAll(){
+  const [reimburse, master, dropdown, relasi, log, cash] = await Promise.all([
+    pcdb.list('reimburse').catch(()=>[]), pcdb.list('master').catch(()=>[]),
+    pcdb.list('dropdown').catch(()=>[]), pcdb.list('relasi').catch(()=>[]),
+    pcdb.list('log').catch(()=>[]), pcdb.list('cash').catch(()=>[])
+  ]);
+  _pcCache = { reimburse, master, dropdown, relasi, log, cash };
+}
+function pcDropdownValues(grup){ return _pcCache.dropdown.filter(d => d.grup === grup).map(d => d.nilai); }
+
+/* ============================================================
+   SHELL — satu halaman dengan tab
+   ============================================================ */
+async function viewAdminPetty(c){
+  c.innerHTML = `
+    <div class="pc-tabs" id="pc-tabs" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px">
+      ${[['dashboard','Dashboard','dashboard'],['reimburse','Reimbursement','receipt_long'],['form','Form Input','add_box'],
+         ['master','Master Data','dataset'],['spp','SPP','print'],['report','Report','assessment'],
+         ['dropdown','Kelola Dropdown','tune'],['cash','Posisi Kas','account_balance'],['log','Log History','history']]
+        .map(([k,label,ic]) => `<button class="btn btn-sm pc-tab-btn" data-tab="${k}" style="${k===_pcTab?'background:var(--mrt-blue);color:#fff':'background:#fff;color:var(--text-2);border:1px solid var(--border)'}">
+          <span class="material-symbols-rounded" style="font-size:17px">${ic}</span>${label}</button>`).join('')}
+    </div>
+    <div id="pc-tab-content"></div>
+  `;
+  $$('#pc-tabs .pc-tab-btn').forEach(b => b.addEventListener('click', () => { _pcTab = b.dataset.tab; renderPettyTab(); $$('#pc-tabs .pc-tab-btn').forEach(x=>{ const on=x.dataset.tab===_pcTab; x.style.cssText = on?'background:var(--mrt-blue);color:#fff':'background:#fff;color:var(--text-2);border:1px solid var(--border)'; }); }));
+
+  const host = $('#pc-tab-content');
+  host.innerHTML = '<div class="card-pad muted">Memuat data petty cash…</div>';
+  try{ await pcLoadAll(); renderPettyTab(); }
+  catch(err){ host.innerHTML = `<div class="card-pad" style="color:#991B1B">Gagal memuat: ${escapeHtml(err.message||'')}</div>`; }
+}
+
+function renderPettyTab(){
+  const host = $('#pc-tab-content'); if(!host) return;
+  if(_pcTab==='dashboard') pcRenderDashboard(host);
+  else if(_pcTab==='reimburse') pcRenderReimburse(host);
+  else if(_pcTab==='form') pcRenderForm(host);
+  else if(_pcTab==='master') pcRenderMaster(host);
+  else if(_pcTab==='spp') pcRenderSPP(host);
+  else if(_pcTab==='report') pcRenderReport(host);
+  else if(_pcTab==='dropdown') pcRenderDropdown(host);
+  else if(_pcTab==='cash') pcRenderCash(host);
+  else if(_pcTab==='log') pcRenderLog(host);
+  try{ enhanceSearchable(host); }catch(e){}
+}
+
+/* ============================================================
+   TAB: DASHBOARD
+   ============================================================ */
+function pcRenderDashboard(host){
+  const all = _pcCache.reimburse;
+  const totalNom = all.reduce((a,r)=>a+(Number(r.nominal)||0),0);
+  const selesai = all.filter(r => r.status==='Selesai').length;
+  const proses = all.filter(r => r.status!=='Selesai').length;
+  const krtTot = all.filter(r=>r.tipe==='KRT').reduce((a,r)=>a+(Number(r.nominal)||0),0);
+  const kndTot = all.filter(r=>r.tipe==='KND').reduce((a,r)=>a+(Number(r.nominal)||0),0);
+  const byWil = {}; PC_WILAYAH.forEach(w=>byWil[w]=0);
+  all.forEach(r=>{ if(byWil[r.loket]!==undefined) byWil[r.loket]+=Number(r.nominal)||0; });
+
+  host.innerHTML = `
+    <div class="adm-stat-grid">
+      <div class="stat-card"><div class="stat-icon"><span class="material-symbols-rounded">receipt_long</span></div>
+        <div class="stat-body"><span class="stat-label">Total Transaksi</span><span class="stat-value">${all.length}</span></div></div>
+      <div class="stat-card"><div class="stat-icon purple"><span class="material-symbols-rounded">autorenew</span></div>
+        <div class="stat-body"><span class="stat-label">Dalam Proses</span><span class="stat-value">${proses}</span></div></div>
+      <div class="stat-card"><div class="stat-icon green"><span class="material-symbols-rounded">task_alt</span></div>
+        <div class="stat-body"><span class="stat-label">Selesai</span><span class="stat-value">${selesai}</span></div></div>
+      <div class="stat-card"><div class="stat-icon warn"><span class="material-symbols-rounded">payments</span></div>
+        <div class="stat-body"><span class="stat-label">Total Nominal</span><span class="stat-value" style="font-size:17px">${fmtRupiah(totalNom)}</span></div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px" id="pc-dash-charts">
+      <div class="card" style="margin:0"><div class="card-head"><h3>Kas Kerumahtanggaan vs Kendaraan</h3></div>
+        <div class="card-body"><canvas id="pc-ch-tipe" height="170"></canvas></div></div>
+      <div class="card" style="margin:0"><div class="card-head"><h3>Penggunaan per Wilayah/Loket</h3></div>
+        <div class="card-body"><canvas id="pc-ch-wil" height="170"></canvas></div></div>
+    </div>
+    <div class="card" style="margin-top:14px"><div class="card-head"><h3>Ringkasan per Status</h3></div>
+      <div class="card-body"><div class="table-wrap"><table class="t t-dense"><thead><tr><th>Status</th><th style="text-align:right">Jumlah</th><th style="text-align:right">Nominal</th></tr></thead>
+        <tbody>${PC_STAGES.concat(['Revisi']).map(s=>{ const rows=all.filter(r=>r.status===s); if(!rows.length) return ''; const n=rows.reduce((a,r)=>a+(Number(r.nominal)||0),0);
+          return `<tr><td><span class="badge ${PC_STAGE_CLASS[s]||'gray'}">${s}</span></td><td style="text-align:right">${rows.length}</td><td style="text-align:right" class="mono">${fmtRupiah(n)}</td></tr>`; }).join('')||'<tr><td colspan="3" class="empty-row">Belum ada data</td></tr>'}</tbody></table></div></div></div>
+  `;
+  if(typeof Chart !== 'undefined'){
+    const t = $('#pc-ch-tipe'); if(t) new Chart(t.getContext('2d'), { type:'doughnut',
+      data:{ labels:['Kerumahtanggaan','Kendaraan'], datasets:[{ data:[krtTot,kndTot], backgroundColor:['#C9A24B','#C9622B'], borderColor:'#fff', borderWidth:2 }] },
+      options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{position:'bottom'}, tooltip:{callbacks:{label:(c)=>c.label+': '+fmtRupiah(c.parsed)}} }, cutout:'58%' } });
+    const w = $('#pc-ch-wil'); if(w) new Chart(w.getContext('2d'), { type:'bar',
+      data:{ labels:PC_WILAYAH.map(x=>x.replace('GA - ','')), datasets:[{ data:PC_WILAYAH.map(x=>byWil[x]||0), backgroundColor:'#0F4C9C', borderRadius:6, maxBarThickness:48 }] },
+      options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}, tooltip:{callbacks:{label:(c)=>fmtRupiah(c.parsed.y)}}}, scales:{ y:{ beginAtZero:true, ticks:{ callback:(v)=>'Rp '+Number(v).toLocaleString('id-ID'), font:{size:9} } } } } });
+  }
+}
+
+/* ============================================================
+   TAB: REIMBURSEMENT (KRT / KND) + workflow proses
+   ============================================================ */
+function pcRenderReimburse(host){
+  const manage = pcCanManage();
+  host.innerHTML = `
+    <div class="card">
+      <div class="card-head">
+        <div class="flex gap-2">
+          <button class="btn btn-sm pc-rt" data-rt="KRT" style="${_pcReimTipe==='KRT'?'background:var(--mrt-blue);color:#fff':'background:#fff;border:1px solid var(--border);color:var(--text-2)'}"><span class="material-symbols-rounded" style="font-size:17px">home</span>Kerumahtanggaan</button>
+          <button class="btn btn-sm pc-rt" data-rt="KND" style="${_pcReimTipe==='KND'?'background:var(--mrt-blue);color:#fff':'background:#fff;border:1px solid var(--border);color:var(--text-2)'}"><span class="material-symbols-rounded" style="font-size:17px">directions_car</span>Kendaraan</button>
+        </div>
+        <div class="flex gap-2">
+          ${manage?'<button class="btn btn-primary btn-sm" id="pc-reim-add"><span class="material-symbols-rounded" style="font-size:18px">add</span>Input Baru</button>':''}
+          <button class="btn btn-ghost btn-sm" id="pc-reim-csv"><span class="material-symbols-rounded" style="font-size:18px">download</span>CSV</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="toolbar"><div class="search"><span class="material-symbols-rounded">search</span>
+          <input class="input" id="pc-reim-search" placeholder="Cari kode / penerima / kegiatan..."/></div>
+          <select class="select" id="pc-reim-status" style="max-width:200px"><option value="">Semua Status</option>${PC_STAGES.concat(['Revisi']).map(s=>`<option>${s}</option>`).join('')}</select>
+          <select class="select" id="pc-reim-wil" style="max-width:220px"><option value="">Semua Wilayah</option>${PC_WILAYAH.map(w=>`<option>${w}</option>`).join('')}</select>
+        </div>
+        <div id="pc-reim-host"></div>
+      </div>
+    </div>`;
+  $$('.pc-rt', host).forEach(b => b.addEventListener('click', () => { _pcReimTipe=b.dataset.rt; pcRenderReimburse(host); }));
+  const search=$('#pc-reim-search'), fstat=$('#pc-reim-status'), fwil=$('#pc-reim-wil');
+  const draw = () => pcDrawReimTable($('#pc-reim-host'), { q:(search.value||'').toLowerCase(), status:fstat.value, wil:fwil.value });
+  [search,fstat,fwil].forEach(el => el.addEventListener('input', draw));
+  if($('#pc-reim-add')) $('#pc-reim-add').addEventListener('click', () => { _pcTab='form'; renderPettyTab(); });
+  $('#pc-reim-csv').addEventListener('click', () => {
+    const rows = _pcCache.reimburse.filter(r=>r.tipe===_pcReimTipe).map(r=>({ Kode:r.kode, Wilayah:r.loket, Penerima:r.penerima, Tanggal:r.tanggal, Kategori:r.kategori, Nominal:r.nominal, Sumber:r.sumber, Status:r.status, No_SPP:r.no_spp||'' }));
+    csvDownload('reimburse-'+_pcReimTipe+'-'+new Date().toISOString().slice(0,10)+'.csv', rows);
+  });
+  draw();
+}
+
+function pcDrawReimTable(host, f){
+  const manage = pcCanManage();
+  let rows = _pcCache.reimburse.filter(r => r.tipe===_pcReimTipe);
+  if(f.q) rows = rows.filter(r => (r.kode+' '+r.penerima+' '+(r.kegiatan||'')+' '+(r.driver||'')).toLowerCase().includes(f.q));
+  if(f.status) rows = rows.filter(r => r.status===f.status);
+  if(f.wil) rows = rows.filter(r => r.loket===f.wil);
+  rows.sort((a,b)=> (b.tanggal||'').localeCompare(a.tanggal||''));
+
+  host.innerHTML = `<div class="table-wrap"><table class="t t-dense"><thead><tr>
+    <th>Kode</th><th>Wilayah/Loket</th><th>Penerima</th><th>Tanggal</th><th>Kategori</th>
+    <th style="text-align:right">Nominal</th><th>Sumber</th><th>Status</th><th>No. SPP</th><th style="text-align:right">Aksi</th>
+  </tr></thead><tbody>
+    ${rows.length ? rows.map(r=>`<tr>
+      <td><span class="code-pill">${escapeHtml(r.kode)}</span></td>
+      <td>${escapeHtml((r.loket||'').replace('GA - ',''))}</td>
+      <td>${escapeHtml(r.penerima||'—')}${r.tipe==='KND'&&r.no_polisi?`<div class="text-sm muted">${escapeHtml(r.no_polisi)}</div>`:''}</td>
+      <td>${fmtDate(r.tanggal)}</td>
+      <td>${escapeHtml(r.kategori||'—')}</td>
+      <td class="mono" style="text-align:right">${fmtRupiah(r.nominal)}</td>
+      <td>${r.sumber==='Fund Non GA'?'<span class="badge gray">Non GA</span>':'<span class="badge status-selesai">GA</span>'}</td>
+      <td><span class="badge ${PC_STAGE_CLASS[r.status]||'gray'}">${escapeHtml(r.status)}</span></td>
+      <td>${escapeHtml(r.no_spp||'—')}</td>
+      <td style="text-align:right"><div class="actions-compact">
+        <button class="btn-icon" data-view="${r.id}" title="Detail"><span class="material-symbols-rounded" style="font-size:17px">visibility</span></button>
+        ${manage?`<button class="btn-icon" data-proc="${r.id}" title="Proses workflow" style="color:var(--mrt-blue)"><span class="material-symbols-rounded" style="font-size:17px">conveyor_belt</span></button>`:''}
+        <button class="btn-icon" data-spp="${r.id}" title="Buat SPP" style="color:var(--mrt-green)"><span class="material-symbols-rounded" style="font-size:17px">print</span></button>
+        ${manage?`<button class="btn-icon" data-del="${r.id}" title="Hapus"><span class="material-symbols-rounded" style="font-size:17px">delete</span></button>`:''}
+      </div></td></tr>`).join('') : `<tr><td colspan="10" class="empty-row">Belum ada transaksi ${_pcReimTipe}</td></tr>`}
+  </tbody></table></div>`;
+
+  $$('button[data-view]', host).forEach(b=>b.addEventListener('click', ()=>pcReimDetail(b.dataset.view)));
+  $$('button[data-proc]', host).forEach(b=>b.addEventListener('click', ()=>pcReimProcess(b.dataset.proc)));
+  $$('button[data-spp]', host).forEach(b=>b.addEventListener('click', ()=>{ _pcSppData=_pcCache.reimburse.find(x=>x.id===b.dataset.spp); _pcTab='spp'; renderPettyTab(); $$('#pc-tabs .pc-tab-btn').forEach(x=>{const on=x.dataset.tab==='spp'; x.style.cssText=on?'background:var(--mrt-blue);color:#fff':'background:#fff;color:var(--text-2);border:1px solid var(--border)';}); }));
+  $$('button[data-del]', host).forEach(b=>b.addEventListener('click', async ()=>{
+    const r=_pcCache.reimburse.find(x=>x.id===b.dataset.del); if(!r||!confirm(`Hapus ${r.kode}?`)) return;
+    await pcdb.remove('reimburse', r.id); pcdb.log('reimburse.delete', r.kode); await pcLoadAll(); renderPettyTab(); toast('Transaksi dihapus','success');
+  }));
+}
+
+function pcReimDetail(id){
+  const r=_pcCache.reimburse.find(x=>x.id===id); if(!r) return;
+  const kndRows = r.tipe==='KND' && r.detail ? PC_KND_KOMPONEN.filter(k=>Number(r.detail[k])>0).map(k=>`<div class="k">${k.toUpperCase()}</div><div class="v">${fmtRupiah(r.detail[k])}</div>`).join('') : '';
+  openModal(`
+    <div class="modal-head"><h3><span class="material-symbols-rounded" style="vertical-align:-6px;color:var(--mrt-blue)">receipt_long</span> Detail ${escapeHtml(r.kode)}</h3><button class="btn-icon" onclick="closeModal()"><span class="material-symbols-rounded">close</span></button></div>
+    <div class="modal-body"><div class="kvlist">
+      <div class="k">Tipe</div><div class="v">${r.tipe==='KRT'?'Kerumahtanggaan':'Kendaraan'}</div>
+      <div class="k">Wilayah/Loket</div><div class="v">${escapeHtml(r.loket||'—')}</div>
+      <div class="k">Penerima</div><div class="v">${escapeHtml(r.penerima||'—')}</div>
+      ${r.tipe==='KND'?`<div class="k">No. Polisi / Driver</div><div class="v">${escapeHtml(r.no_polisi||'—')} · ${escapeHtml(r.driver||'—')}</div>`:''}
+      <div class="k">Tanggal</div><div class="v">${fmtDate(r.tanggal)}</div>
+      <div class="k">Kategori</div><div class="v">${escapeHtml(r.kategori||'—')}</div>
+      ${r.tipe==='KRT'?`<div class="k">Kegiatan</div><div class="v">${escapeHtml(r.kegiatan||'—')}</div>`:''}
+      <div class="k">Departemen</div><div class="v">${escapeHtml(r.departemen||'—')}</div>
+      <div class="k">Rekening</div><div class="v">${escapeHtml(r.rekening||'—')}</div>
+      <div class="k">Nominal</div><div class="v">${fmtRupiah(r.nominal)}</div>
+      ${kndRows}
+      <div class="k">Sumber Dana</div><div class="v">${r.sumber==='Fund Non GA'?'<span class="badge gray">Fund Non GA</span>':'<span class="badge status-selesai">Fund GA</span>'}${r.mata_anggaran?' · '+escapeHtml(r.mata_anggaran):''}</div>
+      <div class="k">Status</div><div class="v"><span class="badge ${PC_STAGE_CLASS[r.status]||'gray'}">${escapeHtml(r.status)}</span></div>
+      <div class="k">PIC</div><div class="v">${escapeHtml(r.pic||'—')}</div>
+      <div class="k">No. SPP</div><div class="v">${escapeHtml(r.no_spp||'—')}</div>
+      <div class="k">Keterangan</div><div class="v" style="white-space:pre-wrap">${escapeHtml(r.keterangan||'—')}</div>
+    </div></div>
+    <div class="modal-foot"><button class="btn btn-ghost" onclick="closeModal()">Tutup</button></div>`,'lg');
+}
+
+function pcReimProcess(id){
+  const r=_pcCache.reimburse.find(x=>x.id===id); if(!r) return;
+  const idx = pcStageIndex(r.status);
+  const me = session.get();
+  openModal(`
+    <div class="modal-head"><h3><span class="material-symbols-rounded" style="vertical-align:-6px;color:var(--mrt-blue)">conveyor_belt</span> Proses Workflow — ${escapeHtml(r.kode)}</h3><button class="btn-icon" onclick="closeModal()"><span class="material-symbols-rounded">close</span></button></div>
+    <div class="modal-body">
+      <div class="steps" style="margin-bottom:14px">${PC_STAGES.map((s,i)=>`<div class="step ${i<idx?'done':i===idx?'on':''}">${s}</div>`).join('')}</div>
+      <form id="pc-proc-form"><div class="form-grid">
+        <div class="field field-required"><label>Status</label>
+          <select class="select" name="status">${PC_STAGES.concat(['Revisi']).map(s=>`<option ${s===r.status?'selected':''}>${s}</option>`).join('')}</select></div>
+        <div class="field"><label>Sumber Dana</label>
+          <select class="select" name="sumber">${PC_SUMBER.map(s=>`<option ${s===r.sumber?'selected':''}>${s}</option>`).join('')}</select></div>
+        <div class="field"><label>PIC</label><input class="input" name="pic" value="${escapeHtml(r.pic||me?.full_name||'')}"/></div>
+        <div class="field"><label>No. SPP</label><input class="input" name="no_spp" value="${escapeHtml(r.no_spp||'')}" placeholder="022/SPP/GA-MRT/III/2026"/></div>
+        <div class="field"><label>Tanggal Transfer</label><input class="input" type="date" name="trf_tgl" value="${escapeHtml(r.trf_tgl||'')}"/></div>
+        <div class="field"><label>Tanggal Cash/Selesai</label><input class="input" type="date" name="cash_tgl" value="${escapeHtml(r.cash_tgl||'')}"/></div>
+        <div class="field full"><label>Keterangan</label><textarea class="textarea" name="keterangan" style="min-height:60px">${escapeHtml(r.keterangan||'')}</textarea></div>
+      </div></form>
+    </div>
+    <div class="modal-foot"><button class="btn btn-ghost" onclick="closeModal()">Batal</button><button class="btn btn-primary" id="pc-proc-save"><span class="material-symbols-rounded">save</span>Simpan</button></div>`,'lg');
+  $('#pc-proc-save').addEventListener('click', async ()=>{
+    const fd = new FormData($('#pc-proc-form'));
+    const patch = { status:fd.get('status'), sumber:fd.get('sumber'), pic:fd.get('pic')||null, no_spp:fd.get('no_spp')||null,
+      trf_tgl:fd.get('trf_tgl')||null, cash_tgl:fd.get('cash_tgl')||null, keterangan:fd.get('keterangan')||null,
+      verif: pcStageIndex(fd.get('status'))>=1 };
+    try{ await pcdb.update('reimburse', id, patch); pcdb.log('reimburse.process', `${r.kode} → ${patch.status}`); await pcLoadAll(); closeModal(); renderPettyTab(); toast('Workflow diperbarui','success'); }
+    catch(err){ toast('Gagal: '+(err.message||''),'error'); }
+  });
+}
+
+/* ============================================================
+   TAB: FORM INPUT (KRT / KND) — dengan autofill relasi
+   ============================================================ */
+function pcRenderForm(host){
+  const tipe = _pcReimTipe;
+  const katGrup = tipe==='KRT' ? 'Kategori KRT' : 'Kategori KND';
+  const kats = pcDropdownValues(katGrup);
+  host.innerHTML = `
+    <div class="card"><div class="card-head">
+      <div class="flex gap-2">
+        <button class="btn btn-sm pc-ft" data-rt="KRT" style="${tipe==='KRT'?'background:var(--mrt-blue);color:#fff':'background:#fff;border:1px solid var(--border);color:var(--text-2)'}">Kerumahtanggaan</button>
+        <button class="btn btn-sm pc-ft" data-rt="KND" style="${tipe==='KND'?'background:var(--mrt-blue);color:#fff':'background:#fff;border:1px solid var(--border);color:var(--text-2)'}">Kendaraan</button>
+      </div></div>
+      <div class="card-body"><form id="pc-form"><div class="form-grid">
+        <div class="field field-required"><label>Wilayah/Loket</label><select class="select" name="loket">${PC_WILAYAH.map(w=>`<option>${w}</option>`).join('')}</select></div>
+        <div class="field field-required"><label>Tanggal</label><input class="input" type="date" name="tanggal" value="${new Date().toISOString().slice(0,10)}"/></div>
+        <div class="field field-required"><label>Penerima</label><input class="input" name="penerima" placeholder="Nama penerima"/></div>
+        <div class="field"><label>Rekening</label><input class="input" name="rekening" placeholder="Bank & no. rekening"/></div>
+        <div class="field"><label>Departemen</label><input class="input" name="departemen" value="General Affairs"/></div>
+        <div class="field field-required"><label>Kategori / Jenis Biaya</label><select class="select" name="kategori" id="pc-form-kat"><option value="">— pilih —</option>${kats.map(k=>`<option>${escapeHtml(k)}</option>`).join('')}</select></div>
+        ${tipe==='KRT' ? `
+          <div class="field full"><label>Kegiatan</label><input class="input" name="kegiatan" placeholder="Uraian kegiatan/pengeluaran"/></div>
+          <div class="field field-required"><label>Nominal</label><input class="input pc-money" name="nominal" inputmode="numeric" placeholder="Rp 0"/></div>
+        ` : `
+          <div class="field"><label>No. Polisi</label><input class="input" name="no_polisi" placeholder="B 1234 ABC"/></div>
+          <div class="field"><label>Driver</label><input class="input" name="driver"/></div>
+          <div class="field"><label>KM Awal</label><input class="input" type="number" name="km_awal"/></div>
+          <div class="field"><label>KM Akhir</label><input class="input" type="number" name="km_akhir"/></div>
+          ${PC_KND_KOMPONEN.map(k=>`<div class="field"><label>${k.toUpperCase()}</label><input class="input pc-money pc-knd" data-k="${k}" inputmode="numeric" placeholder="Rp 0"/></div>`).join('')}
+          <div class="field"><label>Total (otomatis)</label><input class="input" id="pc-knd-total" name="nominal" readonly value="Rp 0"/></div>
+        `}
+        <div class="field"><label>Sumber Dana</label><select class="select" name="sumber">${PC_SUMBER.map(s=>`<option>${s}</option>`).join('')}</select></div>
+        <div class="field"><label>Mata Anggaran (untuk GA)</label><select class="select" name="mata_anggaran" id="pc-form-ma"><option value="">(kosong)</option></select>
+          <span class="hint">Nominal Fund GA menambah realisasi anggaran.</span></div>
+        <div class="field full"><label>Keterangan</label><textarea class="textarea" name="keterangan" style="min-height:56px"></textarea></div>
+      </div>
+      <div class="flex gap-2 mt-3" style="justify-content:flex-end"><button type="button" class="btn btn-ghost" id="pc-form-reset">Reset</button><button type="button" class="btn btn-primary" id="pc-form-save"><span class="material-symbols-rounded">save</span>Simpan</button></div>
+      </form></div></div>`;
+
+  $$('.pc-ft', host).forEach(b=>b.addEventListener('click', ()=>{ _pcReimTipe=b.dataset.rt; pcRenderForm(host); }));
+  // Mata anggaran options
+  db.listMataAnggaran().then(funds=>{ const sel=$('#pc-form-ma'); if(sel){ sel.innerHTML='<option value="">(kosong)</option>'+funds.map(f=>`<option>${escapeHtml(f.name)}</option>`).join(''); refreshSearchable(sel); } }).catch(()=>{});
+  // Money formatter + KND total
+  $$('.pc-money', host).forEach(inp=>inp.addEventListener('input', e=>{ const d=e.target.value.replace(/\D/g,''); e.target.value=d?'Rp '+Number(d).toLocaleString('id-ID'):''; pcKndTotal(host); }));
+  function pcKndTotal(h){ const tot=$('#pc-knd-total',h); if(!tot) return; let s=0; $$('.pc-knd',h).forEach(i=>s+=Number((i.value||'').replace(/\D/g,''))||0); tot.value='Rp '+s.toLocaleString('id-ID'); }
+  $('#pc-form-reset').addEventListener('click', ()=>pcRenderForm(host));
+  $('#pc-form-save').addEventListener('click', async ()=>{
+    const fd=new FormData($('#pc-form'));
+    const penerima=(fd.get('penerima')||'').toString().trim();
+    if(!penerima){ toast('Penerima wajib diisi','warn'); return; }
+    let nominal = Number((fd.get('nominal')||'').toString().replace(/\D/g,''))||0;
+    let detail=null;
+    if(tipe==='KND'){ detail={}; let s=0; $$('.pc-knd',host).forEach(i=>{ const v=Number((i.value||'').replace(/\D/g,''))||0; detail[i.dataset.k]=v; s+=v; }); nominal=s; }
+    if(nominal<=0){ toast('Nominal wajib diisi','warn'); return; }
+    const row = { tipe, kode:pcGenKode(tipe), loket:fd.get('loket'), penerima, tanggal:fd.get('tanggal'),
+      kategori:fd.get('kategori')||null, departemen:fd.get('departemen')||null, rekening:fd.get('rekening')||null,
+      nominal, sumber:fd.get('sumber'), mata_anggaran: fd.get('sumber')==='Fund GA' ? (fd.get('mata_anggaran')||null) : null,
+      kegiatan: tipe==='KRT'?(fd.get('kegiatan')||null):null,
+      no_polisi: tipe==='KND'?(fd.get('no_polisi')||null):null, driver: tipe==='KND'?(fd.get('driver')||null):null,
+      km_awal: tipe==='KND'?(Number(fd.get('km_awal'))||null):null, km_akhir: tipe==='KND'?(Number(fd.get('km_akhir'))||null):null,
+      detail, status:'Input', verif:false, no_spp:'', keterangan:fd.get('keterangan')||null };
+    try{ const ins=await pcdb.insert('reimburse', row); pcdb.log('reimburse.create', ins.kode); await pcLoadAll(); toast('Transaksi tersimpan: '+ins.kode,'success'); _pcTab='reimburse'; renderPettyTab(); $$('#pc-tabs .pc-tab-btn').forEach(x=>{const on=x.dataset.tab==='reimburse'; x.style.cssText=on?'background:var(--mrt-blue);color:#fff':'background:#fff;color:var(--text-2);border:1px solid var(--border)';}); }
+    catch(err){ toast('Gagal: '+(err.message||''),'error'); }
+  });
+}
+
+/* ============================================================
+   TAB: MASTER DATA (KRT / KND)
+   ============================================================ */
+function pcRenderMaster(host){
+  const tipe=_pcMasterTipe, manage=pcCanManage();
+  const rows=_pcCache.master.filter(m=>m.tipe===tipe);
+  const cols = tipe==='KRT'
+    ? [['no_sap','No. SAP'],['wilayah','Wilayah'],['deskripsi','Deskripsi'],['kategori','Kategori'],['gl_account','GL Account'],['no_fund','No. Fund'],['cost_center','Cost Center'],['total_biaya','Total Biaya']]
+    : [['no_trx','No. Trx'],['wilayah','Wilayah'],['no_polisi','No. Polisi'],['deskripsi','Deskripsi'],['kategori','Kategori'],['gl_account','GL Account'],['no_fund','No. Fund'],['cost_center','Cost Center'],['total_biaya','Total Biaya']];
+  host.innerHTML=`<div class="card"><div class="card-head">
+    <div class="flex gap-2">
+      <button class="btn btn-sm pc-mt" data-rt="KRT" style="${tipe==='KRT'?'background:var(--mrt-blue);color:#fff':'background:#fff;border:1px solid var(--border);color:var(--text-2)'}">Master KRT</button>
+      <button class="btn btn-sm pc-mt" data-rt="KND" style="${tipe==='KND'?'background:var(--mrt-blue);color:#fff':'background:#fff;border:1px solid var(--border);color:var(--text-2)'}">Master KND</button>
+    </div>
+    ${manage?'<button class="btn btn-primary btn-sm" id="pc-master-add"><span class="material-symbols-rounded" style="font-size:18px">add</span>Tambah</button>':''}
+    </div><div class="card-body"><div class="table-wrap"><table class="t t-dense"><thead><tr>${cols.map(c=>`<th${c[0]==='total_biaya'?' style="text-align:right"':''}>${c[1]}</th>`).join('')}<th style="text-align:right">Aksi</th></tr></thead>
+    <tbody>${rows.length?rows.map(m=>`<tr>${cols.map(c=>`<td${c[0]==='total_biaya'?' class="mono" style="text-align:right"':''}>${c[0]==='total_biaya'?fmtRupiah(m[c[0]]):escapeHtml(m[c[0]]||'—')}</td>`).join('')}
+      <td style="text-align:right"><div class="actions-compact">${manage?`<button class="btn-icon" data-edit="${m.id}"><span class="material-symbols-rounded" style="font-size:17px">edit</span></button><button class="btn-icon" data-del="${m.id}"><span class="material-symbols-rounded" style="font-size:17px">delete</span></button>`:'—'}</div></td></tr>`).join(''):`<tr><td colspan="${cols.length+1}" class="empty-row">Belum ada master ${tipe}</td></tr>`}</tbody></table></div></div></div>`;
+  $$('.pc-mt',host).forEach(b=>b.addEventListener('click',()=>{_pcMasterTipe=b.dataset.rt;pcRenderMaster(host);}));
+  if($('#pc-master-add')) $('#pc-master-add').addEventListener('click',()=>pcMasterEdit(null));
+  $$('button[data-edit]',host).forEach(b=>b.addEventListener('click',()=>pcMasterEdit(b.dataset.edit)));
+  $$('button[data-del]',host).forEach(b=>b.addEventListener('click',async()=>{ const m=_pcCache.master.find(x=>x.id===b.dataset.del); if(!m||!confirm('Hapus master ini?'))return; await pcdb.remove('master',m.id); pcdb.log('master.delete',m.id); await pcLoadAll(); pcRenderMaster(host); toast('Master dihapus','success'); }));
+}
+function pcMasterEdit(id){
+  const tipe=_pcMasterTipe; const isNew=!id; const m=isNew?{}:_pcCache.master.find(x=>x.id===id);
+  const F = tipe==='KRT'
+    ? [['no_sap','No. SAP'],['wilayah','Wilayah','sel'],['tanggal','Tanggal','date'],['deskripsi','Deskripsi'],['pengguna','Pengguna'],['departemen','Departemen'],['divisi','Divisi'],['sub_kategori','Sub Kategori'],['kategori','Kategori'],['gl_account','GL Account'],['no_fund','No. Fund'],['desc_fund','Desc Fund'],['cost_center','Cost Center'],['total_biaya','Total Biaya','money']]
+    : [['no_trx','No. Trx'],['wilayah','Wilayah','sel'],['tanggal','Tanggal','date'],['no_sap','No. SAP'],['no_polisi','No. Polisi'],['deskripsi','Deskripsi'],['sub_kategori','Sub Kategori'],['kategori','Kategori'],['gl_account','GL Account'],['no_fund','No. Fund'],['desc_fund','Desc Fund'],['cost_center','Cost Center'],['total_biaya','Total Biaya','money']];
+  openModal(`<div class="modal-head"><h3>${isNew?'Tambah':'Edit'} Master ${tipe}</h3><button class="btn-icon" onclick="closeModal()"><span class="material-symbols-rounded">close</span></button></div>
+    <div class="modal-body"><form id="pc-m-form"><div class="form-grid">${F.map(f=>{
+      const v=m[f[0]]??''; const t=f[2]||'text';
+      if(t==='sel') return `<div class="field"><label>${f[1]}</label><select class="select" name="${f[0]}">${PC_WILAYAH.map(w=>`<option ${v===w?'selected':''}>${w}</option>`).join('')}</select></div>`;
+      if(t==='date') return `<div class="field"><label>${f[1]}</label><input class="input" type="date" name="${f[0]}" value="${escapeHtml(v)}"/></div>`;
+      if(t==='money') return `<div class="field"><label>${f[1]}</label><input class="input pc-m-money" name="${f[0]}" inputmode="numeric" value="${v?'Rp '+Number(v).toLocaleString('id-ID'):''}"/></div>`;
+      return `<div class="field"><label>${f[1]}</label><input class="input" name="${f[0]}" value="${escapeHtml(v)}"/></div>`;
+    }).join('')}</div></form></div>
+    <div class="modal-foot"><button class="btn btn-ghost" onclick="closeModal()">Batal</button><button class="btn btn-primary" id="pc-m-save"><span class="material-symbols-rounded">save</span>Simpan</button></div>`,'lg');
+  $$('.pc-m-money').forEach(i=>i.addEventListener('input',e=>{const d=e.target.value.replace(/\D/g,'');e.target.value=d?'Rp '+Number(d).toLocaleString('id-ID'):'';}));
+  $('#pc-m-save').addEventListener('click',async()=>{
+    const fd=new FormData($('#pc-m-form')); const row={tipe};
+    F.forEach(f=>{ let v=fd.get(f[0]); if(f[2]==='money') v=Number((v||'').toString().replace(/\D/g,''))||0; row[f[0]]=v||null; });
+    try{ if(isNew){ const ins=await pcdb.insert('master',row); pcdb.log('master.create',tipe); } else { await pcdb.update('master',id,row); pcdb.log('master.update',id); } await pcLoadAll(); closeModal(); renderPettyTab(); toast('Master tersimpan','success'); }
+    catch(err){ toast('Gagal: '+(err.message||''),'error'); }
+  });
+}
+
+/* ============================================================
+   TAB: SPP — dokumen A4 portrait (format identik) + cetak
+   ============================================================ */
+function pcTerbilang(n){
+  n=Math.floor(Math.abs(Number(n)||0));
+  const sat=['','satu','dua','tiga','empat','lima','enam','tujuh','delapan','sembilan','sepuluh','sebelas'];
+  function f(x){ if(x<12) return sat[x]; if(x<20) return f(x-10)+' belas'; if(x<100) return f(Math.floor(x/10))+' puluh'+(x%10?' '+f(x%10):'');
+    if(x<200) return 'seratus'+(x%100?' '+f(x%100):''); if(x<1000) return f(Math.floor(x/100))+' ratus'+(x%100?' '+f(x%100):'');
+    if(x<2000) return 'seribu'+(x%1000?' '+f(x%1000):''); if(x<1e6) return f(Math.floor(x/1000))+' ribu'+(x%1000?' '+f(x%1000):'');
+    if(x<1e9) return f(Math.floor(x/1e6))+' juta'+(x%1e6?' '+f(x%1e6):''); return f(Math.floor(x/1e9))+' miliar'+(x%1e9?' '+f(x%1e9):''); }
+  if(n===0) return 'nol rupiah';
+  return (f(n).replace(/\s+/g,' ').trim()+' rupiah');
+}
+function pcSppDocHtml(d){
+  d=d||{}; const nominal=Number(d.nominal)||0;
+  const tgl = new Date().toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'});
+  const box=(checked)=>`<span style="display:inline-block;width:11px;height:11px;border:1.5px solid #000;text-align:center;line-height:10px;font-size:7px;vertical-align:middle;margin-right:3px;box-sizing:border-box;">${checked?'X':'&nbsp;'}</span>`;
+  const accBox=(ch)=>`<input type="text" maxlength="1" value="${ch||''}" style="box-sizing:border-box;width:10px;height:14px;border:1.5px solid #000;text-align:center;font-size:8px;padding:0;margin:0;background:white;outline:none;">`;
+  const accRow=(arr)=>`<div style="display:flex;gap:1px;justify-content:center;box-sizing:border-box;">${(arr||['','','','','','','','','']).map(accBox).join('')}</div>`;
+  const emptyRow=`<tr style="border-bottom:1px solid #000;"><td style="padding:2px;text-align:center;vertical-align:middle;border-bottom:1px solid #000;">${accRow()}</td><td style="border-bottom:1px solid #000;padding:2px;text-align:center;">&nbsp;</td><td style="border-bottom:1px solid #000;padding:2px;text-align:center;">&nbsp;</td><td style="border-bottom:1px solid #000;padding:2px;text-align:left;">&nbsp;</td><td style="border-bottom:1px solid #000;padding:2px;text-align:right;">&nbsp;</td></tr>`;
+  return `<div id="spp-doc" style="background:white;padding:8mm 10mm;width:100%;max-width:210mm;min-height:297mm;box-sizing:border-box;margin:0 auto;font-family:'Arial',sans-serif;font-size:9px;line-height:1.4;position:relative;">
+    <div style="text-align:right;margin-bottom:2px;"><img src="https://raw.githubusercontent.com/aleasmir76/logo_mrt/main/MRT_Jakarta_logo_vertical.svg.png" height="22" style="opacity:0.85;" onerror="this.style.display='none'"></div>
+    <table style="border-collapse:collapse;width:100%;font-size:9px;margin-bottom:2px;table-layout:fixed;">
+      <tr><td style="width:140px;padding:1px 0;vertical-align:top;white-space:nowrap;">Nama Divisi/Departemen</td><td style="width:10px;text-align:center;">:</td><td>General Affair</td></tr>
+      <tr><td style="padding:1px 0;">Nama Kegiatan</td><td style="text-align:center;">:</td><td>${escapeHtml(d.kegiatan||d.uraian||'')}</td></tr>
+      <tr><td style="padding:1px 0;">Nama Vendor</td><td style="text-align:center;">:</td><td>${escapeHtml(d.vendor||d.penerima||'')}</td></tr>
+      <tr><td style="padding:1px 0;">Nomor Vendor</td><td style="text-align:center;">:</td><td>${escapeHtml(d.nomor_vendor||'')}</td></tr>
+    </table>
+    <div style="text-align:center;"><div style="font-weight:800;font-size:9px;letter-spacing:0.5px;">SURAT PERMINTAAN PEMBAYARAN (SPP)</div></div>
+    <div style="text-align:center;margin-bottom:4px;font-size:9px;">Nomor SPP &nbsp;&nbsp; : &nbsp;&nbsp; <strong>${escapeHtml(d.no_spp||'022/SPP/GA-MRT/III/2026')}</strong></div>
+    <div style="border-top:2px solid #000;margin-bottom:4px;"></div>
+    <div style="border:2px solid #000;padding:3px 5px;margin-bottom:4px;"><div style="font-weight:700;margin-bottom:3px;">1. Keperluan</div>
+      <table style="width:100%;font-size:9px;table-layout:fixed;"><tr><td style="width:50%;">${box(false)} Uang Muka</td><td>${box(false)} Pembayaran Hutang</td></tr>
+      <tr><td>${box(false)} Biaya Usaha</td><td>${box(false)} Dividen, Tantiem &amp; Jasprod</td></tr>
+      <tr><td>${box(true)} Pengisian Dana Kas Kecil</td><td>${box(false)} Lain-lain</td></tr>
+      <tr><td>${box(false)} Pajak</td><td></td></tr></table></div>
+    <div style="border:2px solid #000;padding:3px 5px;margin-bottom:4px;"><div style="font-weight:700;margin-bottom:3px;">2. Cara Pembayaran</div>
+      <table style="width:100%;font-size:9px;table-layout:fixed;"><tr><td style="width:50%;">${box(false)} Cek/BG</td><td>${box(true)} Transfer</td></tr></table></div>
+    <div style="border-top:2px solid #000;margin-bottom:4px;"></div>
+    <table style="border-collapse:collapse;width:100%;font-size:9px;table-layout:fixed;">
+      <tr style="border-bottom:1px solid #000;"><td rowspan="6" style="width:20px;vertical-align:top;padding:2px 2px 0 0;font-weight:700;">3.</td>
+        <th style="text-align:center;width:100px;padding:2px;border-bottom:1px solid #000;">Kode Akun</th>
+        <th style="text-align:center;width:75px;padding:2px;border-bottom:1px solid #000;">Cost Center</th>
+        <th style="text-align:center;width:60px;padding:2px;border-bottom:1px solid #000;">Nomor Kegiatan</th>
+        <th style="text-align:center;padding:2px;border-bottom:1px solid #000;">Uraian Pengeluaran</th>
+        <th style="text-align:center;width:110px;padding:2px;border-bottom:1px solid #000;">Jumlah yang Diminta</th></tr>
+      <tr style="border-bottom:1px solid #000;">
+        <td style="padding:2px;text-align:center;border-bottom:1px solid #000;">${accRow((d.kode_akun||'610112004').split(''))}</td>
+        <td style="padding:2px;text-align:center;border-bottom:1px solid #000;">${escapeHtml(d.cost_center||'MJ00053200')}</td>
+        <td style="padding:2px;text-align:center;border-bottom:1px solid #000;">${escapeHtml(d.nomor_kegiatan||'')}</td>
+        <td style="padding:2px;text-align:left;border-bottom:1px solid #000;">${escapeHtml(d.uraian||d.kegiatan||'')}</td>
+        <td style="padding:2px;text-align:right;border-bottom:1px solid #000;white-space:nowrap;">Rp &nbsp;&nbsp; ${nominal.toLocaleString('id-ID')}</td></tr>
+      ${emptyRow}${emptyRow}${emptyRow}${emptyRow}
+    </table>
+    <table style="border-collapse:collapse;width:100%;font-size:9px;margin-top:5px;table-layout:fixed;">
+      <tr><td style="padding:3px 0;vertical-align:top;width:60%;"><div>Terbilang :</div><div style="font-style:italic;">${escapeHtml(pcTerbilang(nominal))}</div></td>
+        <td style="padding:3px 0;vertical-align:top;text-align:right;width:40%;"><table style="display:inline-table;"><tr><td style="padding-right:6px;vertical-align:bottom;">Total</td><td style="border-bottom:1.5px solid #000;padding:0 4px;min-width:70px;text-align:right;">Rp ${nominal.toLocaleString('id-ID')}</td></tr></table></td></tr></table>
+    <div style="border-top:2px solid #000;margin:4px 0;"></div>
+    <table style="width:100%;font-size:9px;margin-bottom:2px;table-layout:fixed;"><tr><td style="width:50%;">Permohonan Pembayaran:</td><td style="width:50%;text-align:right;">Jakarta, ${tgl}</td></tr></table>
+    <table style="border-collapse:collapse;width:100%;font-size:9px;margin-bottom:5px;table-layout:fixed;">
+      <tr><th style="border:1px solid #000;border-bottom:none;padding:2px;text-align:center;width:50%;">Disetujui oleh</th><th style="border:1px solid #000;border-bottom:none;padding:2px;text-align:center;width:50%;">Diajukan oleh</th></tr>
+      <tr><td style="border:1px solid #000;border-top:none;border-bottom:none;height:35px;vertical-align:bottom;"><div style="border-bottom:1px solid #000;width:70%;margin:0 auto;"></div></td><td style="border:1px solid #000;border-top:none;border-bottom:none;height:35px;vertical-align:bottom;"><div style="border-bottom:1px solid #000;width:70%;margin:0 auto;"></div></td></tr>
+      <tr><td style="border:1px solid #000;border-top:none;text-align:center;padding:2px;"><div style="font-size:8px;font-style:italic;">General Affair Department Head</div><div style="font-weight:600;">M. Ardhan Rafsanjani</div></td><td style="border:1px solid #000;border-top:none;text-align:center;padding:2px;"><div style="font-weight:600;">${escapeHtml(d.pic||'Siti Zahratus Sholihat')}</div></td></tr></table>
+    <div style="font-size:9px;margin-bottom:2px;">Persetujuan Permintaan Pembayaran :</div>
+    <table style="border-collapse:collapse;width:100%;font-size:9px;table-layout:fixed;">
+      <tr><th style="border:1px solid #000;border-bottom:none;padding:2px;text-align:center;width:50%;">Disetujui oleh</th><th style="border:1px solid #000;border-bottom:none;padding:2px;text-align:center;width:50%;">Diverifikasi oleh</th></tr>
+      <tr><td style="border:1px solid #000;border-top:none;border-bottom:none;height:35px;vertical-align:bottom;"><div style="border-bottom:1px solid #000;width:70%;margin:0 auto;"></div></td><td style="border:1px solid #000;border-top:none;border-bottom:none;height:35px;vertical-align:bottom;"><div style="border-bottom:1px solid #000;width:70%;margin:0 auto;"></div></td></tr>
+      <tr><td style="border:1px solid #000;border-top:none;text-align:center;padding:2px;">&nbsp;</td><td style="border:1px solid #000;border-top:none;text-align:center;padding:2px;">&nbsp;</td></tr></table>
+  </div>`;
+}
+function pcRenderSPP(host){
+  const opts = _pcCache.reimburse;
+  const d = _pcSppData || opts[0] || {};
+  host.innerHTML = `
+    <div class="card"><div class="card-body">
+      <div class="flex gap-2 mb-3" style="flex-wrap:wrap;align-items:center">
+        <label class="text-sm fw-700">Sumber data SPP:</label>
+        <select class="select" id="pc-spp-pick" style="max-width:360px"><option value="">— Manual / kosong —</option>${opts.map(r=>`<option value="${r.id}" ${d&&d.id===r.id?'selected':''}>${escapeHtml(r.kode)} · ${escapeHtml(r.penerima||'')} · ${fmtRupiah(r.nominal)}</option>`).join('')}</select>
+        <button class="btn btn-sm" style="background:#475569;color:#fff" id="pc-spp-print"><span class="material-symbols-rounded" style="font-size:18px">print</span>Print / Export PDF</button>
+      </div>
+      <div style="background:#eef1f6;padding:14px;border-radius:10px;overflow:auto"><div id="pc-spp-mount" style="box-shadow:0 4px 18px rgba(0,0,0,.12)">${pcSppDocHtml(d)}</div></div>
+    </div></div>`;
+  $('#pc-spp-pick').addEventListener('change', e=>{ _pcSppData = _pcCache.reimburse.find(x=>x.id===e.target.value)||{}; $('#pc-spp-mount').innerHTML = pcSppDocHtml(_pcSppData); });
+  $('#pc-spp-print').addEventListener('click', ()=>{
+    const html = $('#pc-spp-mount').innerHTML;
+    const w = window.open('', '_blank');
+    w.document.write(`<!DOCTYPE html><html><head><title>SPP</title><meta charset="utf-8"><style>@page{size:A4 portrait;margin:0}body{margin:0}@media print{body{-webkit-print-color-adjust:exact}}</style></head><body onload="window.print()">${html}</body></html>`);
+    w.document.close();
+    pcdb.log('spp.print', d?.kode||'');
+  });
+}
+
+/* ============================================================
+   TAB: REPORT — realisasi kas kecil (gaya laporan) + integrasi anggaran
+   ============================================================ */
+function pcRenderReport(host){
+  const all=_pcCache.reimburse;
+  const total=all.reduce((a,r)=>a+(Number(r.nominal)||0),0);
+  const gaTot=all.filter(r=>r.sumber==='Fund GA').reduce((a,r)=>a+(Number(r.nominal)||0),0);
+  const nonGaTot=total-gaTot;
+  const byKat={}; all.forEach(r=>{ const k=r.kategori||'Lainnya'; byKat[k]=(byKat[k]||0)+(Number(r.nominal)||0); });
+  const byWil={}; PC_WILAYAH.forEach(w=>byWil[w]=0); all.forEach(r=>{ if(byWil[r.loket]!==undefined) byWil[r.loket]+=Number(r.nominal)||0; });
+  const katArr=Object.entries(byKat).sort((a,b)=>b[1]-a[1]);
+  host.innerHTML=`
+    <div class="card"><div class="card-head"><h3>Realisasi Anggaran Penggunaan Kas Kecil</h3>
+      <button class="btn btn-ghost btn-sm" id="pc-rep-csv"><span class="material-symbols-rounded" style="font-size:18px">download</span>CSV</button></div>
+      <div class="card-body">
+        <div class="adm-stat-grid">
+          <div class="stat-card"><div class="stat-icon"><span class="material-symbols-rounded">savings</span></div><div class="stat-body"><span class="stat-label">Total Penggunaan</span><span class="stat-value" style="font-size:17px">${fmtRupiah(total)}</span></div></div>
+          <div class="stat-card"><div class="stat-icon green"><span class="material-symbols-rounded">account_balance</span></div><div class="stat-body"><span class="stat-label">Fund GA</span><span class="stat-value" style="font-size:17px">${fmtRupiah(gaTot)}</span></div></div>
+          <div class="stat-card"><div class="stat-icon warn"><span class="material-symbols-rounded">account_balance_wallet</span></div><div class="stat-body"><span class="stat-label">Fund Non GA</span><span class="stat-value" style="font-size:17px">${fmtRupiah(nonGaTot)}</span></div></div>
+          <div class="stat-card"><div class="stat-icon purple"><span class="material-symbols-rounded">receipt</span></div><div class="stat-body"><span class="stat-label">Jumlah Transaksi</span><span class="stat-value">${all.length}</span></div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px">
+          <div class="card" style="margin:0"><div class="card-head"><h3>Total per Kategori</h3></div><div class="card-body"><canvas id="pc-rep-kat" height="200"></canvas></div></div>
+          <div class="card" style="margin:0"><div class="card-head"><h3>Penggunaan by Lokasi</h3></div><div class="card-body"><canvas id="pc-rep-wil" height="200"></canvas></div></div>
+        </div>
+        <div class="card" style="margin-top:14px"><div class="card-body"><div class="table-wrap"><table class="t t-dense"><thead><tr><th>Kategori</th><th style="text-align:right">Nominal</th><th style="text-align:right">%</th></tr></thead>
+          <tbody>${katArr.length?katArr.map(([k,v])=>`<tr><td>${escapeHtml(k)}</td><td class="mono" style="text-align:right">${fmtRupiah(v)}</td><td style="text-align:right">${total?Math.round(v/total*100):0}%</td></tr>`).join(''):'<tr><td colspan="3" class="empty-row">Belum ada data</td></tr>'}</tbody></table></div></div></div>
+        <p class="muted text-sm" style="margin-top:10px"><span class="material-symbols-rounded" style="font-size:16px;vertical-align:-3px">info</span> Nominal <strong>Fund GA</strong> juga terhitung pada realisasi <strong>Manajemen Anggaran</strong> (per Mata Anggaran), namun dilaporkan terpisah sebagai "Petty Cash".</p>
+      </div></div>`;
+  if(typeof Chart!=='undefined'){
+    const kc=$('#pc-rep-kat'); if(kc) new Chart(kc.getContext('2d'),{type:'bar',data:{labels:katArr.map(k=>k[0].length>22?k[0].slice(0,20)+'…':k[0]),datasets:[{data:katArr.map(k=>k[1]),backgroundColor:'#C9A24B',borderRadius:6,maxBarThickness:36}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>fmtRupiah(c.parsed.x)}}},scales:{x:{ticks:{callback:v=>'Rp '+Number(v).toLocaleString('id-ID'),font:{size:9}}}}}});
+    const wc=$('#pc-rep-wil'); if(wc) new Chart(wc.getContext('2d'),{type:'doughnut',data:{labels:PC_WILAYAH.map(w=>w.replace('GA - ','')),datasets:[{data:PC_WILAYAH.map(w=>byWil[w]||0),backgroundColor:['#0F4C9C','#C9622B','#6B7280'],borderColor:'#fff',borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'},tooltip:{callbacks:{label:c=>c.label+': '+fmtRupiah(c.parsed)}}},cutout:'55%'}});
+  }
+  $('#pc-rep-csv').addEventListener('click',()=>{ csvDownload('report-pettycash-'+new Date().toISOString().slice(0,10)+'.csv', katArr.map(([k,v])=>({Kategori:k,Nominal:v,Persen:(total?Math.round(v/total*100):0)+'%'}))); });
+}
+
+/* ============================================================
+   TAB: KELOLA DROPDOWN + RELASI AKUN
+   ============================================================ */
+function pcRenderDropdown(host){
+  const manage=pcCanManage();
+  const groups=[...new Set(_pcCache.dropdown.map(d=>d.grup))];
+  host.innerHTML=`
+    <div class="card"><div class="card-head"><h3>Master Daftar Dropdown</h3>
+      ${manage?`<div class="flex gap-2"><input class="input" id="pc-newgrp" placeholder="Nama list baru..." style="max-width:200px"/><button class="btn btn-primary btn-sm" id="pc-addgrp">+ Buat List</button></div>`:''}</div>
+      <div class="card-body"><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1rem">
+        ${groups.map(g=>`<div class="card" style="margin:0"><div class="card-head" style="padding:10px 14px"><h3 style="font-size:13px">${escapeHtml(g)}</h3></div>
+          <div class="card-body" style="padding:12px">
+            ${_pcCache.dropdown.filter(d=>d.grup===g).map(d=>`<div class="flex between items-center" style="padding:4px 0;border-bottom:1px dashed var(--border-2)"><span class="text-sm">${escapeHtml(d.nilai)}</span>${manage?`<button class="btn-icon" data-deldd="${d.id}" style="padding:3px"><span class="material-symbols-rounded" style="font-size:15px">close</span></button>`:''}</div>`).join('')||'<div class="muted text-sm">kosong</div>'}
+            ${manage?`<div class="flex gap-2 mt-2"><input class="input" data-addto="${escapeHtml(g)}" placeholder="Tambah nilai..." style="font-size:12px;padding:6px 8px"/><button class="btn-icon" data-addval="${escapeHtml(g)}"><span class="material-symbols-rounded" style="font-size:16px">add</span></button></div>`:''}
+          </div></div>`).join('')}
+      </div></div></div>
+    <div class="card" style="margin-top:14px"><div class="card-head"><h3>Tabel Relasi Akun (Autofill)</h3>${manage?'<button class="btn btn-primary btn-sm" id="pc-rel-add">+ Tambah Baris</button>':''}</div>
+      <div class="card-body"><div class="table-wrap"><table class="t t-dense"><thead><tr><th>Jenis Biaya</th><th>GL Account</th><th>No. Fund</th><th>Cost Center</th>${manage?'<th></th>':''}</tr></thead>
+        <tbody>${_pcCache.relasi.map(r=>`<tr><td>${escapeHtml(r.jenis_biaya)}</td><td>${escapeHtml(r.gl_account||'')}</td><td>${escapeHtml(r.no_fund||'')}</td><td>${escapeHtml(r.cost_center||'')}</td>${manage?`<td style="text-align:right"><button class="btn-icon" data-delrel="${r.id}"><span class="material-symbols-rounded" style="font-size:16px">delete</span></button></td>`:''}</tr>`).join('')||`<tr><td colspan="${manage?5:4}" class="empty-row">Belum ada relasi</td></tr>`}</tbody></table></div></div></div>`;
+
+  if(manage){
+    $('#pc-addgrp')?.addEventListener('click',async()=>{ const v=$('#pc-newgrp').value.trim(); if(!v)return; await pcdb.insert('dropdown',{grup:v,nilai:'(contoh)'}); await pcLoadAll(); pcRenderDropdown(host); });
+    $$('button[data-addval]',host).forEach(b=>b.addEventListener('click',async()=>{ const inp=host.querySelector(`input[data-addto="${b.dataset.addval}"]`); const v=(inp.value||'').trim(); if(!v)return; await pcdb.insert('dropdown',{grup:b.dataset.addval,nilai:v}); await pcLoadAll(); pcRenderDropdown(host); }));
+    $$('button[data-deldd]',host).forEach(b=>b.addEventListener('click',async()=>{ await pcdb.remove('dropdown',b.dataset.deldd); await pcLoadAll(); pcRenderDropdown(host); }));
+    $('#pc-rel-add')?.addEventListener('click',()=>{
+      openModal(`<div class="modal-head"><h3>Tambah Relasi Akun</h3><button class="btn-icon" onclick="closeModal()"><span class="material-symbols-rounded">close</span></button></div>
+        <div class="modal-body"><form id="pc-rel-form"><div class="field"><label>Jenis Biaya</label><input class="input" name="jenis_biaya"/></div><div class="field"><label>GL Account</label><input class="input" name="gl_account"/></div><div class="field"><label>No. Fund</label><input class="input" name="no_fund"/></div><div class="field"><label>Cost Center</label><input class="input" name="cost_center"/></div></form></div>
+        <div class="modal-foot"><button class="btn btn-ghost" onclick="closeModal()">Batal</button><button class="btn btn-primary" id="pc-rel-save">Simpan</button></div>`);
+      $('#pc-rel-save').addEventListener('click',async()=>{ const fd=new FormData($('#pc-rel-form')); if(!(fd.get('jenis_biaya')||'').trim()){toast('Jenis biaya wajib','warn');return;} await pcdb.insert('relasi',{jenis_biaya:fd.get('jenis_biaya'),gl_account:fd.get('gl_account'),no_fund:fd.get('no_fund'),cost_center:fd.get('cost_center')}); await pcLoadAll(); closeModal(); pcRenderDropdown(host); });
+    });
+    $$('button[data-delrel]',host).forEach(b=>b.addEventListener('click',async()=>{ await pcdb.remove('relasi',b.dataset.delrel); await pcLoadAll(); pcRenderDropdown(host); }));
+  }
+}
+
+/* ============================================================
+   TAB: POSISI KAS (Jurnal Petty Cash) + pencocokan nominal brankas
+   ============================================================ */
+function pcRenderCash(host){
+  const manage=pcCanManage();
+  const rows=[..._pcCache.cash].sort((a,b)=>(a.tanggal||'').localeCompare(b.tanggal||''));
+  let saldo=0; const withSaldo=rows.map(r=>{ saldo += (r.tipe==='Masuk'?1:-1)*(Number(r.nominal)||0); return {...r,saldo}; });
+  const saldoAkhir=saldo;
+  host.innerHTML=`
+    <div class="adm-stat-grid">
+      <div class="stat-card"><div class="stat-icon green"><span class="material-symbols-rounded">savings</span></div><div class="stat-body"><span class="stat-label">Saldo Kas Terhitung</span><span class="stat-value" style="font-size:17px">${fmtRupiah(saldoAkhir)}</span></div></div>
+      <div class="stat-card"><div class="stat-icon"><span class="material-symbols-rounded">login</span></div><div class="stat-body"><span class="stat-label">Total Masuk</span><span class="stat-value" style="font-size:17px">${fmtRupiah(rows.filter(r=>r.tipe==='Masuk').reduce((a,r)=>a+(+r.nominal||0),0))}</span></div></div>
+      <div class="stat-card"><div class="stat-icon warn"><span class="material-symbols-rounded">logout</span></div><div class="stat-body"><span class="stat-label">Total Keluar</span><span class="stat-value" style="font-size:17px">${fmtRupiah(rows.filter(r=>r.tipe==='Keluar').reduce((a,r)=>a+(+r.nominal||0),0))}</span></div></div>
+    </div>
+    <div class="card" style="margin-top:14px"><div class="card-head"><h3>Pencocokan Nominal (Brankas)</h3></div>
+      <div class="card-body"><div class="flex gap-3 items-center" style="flex-wrap:wrap">
+        <div class="field" style="margin:0;max-width:240px"><label>Saldo Fisik di Brankas</label><input class="input pc-money" id="pc-brankas" inputmode="numeric" placeholder="Rp 0"/></div>
+        <button class="btn btn-ghost btn-sm" id="pc-cocok">Cocokkan</button>
+        <div id="pc-cocok-res" class="text-sm muted">Masukkan saldo fisik untuk membandingkan dengan saldo terhitung (${fmtRupiah(saldoAkhir)}).</div>
+      </div></div></div>
+    <div class="card" style="margin-top:14px"><div class="card-head"><h3>Jurnal Kas Kecil</h3>${manage?'<button class="btn btn-primary btn-sm" id="pc-cash-add"><span class="material-symbols-rounded" style="font-size:18px">add</span>Tambah Entri</button>':''}</div>
+      <div class="card-body"><div class="table-wrap"><table class="t t-dense"><thead><tr><th>Tanggal</th><th>Uraian</th><th>Tipe</th><th style="text-align:right">Masuk</th><th style="text-align:right">Keluar</th><th style="text-align:right">Saldo</th>${manage?'<th></th>':''}</tr></thead>
+        <tbody>${withSaldo.length?withSaldo.map(r=>`<tr><td>${fmtDate(r.tanggal)}</td><td>${escapeHtml(r.uraian||'')}${r.keterangan?`<div class="text-sm muted">${escapeHtml(r.keterangan)}</div>`:''}</td><td>${r.tipe==='Masuk'?'<span class="badge status-selesai">Masuk</span>':'<span class="badge status-belum">Keluar</span>'}</td><td class="mono" style="text-align:right">${r.tipe==='Masuk'?fmtRupiah(r.nominal):'—'}</td><td class="mono" style="text-align:right">${r.tipe==='Keluar'?fmtRupiah(r.nominal):'—'}</td><td class="mono" style="text-align:right">${fmtRupiah(r.saldo)}</td>${manage?`<td style="text-align:right"><button class="btn-icon" data-delcash="${r.id}"><span class="material-symbols-rounded" style="font-size:16px">delete</span></button></td>`:''}</tr>`).join(''):`<tr><td colspan="${manage?7:6}" class="empty-row">Belum ada entri</td></tr>`}</tbody></table></div></div></div>`;
+  $$('.pc-money',host).forEach(i=>i.addEventListener('input',e=>{const d=e.target.value.replace(/\D/g,'');e.target.value=d?'Rp '+Number(d).toLocaleString('id-ID'):'';}));
+  $('#pc-cocok').addEventListener('click',()=>{ const fisik=Number(($('#pc-brankas').value||'').replace(/\D/g,''))||0; const sel=fisik-saldoAkhir; const res=$('#pc-cocok-res');
+    res.innerHTML = sel===0 ? '<span style="color:var(--mrt-green);font-weight:700">✓ Cocok — saldo fisik sama dengan saldo terhitung.</span>' : `<span style="color:var(--danger);font-weight:700">Selisih ${fmtRupiah(Math.abs(sel))} (${sel>0?'fisik lebih besar':'fisik lebih kecil'}). Perlu pengecekan.</span>`; });
+  if(manage){
+    $('#pc-cash-add')?.addEventListener('click',()=>{
+      openModal(`<div class="modal-head"><h3>Tambah Entri Kas</h3><button class="btn-icon" onclick="closeModal()"><span class="material-symbols-rounded">close</span></button></div>
+        <div class="modal-body"><form id="pc-cash-form"><div class="form-grid">
+          <div class="field"><label>Tanggal</label><input class="input" type="date" name="tanggal" value="${new Date().toISOString().slice(0,10)}"/></div>
+          <div class="field"><label>Tipe</label><select class="select" name="tipe"><option>Masuk</option><option>Keluar</option></select></div>
+          <div class="field full"><label>Uraian</label><input class="input" name="uraian"/></div>
+          <div class="field"><label>Nominal</label><input class="input pc-cm" name="nominal" inputmode="numeric" placeholder="Rp 0"/></div>
+          <div class="field"><label>Keterangan</label><input class="input" name="keterangan"/></div>
+        </div></form></div>
+        <div class="modal-foot"><button class="btn btn-ghost" onclick="closeModal()">Batal</button><button class="btn btn-primary" id="pc-cash-save">Simpan</button></div>`);
+      $$('.pc-cm').forEach(i=>i.addEventListener('input',e=>{const d=e.target.value.replace(/\D/g,'');e.target.value=d?'Rp '+Number(d).toLocaleString('id-ID'):'';}));
+      $('#pc-cash-save').addEventListener('click',async()=>{ const fd=new FormData($('#pc-cash-form')); const nom=Number((fd.get('nominal')||'').replace(/\D/g,''))||0; if(nom<=0){toast('Nominal wajib','warn');return;} await pcdb.insert('cash',{tanggal:fd.get('tanggal'),tipe:fd.get('tipe'),uraian:fd.get('uraian')||'',nominal:nom,keterangan:fd.get('keterangan')||''}); await pcLoadAll(); closeModal(); pcRenderCash(host); toast('Entri kas tersimpan','success'); });
+    });
+    $$('button[data-delcash]',host).forEach(b=>b.addEventListener('click',async()=>{ if(!confirm('Hapus entri ini?'))return; await pcdb.remove('cash',b.dataset.delcash); await pcLoadAll(); pcRenderCash(host); }));
+  }
+}
+
+/* ============================================================
+   TAB: LOG HISTORY
+   ============================================================ */
+function pcRenderLog(host){
+  const rows=[..._pcCache.log].sort((a,b)=>(b.waktu||'').localeCompare(a.waktu||''));
+  host.innerHTML=`<div class="card"><div class="card-head"><h3>Log History Petty Cash</h3></div><div class="card-body"><div class="table-wrap"><table class="t t-dense"><thead><tr><th>Waktu</th><th>User</th><th>Aksi</th><th>Detail</th></tr></thead>
+    <tbody>${rows.length?rows.map(l=>`<tr><td>${fmtDateTime(l.waktu)}</td><td>${escapeHtml(l.user||'-')}</td><td><span class="tag">${escapeHtml(l.aksi||'')}</span></td><td>${escapeHtml(l.detail||'')}</td></tr>`).join(''):'<tr><td colspan="4" class="empty-row">Belum ada aktivitas</td></tr>'}</tbody></table></div></div></div>`;
+}
+
 
 /* ----------- ADMIN: MASTER DATA ----------- */
 async function viewAdminMaster(c){
@@ -5676,6 +7125,112 @@ async function viewAdminMaster(c){
 /* ============================================================
    v1.7: KATEGORI PEMESANAN — dedicated page
    ============================================================ */
+/* ----------- ADMIN: MASTER KARYAWAN (v2.5) -----------
+   CRUD nama karyawan + penempatan Divisi & Departemen. Dipakai sebagai sumber
+   typesearch (mis. PIC, penerima, dll). CRUD: Super Admin / Admin. */
+let _karState = { search:'', filterDiv:'', filterDep:'' };
+async function viewAdminKaryawan(c){
+  const me = session.get();
+  const canManage = !!me && ['superadmin','admin'].includes(me.role);
+  c.innerHTML = `
+    <div class="card">
+      <div class="card-head">
+        <h3>Master Karyawan</h3>
+        <div class="flex gap-2">
+          ${canManage?'<button class="btn btn-primary btn-sm" id="kar-add"><span class="material-symbols-rounded" style="font-size:18px">person_add</span>Tambah Karyawan</button>':''}
+          <button class="btn btn-ghost btn-sm" id="kar-csv"><span class="material-symbols-rounded" style="font-size:18px">download</span>CSV</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <p class="muted text-sm" style="margin:-6px 0 12px">Kelola daftar nama karyawan beserta penempatan Divisi & Departemen. Data ini menjadi sumber pencarian (typesearch) di form-form lain.</p>
+        <div class="toolbar" style="flex-wrap:wrap">
+          <div class="search"><span class="material-symbols-rounded">search</span><input class="input" id="kar-search" placeholder="Cari nama / jabatan..." value="${escapeHtml(_karState.search)}"/></div>
+          <select class="select sel-search" id="kar-fdiv" style="max-width:240px"><option value="">Semua Divisi</option></select>
+          <select class="select sel-search" id="kar-fdep" style="max-width:240px"><option value="">Semua Departemen</option></select>
+        </div>
+        <div id="kar-host"></div>
+      </div>
+    </div>`;
+
+  const [divisi, departemen, karyawan] = await Promise.all([ db.listDivisi(), db.listDepartemen(), db.listKaryawan() ]);
+  const divName = (id)=> (divisi.find(d=>d.id===id)||{}).name || '—';
+  const depName = (id)=> (departemen.find(d=>d.id===id)||{}).name || '—';
+
+  const fdiv = $('#kar-fdiv'), fdep = $('#kar-fdep'), search = $('#kar-search');
+  fdiv.innerHTML = '<option value="">Semua Divisi</option>' + divisi.map(d=>`<option value="${d.id}" ${_karState.filterDiv===d.id?'selected':''}>${escapeHtml(d.name)}</option>`).join('');
+  fdep.innerHTML = '<option value="">Semua Departemen</option>' + departemen.map(d=>`<option value="${d.id}" ${_karState.filterDep===d.id?'selected':''}>${escapeHtml(d.name)}</option>`).join('');
+
+  function draw(){
+    const host = $('#kar-host');
+    let rows = karyawan.slice();
+    const q = (_karState.search||'').toLowerCase();
+    if(q) rows = rows.filter(k => (k.nama||'').toLowerCase().includes(q) || (k.jabatan||'').toLowerCase().includes(q));
+    if(_karState.filterDiv) rows = rows.filter(k => k.divisi_id === _karState.filterDiv);
+    if(_karState.filterDep) rows = rows.filter(k => k.departemen_id === _karState.filterDep);
+    rows.sort((a,b)=>(a.nama||'').localeCompare(b.nama||''));
+    host.innerHTML = `<div class="table-wrap"><table class="t t-dense"><thead><tr>
+      <th>Nama</th><th>Jabatan</th><th>Divisi</th><th>Departemen</th><th>Status</th>${canManage?'<th style="text-align:right">Aksi</th>':''}
+    </tr></thead><tbody>
+      ${rows.length ? rows.map(k=>`<tr>
+        <td class="fw-700">${escapeHtml(k.nama)}</td>
+        <td>${escapeHtml(k.jabatan||'—')}</td>
+        <td>${escapeHtml(divName(k.divisi_id))}</td>
+        <td>${escapeHtml(depName(k.departemen_id))}</td>
+        <td>${k.active===false?'<span class="badge gray">Nonaktif</span>':'<span class="badge status-selesai">Aktif</span>'}</td>
+        ${canManage?`<td style="text-align:right"><div class="actions-compact"><button class="btn-icon" data-edit="${k.id}"><span class="material-symbols-rounded" style="font-size:17px">edit</span></button><button class="btn-icon" data-del="${k.id}"><span class="material-symbols-rounded" style="font-size:17px">delete</span></button></div></td>`:''}
+      </tr>`).join('') : `<tr><td colspan="${canManage?6:5}" class="empty-row">Belum ada karyawan</td></tr>`}
+    </tbody></table></div>`;
+    if(canManage){
+      $$('button[data-edit]', host).forEach(b=>b.addEventListener('click', ()=>openKaryawanEdit(b.dataset.edit, divisi, departemen, karyawan, ()=>viewAdminKaryawan(c))));
+      $$('button[data-del]', host).forEach(b=>b.addEventListener('click', async ()=>{ const k=karyawan.find(x=>x.id===b.dataset.del); if(!k||!confirm(`Hapus karyawan "${k.nama}"?`))return; await db.deleteKaryawan(k.id); db.logActivity({action:'karyawan.delete',target_type:'karyawan',target_id:k.id,detail:`Hapus karyawan ${k.nama}`}); toast('Karyawan dihapus','success'); viewAdminKaryawan(c); }));
+    }
+  }
+  search.addEventListener('input', e=>{ _karState.search=e.target.value; draw(); });
+  fdiv.addEventListener('change', e=>{ _karState.filterDiv=e.target.value; draw(); });
+  fdep.addEventListener('change', e=>{ _karState.filterDep=e.target.value; draw(); });
+  if($('#kar-add')) $('#kar-add').addEventListener('click', ()=>openKaryawanEdit(null, divisi, departemen, karyawan, ()=>viewAdminKaryawan(c)));
+  $('#kar-csv').addEventListener('click', ()=>{ csvDownload('karyawan-'+new Date().toISOString().slice(0,10)+'.csv', karyawan.map(k=>({Nama:k.nama,Jabatan:k.jabatan||'',Divisi:divName(k.divisi_id),Departemen:depName(k.departemen_id),Status:k.active===false?'Nonaktif':'Aktif'}))); });
+  enhanceSearchable(c);
+  draw();
+}
+
+function openKaryawanEdit(id, divisi, departemen, karyawan, onDone){
+  const isNew = !id;
+  const k = isNew ? {} : karyawan.find(x=>x.id===id) || {};
+  const depOptions = (divId)=> departemen.filter(d=>!divId || d.divisi_id===divId);
+  openModal(`
+    <div class="modal-head"><h3>${isNew?'Tambah':'Edit'} Karyawan</h3><button class="btn-icon" onclick="closeModal()"><span class="material-symbols-rounded">close</span></button></div>
+    <div class="modal-body"><form id="kar-form"><div class="form-grid">
+      <div class="field full field-required"><label>Nama Karyawan</label><input class="input" name="nama" value="${escapeHtml(k.nama||'')}" required/></div>
+      <div class="field"><label>Jabatan</label><input class="input" name="jabatan" value="${escapeHtml(k.jabatan||'')}" placeholder="Mis. Staff GA"/></div>
+      <div class="field"><label>Status</label><select class="select" name="active"><option value="true" ${k.active!==false?'selected':''}>Aktif</option><option value="false" ${k.active===false?'selected':''}>Nonaktif</option></select></div>
+      <div class="field field-required"><label>Divisi</label><select class="select sel-search" name="divisi_id" id="kar-div"><option value="">— pilih —</option>${divisi.map(d=>`<option value="${d.id}" ${k.divisi_id===d.id?'selected':''}>${escapeHtml(d.name)}</option>`).join('')}</select></div>
+      <div class="field field-required"><label>Departemen</label><select class="select sel-search" name="departemen_id" id="kar-dep"><option value="">— pilih —</option>${depOptions(k.divisi_id).map(d=>`<option value="${d.id}" ${k.departemen_id===d.id?'selected':''}>${escapeHtml(d.name)}</option>`).join('')}</select></div>
+    </div></form></div>
+    <div class="modal-foot"><button class="btn btn-ghost" onclick="closeModal()">Batal</button><button class="btn btn-primary" id="kar-save"><span class="material-symbols-rounded">save</span>Simpan</button></div>`, 'lg');
+
+  // Departemen mengikuti Divisi terpilih
+  $('#kar-div').addEventListener('change', e=>{
+    const dep = $('#kar-dep');
+    dep.innerHTML = '<option value="">— pilih —</option>' + depOptions(e.target.value).map(d=>`<option value="${d.id}">${escapeHtml(d.name)}</option>`).join('');
+    refreshSearchable(dep);
+  });
+  enhanceSearchable(document.getElementById('modal-content'));
+  $('#kar-save').addEventListener('click', async ()=>{
+    const fd = new FormData($('#kar-form'));
+    const nama = (fd.get('nama')||'').toString().trim();
+    if(!nama){ toast('Nama wajib diisi','warn'); return; }
+    if(!fd.get('divisi_id')){ toast('Divisi wajib dipilih','warn'); return; }
+    if(!fd.get('departemen_id')){ toast('Departemen wajib dipilih','warn'); return; }
+    const row = { nama, jabatan:(fd.get('jabatan')||'').toString().trim()||null, divisi_id:fd.get('divisi_id'), departemen_id:fd.get('departemen_id'), active: fd.get('active')==='true' };
+    try{
+      if(isNew){ const ins=await db.addKaryawan(row); db.logActivity({action:'karyawan.create',target_type:'karyawan',target_id:ins?.id,detail:`Tambah karyawan ${nama}`}); }
+      else { await db.updateKaryawan(id, row); db.logActivity({action:'karyawan.update',target_type:'karyawan',target_id:id,detail:`Update karyawan ${nama}`}); }
+      closeModal(); toast('Karyawan tersimpan','success'); if(typeof onDone==='function') onDone();
+    }catch(err){ toast('Gagal menyimpan: '+(err.message||''),'error'); }
+  });
+}
+
 async function viewAdminKategori(c){
   c.innerHTML = `
     <div class="card">
@@ -6343,18 +7898,22 @@ async function viewAdminAnggaran(c){
   const year = new Date().getFullYear();
   c.innerHTML = `<div class="card"><div class="card-body"><div class="muted">Memuat data anggaran…</div></div></div>`;
 
-  let funds=[], topups=[], cdp=[], merged=[];
+  let funds=[], topups=[], cdp=[], merged=[], recurringGA=[], pettyGA=[];
   try{
-    const [reqs, pays, fundsL, topupsL, cdpL] = await Promise.all([
+    const [reqs, pays, fundsL, topupsL, cdpL, recurringL, pettyL] = await Promise.all([
       db.listRequests().catch(()=>[]),
       db.listPayments().catch(()=>[]),
       db.listMataAnggaran().catch(()=>[]),   // v2.0.1: funds = Mata Anggaran (single source of truth)
       db.listFundTopups().catch(()=>[]),
-      db.listCdpPlans().catch(()=>[])
+      db.listCdpPlans().catch(()=>[]),
+      db.listRecurring().catch(()=>[]),       // v2.3: tagihan rutin GA juga menambah realisasi
+      pcdb.list('reimburse').catch(()=>[])     // v2.4: petty cash Fund GA juga menambah realisasi
     ]);
     funds = fundsL; topups = topupsL; cdp = cdpL;
     const byReq = {}; (pays||[]).forEach(p => { byReq[p.request_id] = p; });
     merged = reqs.filter(r => reqUsesGABudget(r)).map(r => mergePayment(r, byReq[r.id]));
+    recurringGA = (recurringL||[]).filter(rp => rp.pakai_anggaran_ga);
+    pettyGA = (pettyL||[]).filter(p => p.sumber === 'Fund GA');
   }catch(err){
     c.innerHTML = `<div class="card card-pad" style="color:#991B1B">Gagal memuat data anggaran: ${escapeHtml(err.message||'')}</div>`;
     return;
@@ -6370,6 +7929,25 @@ async function viewAdminAnggaran(c){
   merged.forEach(m => {
     const gt = payGrandTotal(m);
     const fid = idByName[m.mata_anggaran];   // payment stores the Mata Anggaran NAME
+    if(fid && realisasiByFund[fid] !== undefined) realisasiByFund[fid] += gt;
+    else unassignedRealisasi += gt;
+  });
+  // v2.3: tagihan rutin GA menambah realisasi (di-match by Mata Anggaran name).
+  // Dilacak terpisah (realisasiRutin*) agar pelaporan tetap bisa membedakannya.
+  let realisasiRutinTotal = 0;
+  recurringGA.forEach(rp => {
+    const gt = Number(rp.nominal)||0;
+    realisasiRutinTotal += gt;
+    const fid = idByName[rp.mata_anggaran];
+    if(fid && realisasiByFund[fid] !== undefined) realisasiByFund[fid] += gt;
+    else unassignedRealisasi += gt;
+  });
+  // v2.4: petty cash Fund GA juga menambah realisasi (match by Mata Anggaran name), dilacak terpisah.
+  let realisasiPettyTotal = 0;
+  pettyGA.forEach(p => {
+    const gt = Number(p.nominal)||0;
+    realisasiPettyTotal += gt;
+    const fid = idByName[p.mata_anggaran];
     if(fid && realisasiByFund[fid] !== undefined) realisasiByFund[fid] += gt;
     else unassignedRealisasi += gt;
   });
@@ -6389,6 +7967,18 @@ async function viewAdminAnggaran(c){
   });
   const cdpByMonth = Array(12).fill(0);
   cdp.filter(p => Number(p.tahun)===year).forEach(p => { const b=Number(p.bulan)-1; if(b>=0&&b<12) cdpByMonth[b]+=Number(p.rencana)||0; });
+  // v2.3: tagihan rutin GA ditampilkan sebagai kategori tersendiri pada distribusi & per-bulan
+  recurringGA.forEach(rp => {
+    const gt = Number(rp.nominal)||0;
+    byJenis['Pembayaran Rutin'] = (byJenis['Pembayaran Rutin']||0) + gt;
+    if(rp.tanggal_jatuh_tempo){ const d = new Date(rp.tanggal_jatuh_tempo); if(d.getFullYear()===year) realisasiByMonth[d.getMonth()] += gt; }
+  });
+  // v2.4: petty cash GA sebagai kategori tersendiri pada distribusi & per-bulan
+  pettyGA.forEach(p => {
+    const gt = Number(p.nominal)||0;
+    byJenis['Petty Cash'] = (byJenis['Petty Cash']||0) + gt;
+    if(p.tanggal){ const d = new Date(p.tanggal); if(d.getFullYear()===year) realisasiByMonth[d.getMonth()] += gt; }
+  });
 
   c.innerHTML = `
     <div class="adm-stat-grid">
