@@ -1281,6 +1281,7 @@ table.t{
             <a class="nav-item" data-route="divisi"      data-allowed-roles="superadmin,admin"><span class="material-symbols-rounded">account_tree</span><span class="nav-label">Divisi</span></a>
             <a class="nav-item" data-route="departemen"  data-allowed-roles="superadmin,admin"><span class="material-symbols-rounded">groups</span><span class="nav-label">Departemen</span></a>
             <a class="nav-item" data-route="karyawan"    data-allowed-roles="superadmin,admin"><span class="material-symbols-rounded">badge</span><span class="nav-label">Master Karyawan</span></a>
+            <a class="nav-item" data-route="pettydropdown" data-allowed-roles="superadmin,admin"><span class="material-symbols-rounded">tune</span><span class="nav-label">Petty Cash — Kategori & Relasi</span></a>
             <a class="nav-item" data-route="kendaraan"    data-allowed-roles="superadmin,admin"><span class="material-symbols-rounded">directions_car</span><span class="nav-label">Armada Kendaraan</span></a>
           </div>
         </div>
@@ -1434,6 +1435,7 @@ const ROUTE_ROLES = {
   recurring:  ['superadmin','admin','pic','admin_payment'],
   petty:      ['superadmin','admin','pic','admin_payment'],
   karyawan:   ['superadmin','admin'],
+  pettydropdown: ['superadmin','admin'],
   masterdata: ['superadmin','admin'],
   kategori:   ['superadmin','admin'],
   divisi:     ['superadmin','admin'],
@@ -1454,6 +1456,7 @@ const PAGE_LABELS = {
   recurring:'Pembayaran Rutin',
   petty:'Petty Cash (izin CRUD)',
   karyawan:'Master Karyawan',
+  pettydropdown:'Petty Cash — Kategori & Relasi',
   masterdata:'Master Data (Lokasi/Tujuan/Anggaran)', kategori:'Kategori Pemesanan', divisi:'Divisi',
   departemen:'Departemen', kendaraan:'Armada Kendaraan', users:'Manajemen User',
   slatargets:'SLA Target', activity:'Log Aktivitas', version:'Riwayat Versi'
@@ -1746,7 +1749,8 @@ const demo = (() => {
     {id:'v16',version:'2.3.0',release_date:'2026-06-13',changes:'Permintaan "Bukan Anggaran GA" dipindah ke halaman tersendiri (menu Payment Non-GA) agar Admin Payment lebih fokus; halaman Payment utama kembali khusus Anggaran GA. Modul baru Pembayaran Rutin: tagihan berkala (pulsa, telepon, internet, listrik, sewa, dll) di luar formulir permintaan, diajukan PIC & diproses Admin Payment, dengan tanggal jatuh tempo dan pengingat otomatis (pop-up yang bisa ditutup + lonceng) pada H-14, H-7, lalu setiap hari H-6 hingga jatuh tempo, memberi notifikasi ke PIC dan Admin Payment. Status mengikuti alur GA lengkap (bila Anggaran GA) atau sederhana On Progress/Paid/Revision (bila Non-GA). Nominal tagihan rutin GA menambah realisasi Manajemen Anggaran namun dilaporkan sebagai kategori terpisah ("Pembayaran Rutin").'},
     {id:'v17',version:'2.4.0',release_date:'2026-06-13',changes:'Modul Petty Cash (satu menu, sub-modul sebagai tab): Dashboard, Reimbursement (Kerumahtanggaan/KRT & Kendaraan/KND) dengan workflow Input→Diverifikasi→Permintaan Transfer→Ditransfer→SPP Terbit→Selesai, Form Input, Master Data (KRT/KND), SPP dengan cetak/Export PDF berformat identik (A4 portrait), Report realisasi (per kategori & lokasi) + export, Kelola Dropdown + Tabel Relasi Akun (autofill GL/Fund/Cost Center), Posisi Kas (jurnal kas kecil + saldo berjalan + pencocokan saldo brankas), dan Log History. Lokasi: Wisma Nusantara, Transport Hub, Depo Lebak Bulus. Petty Cash dapat dibuka semua user; izin CRUD diatur via Hak Akses Halaman. Nominal Fund GA menambah realisasi anggaran (dilaporkan terpisah sebagai "Petty Cash").'},
     {id:'v18',version:'2.5.0',release_date:'2026-06-13',changes:'Modul baru Master Karyawan: CRUD nama karyawan beserta penempatan Divisi & Departemen (Departemen mengikuti Divisi terpilih), lengkap dengan pencarian, filter, dan ekspor CSV. Fitur Typesearch: seluruh dropdown panjang (≥ 8 opsi) di aplikasi kini bisa diketik untuk mencari (combobox), termasuk pemilihan Divisi/Departemen/PIC/Mata Anggaran dan dropdown master Petty Cash.'},
-    {id:'v19',version:'2.6.0',release_date:'2026-06-13',changes:'Pop-up/modal diperlebar agar lebih nyaman. Dropdown "Jenis" pada Pembayaran Rutin tidak lagi hardcoded — kini combobox bebas-ketik dengan saran (default + jenis yang pernah dipakai). Dropdown Wilayah/Loket & Kategori Petty Cash kini bersumber dari menu "Kelola Dropdown" (bisa ditambah/diubah sendiri). Master Karyawan: disediakan template CSV (berbasis nama divisi/departemen) + skrip SQL staging untuk mass-upload ke Supabase. Hapus Massal (khusus Super Admin): kolom centang di kiri Daftar Permintaan & Payment Non-GA dengan aksi "Hapus Terpilih" dan opsi pilih semua hasil filter — memudahkan membersihkan data percobaan.'}
+    {id:'v19',version:'2.6.0',release_date:'2026-06-13',changes:'Pop-up/modal diperlebar agar lebih nyaman. Dropdown "Jenis" pada Pembayaran Rutin tidak lagi hardcoded — kini combobox bebas-ketik dengan saran (default + jenis yang pernah dipakai). Dropdown Wilayah/Loket & Kategori Petty Cash kini bersumber dari menu "Kelola Dropdown" (bisa ditambah/diubah sendiri). Master Karyawan: disediakan template CSV (berbasis nama divisi/departemen) + skrip SQL staging untuk mass-upload ke Supabase. Hapus Massal (khusus Super Admin): kolom centang di kiri Daftar Permintaan & Payment Non-GA dengan aksi "Hapus Terpilih" dan opsi pilih semua hasil filter — memudahkan membersihkan data percobaan.'},
+    {id:'v20',version:'2.7.0',release_date:'2026-06-13',changes:'Petty Cash kini SINKRON penuh dengan Master Data: Wilayah/Loket mengikuti master Lokasi Kerja, Divisi/Departemen mengikuti masternya, Pengguna/Penerima mengikuti Master Karyawan, Kategori & Mata Anggaran dari master. Tab "Kelola Dropdown" dihapus dari Petty Cash; pengelolaan kategori & relasi akun (autofill) dipindah ke menu Master Data ("Petty Cash — Kategori & Relasi"). Label "KRT/KND" diganti menjadi "Kerumahtanggaan/Kendaraan". Modal master diperlebar. Tambahan: Kalkulator mengambang — tombol bulat di pojok kanan-bawah yang membuka pop-up kalkulator lengkap (+ − × ÷, kurung, pangkat, kuadrat, akar, persen, ubah tanda), bisa via klik maupun keyboard, dengan tombol salin hasil.'}
   ];
 
   // Mata Anggaran options
@@ -3843,6 +3847,7 @@ async function renderAdmin(page){
     divisi:'Divisi',
     departemen:'Departemen',
     karyawan:'Master Karyawan',
+    pettydropdown:'Petty Cash — Kategori & Relasi',
     kendaraan:'Armada Kendaraan',
     anggaran:'Manajemen Anggaran',
     users:'Manajemen User',
@@ -3885,6 +3890,7 @@ async function renderAdmin(page){
   else if(page==='divisi')     await viewAdminDivisi(c);
   else if(page==='departemen') await viewAdminDepartemen(c);
   else if(page==='karyawan')   await viewAdminKaryawan(c);
+  else if(page==='pettydropdown') await viewAdminPettyDropdown(c);
   else if(page==='kendaraan')  await viewAdminKendaraan(c);
   else if(page==='users')      await viewAdminUsers(c);
   else if(page==='slatargets') await viewAdminSlaTargets(c);
@@ -6392,7 +6398,8 @@ function showRecurringPopup(items){
    Terintegrasi anggaran (realisasi), CRUD digate via Hak Akses Halaman.
    Self-contained: semua state & data-layer ada di blok ini agar mudah dirawat.
    ============================================================ */
-const PC_WILAYAH = ['GA - Wisma Nusantara', 'GA - Transport Hub', 'GA - Depo Lebak Bulus'];
+const PC_WILAYAH = ['Wisma Nusantara', 'Transport Hub', 'Depo Lebak Bulus'];   // fallback bila master Lokasi Kerja kosong
+function pcTipeLabel(t){ return t === 'KND' ? 'Kendaraan' : 'Kerumahtanggaan'; }
 const PC_STAGES = ['Input','Diverifikasi','Permintaan Transfer','Ditransfer','SPP Terbit','Selesai'];
 const PC_STAGE_CLASS = {
   'Input':'pay-belum','Diverifikasi':'pay-proses','Permintaan Transfer':'pay-menunggu',
@@ -6406,16 +6413,16 @@ const _pcDemo = (() => {
   const now = new Date(); const iso = (d)=>d.toISOString();
   const dd = (n)=>{ const d=new Date(now); d.setDate(d.getDate()+n); return d.toISOString().slice(0,10); };
   const reimburse = [
-    { id:'pcr1', tipe:'KRT', kode:'KRT-0001', loket:'GA - Wisma Nusantara', penerima:'Andi Pratama',
+    { id:'pcr1', tipe:'KRT', kode:'KRT-0001', loket:'Wisma Nusantara', penerima:'Andi Pratama',
       tanggal:dd(-6), kategori:'Penyedia ATK dan Percetakan', departemen:'General Affairs', kegiatan:'Pembelian ATK pantry Lt.5',
       rekening:'BCA 1234567890', nominal:1850000, sumber:'Fund GA', mata_anggaran:'Operasional Harian',
       status:'Diverifikasi', pic:'Bagus Payment', verif:true, tgl_verif:dd(-4),
       no_spp:'', cash_stat:'', cash_tgl:'', keterangan:'', detail:null, created_at:iso(now) },
-    { id:'pcr2', tipe:'KRT', kode:'KRT-0002', loket:'GA - Depo Lebak Bulus', penerima:'Maya Sari',
+    { id:'pcr2', tipe:'KRT', kode:'KRT-0002', loket:'Depo Lebak Bulus', penerima:'Maya Sari',
       tanggal:dd(-3), kategori:'Penyedia Fasilitas Konsumsi', departemen:'General Affairs', kegiatan:'Konsumsi rapat mendadak Depo',
       rekening:'Mandiri 0987654321', nominal:1250000, sumber:'Fund GA', mata_anggaran:'Operasional Harian',
       status:'Input', pic:'', verif:false, tgl_verif:'', no_spp:'', cash_stat:'', cash_tgl:'', keterangan:'', detail:null, created_at:iso(now) },
-    { id:'pck1', tipe:'KND', kode:'KND-0001', loket:'GA - Transport Hub', penerima:'Zamal Ardika',
+    { id:'pck1', tipe:'KND', kode:'KND-0001', loket:'Transport Hub', penerima:'Zamal Ardika',
       tanggal:dd(-5), kategori:'Operasional Kendaraan', no_polisi:'B 1514 DZV', driver:'Zamal Ardika',
       departemen:'General Affairs', rekening:'BNI 1122334455', nominal:1320000, sumber:'Fund Non GA', mata_anggaran:null,
       status:'SPP Terbit', pic:'Bagus Payment', verif:true, tgl_verif:dd(-3), no_spp:'022/SPP/GA-MRT/III/2026',
@@ -6423,23 +6430,21 @@ const _pcDemo = (() => {
       detail:{ bbm:900000, listrik:0, nonbon:0, parkir:70000, service:0, toll:300000, lain:50000 }, created_at:iso(now) }
   ];
   const master = [
-    { id:'pcm1', tipe:'KRT', no_sap:'SAP-0001', wilayah:'GA - Wisma Nusantara', tanggal:dd(-30), deskripsi:'ATK & percetakan',
+    { id:'pcm1', tipe:'KRT', no_sap:'SAP-0001', wilayah:'Wisma Nusantara', tanggal:dd(-30), deskripsi:'ATK & percetakan',
       pengguna:'General Affairs', departemen:'General Affairs', divisi:'Corporate Services', sub_kategori:'ATK',
       kategori:'Penyedia ATK dan Percetakan', gl_account:'610112004', no_fund:'F-001', desc_fund:'Operasional Harian',
       no_formulir:'', cost_center:'MJ00053200', total_biaya:5000000 },
-    { id:'pcm2', tipe:'KND', no_trx:'TRX-0001', tanggal:dd(-30), wilayah:'GA - Transport Hub', no_sap:'SAP-0002',
+    { id:'pcm2', tipe:'KND', no_trx:'TRX-0001', tanggal:dd(-30), wilayah:'Transport Hub', no_sap:'SAP-0002',
       deskripsi:'Operasional kendaraan', no_polisi:'B 1514 DZV', sub_kategori:'BBM', kategori:'Operasional Kendaraan',
       gl_account:'6101120010', no_fund:'F-002', desc_fund:'Perawatan Fasilitas', cost_center:'MJ00053200', total_biaya:3000000 }
   ];
   const dropdown = [
-    { id:'d1', grup:'Wilayah/Loket', nilai:'GA - Wisma Nusantara' },
-    { id:'d2', grup:'Wilayah/Loket', nilai:'GA - Transport Hub' },
-    { id:'d3', grup:'Wilayah/Loket', nilai:'GA - Depo Lebak Bulus' },
     { id:'d4', grup:'Kategori KRT', nilai:'Penyedia ATK dan Percetakan' },
     { id:'d5', grup:'Kategori KRT', nilai:'Penyedia Fasilitas Konsumsi' },
     { id:'d6', grup:'Kategori KRT', nilai:'Penyedia Barang Perlengkapan Kantor' },
     { id:'d7', grup:'Kategori KRT', nilai:'Perjalanan Dinas' },
-    { id:'d8', grup:'Kategori KND', nilai:'Operasional Kendaraan' }
+    { id:'d8', grup:'Kategori KND', nilai:'Operasional Kendaraan' },
+    { id:'d9', grup:'Kategori KND', nilai:'Service & Perawatan' }
   ];
   const relasi = [
     { id:'r1', jenis_biaya:'Penyedia ATK dan Percetakan', gl_account:'6101120004', no_fund:'F-001', cost_center:'MJ00053200' },
@@ -6501,6 +6506,8 @@ function pcCanManage(){
 
 /* ---------- cache + state ---------- */
 let _pcCache = { reimburse:[], master:[], dropdown:[], relasi:[], log:[], cash:[] };
+// v2.6: master bersama (sinkron dengan Master Data utama) untuk dropdown form petty cash
+let _pcMasters = { lokasiKerja:[], divisi:[], departemen:[], karyawan:[], kategori:[] };
 let _pcTab = 'dashboard';
 let _pcReimTipe = 'KRT';     // sub-tab KRT/KND di Reimbursement & Master
 let _pcMasterTipe = 'KRT';
@@ -6513,10 +6520,16 @@ async function pcLoadAll(){
     pcdb.list('log').catch(()=>[]), pcdb.list('cash').catch(()=>[])
   ]);
   _pcCache = { reimburse, master, dropdown, relasi, log, cash };
+  // sinkron dengan Master Data utama
+  const [lk, dv, dp, kr, kt] = await Promise.all([
+    db.listLokasiKerja().catch(()=>[]), db.listDivisi().catch(()=>[]),
+    db.listDepartemen().catch(()=>[]), db.listKaryawan().catch(()=>[]), db.listKategori().catch(()=>[])
+  ]);
+  _pcMasters = { lokasiKerja:lk, divisi:dv, departemen:dp, karyawan:kr, kategori:kt };
 }
 function pcDropdownValues(grup){ return _pcCache.dropdown.filter(d => d.grup === grup).map(d => d.nilai); }
-// v2.6: Wilayah/Loket diambil dari "Kelola Dropdown" (grup Wilayah/Loket); fallback ke default.
-function pcWilayah(){ const v = pcDropdownValues('Wilayah/Loket'); return v.length ? v : PC_WILAYAH; }
+// v2.6: Wilayah/Loket sinkron dengan master Lokasi Kerja (fallback ke default)
+function pcWilayah(){ const v = (_pcMasters.lokasiKerja||[]).map(x=>x.name); return v.length ? v : PC_WILAYAH; }
 
 /* ============================================================
    SHELL — satu halaman dengan tab
@@ -6526,7 +6539,7 @@ async function viewAdminPetty(c){
     <div class="pc-tabs" id="pc-tabs" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px">
       ${[['dashboard','Dashboard','dashboard'],['reimburse','Reimbursement','receipt_long'],['form','Form Input','add_box'],
          ['master','Master Data','dataset'],['spp','SPP','print'],['report','Report','assessment'],
-         ['dropdown','Kelola Dropdown','tune'],['cash','Posisi Kas','account_balance'],['log','Log History','history']]
+         ['cash','Posisi Kas','account_balance'],['log','Log History','history']]
         .map(([k,label,ic]) => `<button class="btn btn-sm pc-tab-btn" data-tab="${k}" style="${k===_pcTab?'background:var(--mrt-blue);color:#fff':'background:#fff;color:var(--text-2);border:1px solid var(--border)'}">
           <span class="material-symbols-rounded" style="font-size:17px">${ic}</span>${label}</button>`).join('')}
     </div>
@@ -6548,7 +6561,6 @@ function renderPettyTab(){
   else if(_pcTab==='master') pcRenderMaster(host);
   else if(_pcTab==='spp') pcRenderSPP(host);
   else if(_pcTab==='report') pcRenderReport(host);
-  else if(_pcTab==='dropdown') pcRenderDropdown(host);
   else if(_pcTab==='cash') pcRenderCash(host);
   else if(_pcTab==='log') pcRenderLog(host);
   try{ enhanceSearchable(host); }catch(e){}
@@ -6740,6 +6752,8 @@ function pcRenderForm(host){
   const tipe = _pcReimTipe;
   const katGrup = tipe==='KRT' ? 'Kategori KRT' : 'Kategori KND';
   const kats = pcDropdownValues(katGrup);
+  const karList = (_pcMasters.karyawan||[]).map(k=>k.nama);
+  const depList = (_pcMasters.departemen||[]).map(d=>d.name);
   host.innerHTML = `
     <div class="card"><div class="card-head">
       <div class="flex gap-2">
@@ -6747,12 +6761,12 @@ function pcRenderForm(host){
         <button class="btn btn-sm pc-ft" data-rt="KND" style="${tipe==='KND'?'background:var(--mrt-blue);color:#fff':'background:#fff;border:1px solid var(--border);color:var(--text-2)'}">Kendaraan</button>
       </div></div>
       <div class="card-body"><form id="pc-form"><div class="form-grid">
-        <div class="field field-required"><label>Wilayah/Loket</label><select class="select" name="loket">${pcWilayah().map(w=>`<option>${w}</option>`).join('')}</select></div>
+        <div class="field field-required"><label>Wilayah/Loket</label><select class="select sel-search" name="loket"><option value="">— pilih —</option>${pcWilayah().map(w=>`<option>${escapeHtml(w)}</option>`).join('')}</select></div>
         <div class="field field-required"><label>Tanggal</label><input class="input" type="date" name="tanggal" value="${new Date().toISOString().slice(0,10)}"/></div>
-        <div class="field field-required"><label>Penerima</label><input class="input" name="penerima" placeholder="Nama penerima"/></div>
+        <div class="field field-required"><label>Penerima</label><input class="input" name="penerima" list="pc-form-penerima" placeholder="Pilih dari Master Karyawan atau ketik" autocomplete="off"/><datalist id="pc-form-penerima">${karList.map(n=>`<option value="${escapeHtml(n)}"></option>`).join('')}</datalist></div>
         <div class="field"><label>Rekening</label><input class="input" name="rekening" placeholder="Bank & no. rekening"/></div>
-        <div class="field"><label>Departemen</label><input class="input" name="departemen" value="General Affairs"/></div>
-        <div class="field field-required"><label>Kategori / Jenis Biaya</label><select class="select" name="kategori" id="pc-form-kat"><option value="">— pilih —</option>${kats.map(k=>`<option>${escapeHtml(k)}</option>`).join('')}</select></div>
+        <div class="field"><label>Departemen</label><select class="select sel-search" name="departemen"><option value="">— pilih —</option>${depList.map(d=>`<option ${d==='General Affairs'?'selected':''}>${escapeHtml(d)}</option>`).join('')}</select></div>
+        <div class="field field-required"><label>Kategori / Jenis Biaya</label><select class="select sel-search" name="kategori" id="pc-form-kat"><option value="">— pilih —</option>${kats.map(k=>`<option>${escapeHtml(k)}</option>`).join('')}</select></div>
         ${tipe==='KRT' ? `
           <div class="field full"><label>Kegiatan</label><input class="input" name="kegiatan" placeholder="Uraian kegiatan/pengeluaran"/></div>
           <div class="field field-required"><label>Nominal</label><input class="input pc-money" name="nominal" inputmode="numeric" placeholder="Rp 0"/></div>
@@ -6810,8 +6824,8 @@ function pcRenderMaster(host){
     : [['no_trx','No. Trx'],['wilayah','Wilayah'],['no_polisi','No. Polisi'],['deskripsi','Deskripsi'],['kategori','Kategori'],['gl_account','GL Account'],['no_fund','No. Fund'],['cost_center','Cost Center'],['total_biaya','Total Biaya']];
   host.innerHTML=`<div class="card"><div class="card-head">
     <div class="flex gap-2">
-      <button class="btn btn-sm pc-mt" data-rt="KRT" style="${tipe==='KRT'?'background:var(--mrt-blue);color:#fff':'background:#fff;border:1px solid var(--border);color:var(--text-2)'}">Master KRT</button>
-      <button class="btn btn-sm pc-mt" data-rt="KND" style="${tipe==='KND'?'background:var(--mrt-blue);color:#fff':'background:#fff;border:1px solid var(--border);color:var(--text-2)'}">Master KND</button>
+      <button class="btn btn-sm pc-mt" data-rt="KRT" style="${tipe==='KRT'?'background:var(--mrt-blue);color:#fff':'background:#fff;border:1px solid var(--border);color:var(--text-2)'}">Master Kerumahtanggaan</button>
+      <button class="btn btn-sm pc-mt" data-rt="KND" style="${tipe==='KND'?'background:var(--mrt-blue);color:#fff':'background:#fff;border:1px solid var(--border);color:var(--text-2)'}">Master Kendaraan</button>
     </div>
     ${manage?'<button class="btn btn-primary btn-sm" id="pc-master-add"><span class="material-symbols-rounded" style="font-size:18px">add</span>Tambah</button>':''}
     </div><div class="card-body"><div class="table-wrap"><table class="t t-dense"><thead><tr>${cols.map(c=>`<th${c[0]==='total_biaya'?' style="text-align:right"':''}>${c[1]}</th>`).join('')}<th style="text-align:right">Aksi</th></tr></thead>
@@ -6824,23 +6838,37 @@ function pcRenderMaster(host){
 }
 function pcMasterEdit(id){
   const tipe=_pcMasterTipe; const isNew=!id; const m=isNew?{}:_pcCache.master.find(x=>x.id===id);
+  // sumber dropdown — semua dari Master Data
+  const wil = pcWilayah();
+  const kat = pcDropdownValues('Kategori '+tipe);
+  const div = (_pcMasters.divisi||[]).map(d=>d.name);
+  const dep = (_pcMasters.departemen||[]).map(d=>d.name);
+  const kar = (_pcMasters.karyawan||[]).map(k=>k.nama);
+  // format field: [key, label, type, options?]   type: text|sel|combo|date|money
   const F = tipe==='KRT'
-    ? [['no_sap','No. SAP'],['wilayah','Wilayah','sel'],['tanggal','Tanggal','date'],['deskripsi','Deskripsi'],['pengguna','Pengguna'],['departemen','Departemen'],['divisi','Divisi'],['sub_kategori','Sub Kategori'],['kategori','Kategori'],['gl_account','GL Account'],['no_fund','No. Fund'],['desc_fund','Desc Fund'],['cost_center','Cost Center'],['total_biaya','Total Biaya','money']]
-    : [['no_trx','No. Trx'],['wilayah','Wilayah','sel'],['tanggal','Tanggal','date'],['no_sap','No. SAP'],['no_polisi','No. Polisi'],['deskripsi','Deskripsi'],['sub_kategori','Sub Kategori'],['kategori','Kategori'],['gl_account','GL Account'],['no_fund','No. Fund'],['desc_fund','Desc Fund'],['cost_center','Cost Center'],['total_biaya','Total Biaya','money']];
-  openModal(`<div class="modal-head"><h3>${isNew?'Tambah':'Edit'} Master ${tipe}</h3><button class="btn-icon" onclick="closeModal()"><span class="material-symbols-rounded">close</span></button></div>
-    <div class="modal-body"><form id="pc-m-form"><div class="form-grid">${F.map(f=>{
-      const v=m[f[0]]??''; const t=f[2]||'text';
-      if(t==='sel') return `<div class="field"><label>${f[1]}</label><select class="select" name="${f[0]}">${pcWilayah().map(w=>`<option ${v===w?'selected':''}>${w}</option>`).join('')}</select></div>`;
-      if(t==='date') return `<div class="field"><label>${f[1]}</label><input class="input" type="date" name="${f[0]}" value="${escapeHtml(v)}"/></div>`;
-      if(t==='money') return `<div class="field"><label>${f[1]}</label><input class="input pc-m-money" name="${f[0]}" inputmode="numeric" value="${v?'Rp '+Number(v).toLocaleString('id-ID'):''}"/></div>`;
-      return `<div class="field"><label>${f[1]}</label><input class="input" name="${f[0]}" value="${escapeHtml(v)}"/></div>`;
-    }).join('')}</div></form></div>
-    <div class="modal-foot"><button class="btn btn-ghost" onclick="closeModal()">Batal</button><button class="btn btn-primary" id="pc-m-save"><span class="material-symbols-rounded">save</span>Simpan</button></div>`,'lg');
+    ? [['no_sap','No. SAP'],['wilayah','Wilayah','sel',wil],['tanggal','Tanggal','date'],['deskripsi','Deskripsi'],
+       ['pengguna','Pengguna','combo',kar],['departemen','Departemen','sel',dep],['divisi','Divisi','sel',div],
+       ['sub_kategori','Sub Kategori'],['kategori','Kategori','sel',kat],['gl_account','GL Account'],['no_fund','No. Fund'],
+       ['desc_fund','Desc Fund'],['cost_center','Cost Center'],['total_biaya','Total Biaya','money']]
+    : [['no_trx','No. Trx'],['wilayah','Wilayah','sel',wil],['tanggal','Tanggal','date'],['no_sap','No. SAP'],
+       ['no_polisi','No. Polisi'],['deskripsi','Deskripsi'],['sub_kategori','Sub Kategori'],['kategori','Kategori','sel',kat],
+       ['gl_account','GL Account'],['no_fund','No. Fund'],['desc_fund','Desc Fund'],['cost_center','Cost Center'],['total_biaya','Total Biaya','money']];
+  const fld = (f)=>{
+    const v=m[f[0]]??''; const t=f[2]||'text'; const opts=f[3]||[];
+    if(t==='sel') return `<div class="field"><label>${f[1]}</label><select class="select sel-search" name="${f[0]}"><option value="">— pilih —</option>${opts.map(o=>`<option ${v===o?'selected':''}>${escapeHtml(o)}</option>`).join('')}</select></div>`;
+    if(t==='combo') return `<div class="field"><label>${f[1]}</label><input class="input" name="${f[0]}" list="pcm-${f[0]}" value="${escapeHtml(v)}" autocomplete="off"/><datalist id="pcm-${f[0]}">${opts.map(o=>`<option value="${escapeHtml(o)}"></option>`).join('')}</datalist></div>`;
+    if(t==='date') return `<div class="field"><label>${f[1]}</label><input class="input" type="date" name="${f[0]}" value="${escapeHtml(v)}"/></div>`;
+    if(t==='money') return `<div class="field"><label>${f[1]}</label><input class="input pc-m-money" name="${f[0]}" inputmode="numeric" value="${v?'Rp '+Number(v).toLocaleString('id-ID'):''}"/></div>`;
+    return `<div class="field"><label>${f[1]}</label><input class="input" name="${f[0]}" value="${escapeHtml(v)}"/></div>`;
+  };
+  openModal(`<div class="modal-head"><h3>${isNew?'Tambah':'Edit'} Master ${pcTipeLabel(tipe)}</h3><button class="btn-icon" onclick="closeModal()"><span class="material-symbols-rounded">close</span></button></div>
+    <div class="modal-body"><form id="pc-m-form"><div class="form-grid">${F.map(fld).join('')}</div></form></div>
+    <div class="modal-foot"><button class="btn btn-ghost" onclick="closeModal()">Batal</button><button class="btn btn-primary" id="pc-m-save"><span class="material-symbols-rounded">save</span>Simpan</button></div>`,'xl');
   $$('.pc-m-money').forEach(i=>i.addEventListener('input',e=>{const d=e.target.value.replace(/\D/g,'');e.target.value=d?'Rp '+Number(d).toLocaleString('id-ID'):'';}));
   $('#pc-m-save').addEventListener('click',async()=>{
     const fd=new FormData($('#pc-m-form')); const row={tipe};
     F.forEach(f=>{ let v=fd.get(f[0]); if(f[2]==='money') v=Number((v||'').toString().replace(/\D/g,''))||0; row[f[0]]=v||null; });
-    try{ if(isNew){ const ins=await pcdb.insert('master',row); pcdb.log('master.create',tipe); } else { await pcdb.update('master',id,row); pcdb.log('master.update',id); } await pcLoadAll(); closeModal(); renderPettyTab(); toast('Master tersimpan','success'); }
+    try{ if(isNew){ await pcdb.insert('master',row); pcdb.log('master.create',pcTipeLabel(tipe)); } else { await pcdb.update('master',id,row); pcdb.log('master.update',id); } await pcLoadAll(); closeModal(); renderPettyTab(); toast('Master tersimpan','success'); }
     catch(err){ toast('Gagal: '+(err.message||''),'error'); }
   });
 }
@@ -6976,13 +7004,22 @@ function pcRenderReport(host){
 /* ============================================================
    TAB: KELOLA DROPDOWN + RELASI AKUN
    ============================================================ */
+/* Pengelolaan dropdown khas petty cash — TAMPIL DI MENU MASTER DATA (bukan tab petty). */
+async function viewAdminPettyDropdown(c){
+  c.innerHTML = '<div class="card"><div class="card-body"><div class="muted">Memuat data…</div></div></div>';
+  try{ await pcLoadAll(); pcRenderDropdown(c); }
+  catch(e){ c.innerHTML = `<div class="card-pad" style="color:#991B1B">Gagal memuat: ${escapeHtml(e.message||'')}</div>`; }
+}
+
 function pcRenderDropdown(host){
   const manage=pcCanManage();
-  const groups=[...new Set(_pcCache.dropdown.map(d=>d.grup))];
+  const groups=[...new Set(_pcCache.dropdown.map(d=>d.grup))].filter(g => g !== 'Wilayah/Loket');
   host.innerHTML=`
-    <div class="card"><div class="card-head"><h3>Master Daftar Dropdown</h3>
+    <div class="card"><div class="card-head"><h3>Petty Cash — Kategori &amp; Relasi Akun</h3>
       ${manage?`<div class="flex gap-2"><input class="input" id="pc-newgrp" placeholder="Nama list baru..." style="max-width:200px"/><button class="btn btn-primary btn-sm" id="pc-addgrp">+ Buat List</button></div>`:''}</div>
-      <div class="card-body"><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1rem">
+      <div class="card-body">
+      <p class="muted text-sm" style="margin:-4px 0 12px"><span class="material-symbols-rounded" style="font-size:16px;vertical-align:-3px">info</span> <strong>Wilayah/Loket</strong> petty cash mengikuti master <strong>Lokasi Kerja</strong>, <strong>Divisi/Departemen</strong> mengikuti masternya, dan <strong>Pengguna</strong> mengikuti <strong>Master Karyawan</strong> — kelola di menu masing-masing. Di sini hanya opsi khas petty cash: kategori &amp; relasi akun (autofill).</p>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1rem">
         ${groups.map(g=>`<div class="card" style="margin:0"><div class="card-head" style="padding:10px 14px"><h3 style="font-size:13px">${escapeHtml(g)}</h3></div>
           <div class="card-body" style="padding:12px">
             ${_pcCache.dropdown.filter(d=>d.grup===g).map(d=>`<div class="flex between items-center" style="padding:4px 0;border-bottom:1px dashed var(--border-2)"><span class="text-sm">${escapeHtml(d.nilai)}</span>${manage?`<button class="btn-icon" data-deldd="${d.id}" style="padding:3px"><span class="material-symbols-rounded" style="font-size:15px">close</span></button>`:''}</div>`).join('')||'<div class="muted text-sm">kosong</div>'}
@@ -10057,12 +10094,163 @@ window.closeModal = closeModal;
 /* ============================================================
    BOOT
    ============================================================ */
+/* ============================================================
+   KALKULATOR MENGAMBANG (v2.7)
+   Tombol bulat di pojok kanan-bawah (hover) → pop-up kalkulator.
+   Fungsi: + − × ÷, kurung, pangkat (xʸ), kuadrat (x²), akar (√), persen (%),
+   ubah tanda (±), hapus (⌫), bersih (C), desimal. Bisa via klik atau keyboard.
+   ============================================================ */
+function initCalculator(){
+  if(document.getElementById('calc-fab')) return;
+  // --- style ---
+  const css = document.createElement('style');
+  css.textContent = `
+    #calc-fab{position:fixed;right:22px;bottom:22px;width:54px;height:54px;border-radius:50%;border:none;cursor:pointer;
+      background:linear-gradient(135deg,var(--mrt-blue-2,#0055B8),var(--mrt-blue,#003D7E));color:#fff;z-index:1500;
+      box-shadow:0 8px 22px rgba(0,61,126,.32);display:flex;align-items:center;justify-content:center;transition:transform .18s,box-shadow .18s}
+    #calc-fab:hover{transform:translateY(-3px) scale(1.06);box-shadow:0 14px 30px rgba(0,61,126,.42)}
+    #calc-fab .material-symbols-rounded{font-size:26px}
+    #calc-panel{position:fixed;right:22px;bottom:88px;width:300px;max-width:calc(100vw - 32px);z-index:1500;
+      background:#fff;border:1px solid var(--border,#E3E8F0);border-radius:16px;box-shadow:0 20px 50px rgba(2,32,71,.28);
+      overflow:hidden;display:none;animation:calcIn .18s ease}
+    #calc-panel.open{display:block}
+    @keyframes calcIn{from{opacity:0;transform:translateY(10px) scale(.98)}to{opacity:1;transform:none}}
+    .calc-head{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--mrt-blue,#003D7E);color:#fff}
+    .calc-head b{font-size:13px;font-weight:700;letter-spacing:.3px}
+    .calc-head button{background:transparent;border:none;color:#fff;cursor:pointer;display:flex;padding:2px;border-radius:6px}
+    .calc-head button:hover{background:rgba(255,255,255,.18)}
+    .calc-disp{padding:12px 14px;text-align:right;background:#F4F7FB}
+    .calc-expr{font-size:13px;color:var(--text-mut,#6B7891);min-height:18px;word-break:break-all;font-family:ui-monospace,monospace}
+    .calc-res{font-size:26px;font-weight:800;color:var(--text,#0F1B2D);font-family:ui-monospace,monospace;word-break:break-all}
+    .calc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:12px}
+    .calc-grid button{border:1px solid var(--border,#E3E8F0);background:#fff;border-radius:10px;padding:11px 0;font-size:15px;font-weight:600;
+      cursor:pointer;color:var(--text,#0F1B2D);transition:.12s;font-family:inherit}
+    .calc-grid button:hover{background:var(--mrt-blue-soft,#E8F0FB);border-color:var(--mrt-blue-2,#0055B8)}
+    .calc-grid button:active{transform:scale(.95)}
+    .calc-grid button.op{color:var(--mrt-blue-2,#0055B8)}
+    .calc-grid button.fn{background:#F1F5FB;font-size:13px}
+    .calc-grid button.eq{background:var(--mrt-blue-2,#0055B8);color:#fff;border-color:var(--mrt-blue-2,#0055B8)}
+    .calc-grid button.eq:hover{background:var(--mrt-blue,#003D7E)}
+    .calc-grid button.clr{color:#DC2626}
+    .calc-grid button.span2{grid-column:span 2}
+  `;
+  document.head.appendChild(css);
+
+  // --- markup ---
+  const fab = document.createElement('button');
+  fab.id = 'calc-fab'; fab.title = 'Kalkulator'; fab.setAttribute('aria-label','Kalkulator');
+  fab.innerHTML = '<span class="material-symbols-rounded">calculate</span>';
+  const panel = document.createElement('div');
+  panel.id = 'calc-panel';
+  panel.innerHTML = `
+    <div class="calc-head"><b>Kalkulator</b><button id="calc-close" title="Tutup"><span class="material-symbols-rounded" style="font-size:18px">close</span></button></div>
+    <div class="calc-disp"><div class="calc-expr" id="calc-expr">&nbsp;</div><div class="calc-res" id="calc-res">0</div></div>
+    <div class="calc-grid">
+      <button class="fn" data-act="square" title="Kuadrat">x²</button>
+      <button class="fn" data-act="sqrt" title="Akar kuadrat">√</button>
+      <button class="fn op" data-op="^" title="Pangkat">xʸ</button>
+      <button class="fn" data-act="percent" title="Persen">%</button>
+      <button class="clr" data-act="clear">C</button>
+      <button data-act="back" title="Hapus">⌫</button>
+      <button class="op" data-paren="(">(</button>
+      <button class="op" data-paren=")">)</button>
+      <button data-num="7">7</button><button data-num="8">8</button><button data-num="9">9</button><button class="op" data-op="÷">÷</button>
+      <button data-num="4">4</button><button data-num="5">5</button><button data-num="6">6</button><button class="op" data-op="×">×</button>
+      <button data-num="1">1</button><button data-num="2">2</button><button data-num="3">3</button><button class="op" data-op="−">−</button>
+      <button data-act="negate" title="Ubah tanda">±</button><button data-num="0">0</button><button data-num=".">.</button><button class="op" data-op="+">+</button>
+      <button class="eq span2" data-act="equals">=</button>
+      <button class="fn span2" data-act="copy" title="Salin hasil">Salin</button>
+    </div>`;
+  document.body.appendChild(fab);
+  document.body.appendChild(panel);
+
+  // --- logic ---
+  let expr = '';
+  const exprEl = () => document.getElementById('calc-expr');
+  const resEl  = () => document.getElementById('calc-res');
+  const fmt = (v) => {
+    if(typeof v !== 'number' || !isFinite(v)) return 'Error';
+    return String(parseFloat(v.toPrecision(12)));
+  };
+  function calcEval(raw){
+    let s = String(raw).replace(/×/g,'*').replace(/÷/g,'/').replace(/−/g,'-').replace(/\^/g,'**');
+    if(s.trim()==='') return 0;
+    if(/[^0-9+\-*/().\s]/.test(s)) throw new Error('bad');     // hanya karakter aritmetika
+    const v = Function('"use strict"; return (' + s + ')')();
+    if(typeof v !== 'number' || !isFinite(v)) throw new Error('bad');
+    return v;
+  }
+  function render(){
+    exprEl().innerHTML = expr ? escapeHtml(expr) : '&nbsp;';
+    try{ resEl().textContent = expr ? fmt(calcEval(expr)) : '0'; }
+    catch{ resEl().textContent = '…'; }
+  }
+  const isOp = (c) => ['+','−','×','÷','^'].includes(c);
+  function press(token){ // angka/operator/kurung
+    const last = expr.slice(-1);
+    if(isOp(token)){
+      if(expr==='' && token!=='−') return;       // jangan mulai dengan operator (kecuali minus)
+      if(isOp(last)) expr = expr.slice(0,-1);     // ganti operator berurutan
+    }
+    if(token==='.'){ // cegah dua titik di angka yang sama
+      const seg = expr.split(/[+\-−×÷^()]/).pop();
+      if(seg.includes('.')) return;
+    }
+    expr += token; render();
+  }
+  function unary(kind){
+    let cur; try{ cur = calcEval(expr || '0'); }catch{ resEl().textContent='Error'; return; }
+    let r;
+    if(kind==='square') r = cur*cur;
+    else if(kind==='sqrt'){ if(cur<0){ resEl().textContent='Error'; return; } r = Math.sqrt(cur); }
+    else if(kind==='negate') r = -cur;
+    else if(kind==='percent') r = cur/100;
+    expr = fmt(r); render();
+  }
+  function equals(){ try{ expr = fmt(calcEval(expr)); }catch{ expr=''; resEl().textContent='Error'; exprEl().innerHTML='&nbsp;'; return; } render(); }
+
+  panel.addEventListener('click', (e) => {
+    const b = e.target.closest('button'); if(!b) return;
+    if(b.id==='calc-close'){ panel.classList.remove('open'); return; }
+    if(b.dataset.num!=null) press(b.dataset.num);
+    else if(b.dataset.op!=null) press(b.dataset.op);
+    else if(b.dataset.paren!=null) press(b.dataset.paren);
+    else if(b.dataset.act==='clear'){ expr=''; render(); }
+    else if(b.dataset.act==='back'){ expr=expr.slice(0,-1); render(); }
+    else if(b.dataset.act==='equals') equals();
+    else if(b.dataset.act==='copy'){ const t=resEl().textContent; if(navigator.clipboard) navigator.clipboard.writeText(t).then(()=>toast('Hasil disalin: '+t,'success')).catch(()=>{}); }
+    else if(['square','sqrt','negate','percent'].includes(b.dataset.act)) unary(b.dataset.act);
+  });
+
+  fab.addEventListener('click', () => { panel.classList.toggle('open'); if(panel.classList.contains('open')) render(); });
+
+  // keyboard saat panel terbuka
+  document.addEventListener('keydown', (e) => {
+    if(!panel.classList.contains('open')) return;
+    const k = e.key;
+    if(/[0-9.]/.test(k)) { press(k); e.preventDefault(); }
+    else if(k==='+'){ press('+'); e.preventDefault(); }
+    else if(k==='-'){ press('−'); e.preventDefault(); }
+    else if(k==='*'){ press('×'); e.preventDefault(); }
+    else if(k==='/'){ press('÷'); e.preventDefault(); }
+    else if(k==='^'){ press('^'); e.preventDefault(); }
+    else if(k==='('||k===')'){ press(k); e.preventDefault(); }
+    else if(k==='Enter'||k==='='){ equals(); e.preventDefault(); }
+    else if(k==='Backspace'){ expr=expr.slice(0,-1); render(); e.preventDefault(); }
+    else if(k==='Escape'){ panel.classList.remove('open'); }
+    else if(k.toLowerCase()==='c'){ expr=''; render(); }
+  });
+  render();
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
   if(!SUPA_CONFIGURED){
     setTimeout(()=> toast('Berjalan dalam mode DEMO (data hanya di memori). Edit SUPABASE_URL & SUPABASE_ANON_KEY di index.html untuk aktifkan Supabase.','warn',7000), 600);
   }
   // v1.7: prime kategori cache so KATEGORI_KODE includes any custom categories
   try{ await refreshKategoriKode(); }catch(err){ console.warn('[boot kategori]', err); }
+  // v2.7: kalkulator mengambang
+  try{ initCalculator(); }catch(err){ console.warn('[calc]', err); }
   route();
 });
 
