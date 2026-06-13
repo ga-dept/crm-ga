@@ -446,8 +446,6 @@ button{font-family:inherit;cursor:pointer}
 .footer-links a{ position:relative; color:#fff; font-size:20px; font-weight:500; width:max-content;
   display:inline-flex; align-items:center; gap:9px; transition:.16s; text-decoration:none; }
 .footer-links a .material-symbols-rounded{ font-size:19px; opacity:.7; }
-.footer-links a:first-child::before{ content:""; width:7px; height:7px; border-radius:50%; background:var(--mrt-green-2);
-  position:absolute; left:-16px; top:50%; transform:translateY(-50%); }
 .footer-links a:hover{ color:var(--mrt-green-2); text-decoration:none; }
 .footer-divider{ position:relative; z-index:1; height:1px; background:rgba(255,255,255,.16); margin:34px 0 18px; }
 .footer-bottom{ position:relative; z-index:1; display:flex; justify-content:space-between; align-items:center;
@@ -1227,8 +1225,8 @@ table.t{
           <div class="brand-mark"><img src="logo.png" alt="GA" onload="this.parentElement.classList.add('has-img')" onerror="this.parentElement.classList.remove('has-img');this.outerHTML='GA'" /></div>
           <div class="brand-name"><strong style="color:#fff">GA Hotline Portal</strong><span style="color:#CFDCEE">Admin Dashboard</span></div>
         </div>
-        <h2>Eh, ketemu lagi!</h2>
-        <p>Tetap semangat walau rintangan menghadang, karena harga BBM semakin meradang!!! Saya akan lawan!!</p>
+        <h2>Elu lagi ajee. Ngga capek ke sini terus?</h2>
+        <p>Gapapa, walau rintangan menghadang, tetap semangat karena harga bahan pokok semakin meradang! Saya akan lawan!!</p>
       </div>
     </div>
     <div class="login-right">
@@ -2154,6 +2152,20 @@ const db = {
       if(error) console.warn('[activity_log]', error);
     }catch(e){ console.warn('[activity_log]', e); }
   },
+  // Hapus otomatis log aktivitas (& log petty cash) yang lebih tua dari `days` hari (default 90 = 3 bulan)
+  async purgeOldLogs(days){
+    days = days || 90;
+    if(!SUPA_CONFIGURED){
+      const cutoff = Date.now() - days*864e5;
+      try{ demo.activityLogs = (demo.activityLogs||[]).filter(l => new Date(l.created_at).getTime() >= cutoff); }catch(e){}
+      return { ok:true, demo:true };
+    }
+    const cutoffISO = new Date(Date.now() - days*864e5).toISOString();
+    const res = { activity_logs:0, pc_log:0 };
+    try{ const { error } = await supa.from('activity_logs').delete().lt('created_at', cutoffISO); if(error) console.warn('[purge activity_logs]', error); else res.activity_logs = 1; }catch(e){ console.warn('[purge activity_logs]', e); }
+    try{ const { error } = await supa.from('pc_log').delete().lt('created_at', cutoffISO); if(error) console.warn('[purge pc_log]', error); else res.pc_log = 1; }catch(e){ console.warn('[purge pc_log]', e); }
+    return res;
+  },
 
   // -------- SLA Targets --------
   async listSlaTargets(){
@@ -3051,6 +3063,53 @@ async function captureDashboardJpg(){
     window.scrollTo(0, savedScroll);
     if(btn){ btn.disabled = false; btn.innerHTML = original; }
   }
+}
+
+/* ----- Backup Data (ZIP berisi satu .csv per tabel — siap re-import ke Supabase per tabel) ----- */
+function rowsToCsv(rows){
+  if(!rows || !rows.length) return '';
+  const cols=[]; const seen=new Set();
+  rows.forEach(r=>Object.keys(r).forEach(k=>{ if(!seen.has(k)){ seen.add(k); cols.push(k); } }));
+  const esc=(v)=>{
+    if(v===null||v===undefined) return '';
+    if(typeof v==='object') v=JSON.stringify(v);
+    const s=String(v).replace(/"/g,'""');
+    return /[",\n\r]/.test(s) ? `"${s}"` : s;
+  };
+  const lines=[cols.join(',')];
+  rows.forEach(r=>lines.push(cols.map(c=>esc(r[c])).join(',')));
+  return lines.join('\n');
+}
+const BACKUP_TABLES = ['app_users','counters','requests','ratings','version_history','notifications',
+  'lokasi_options','tujuan_options','lokasi_kerja_options','activity_logs','sla_targets',
+  'mata_anggaran_options','divisi_options','departemen_options','kategori_options','approvals',
+  'payments','kendaraan_options','anggaran_funds','anggaran_topups','cdp_plans','recurring_payments',
+  'pc_reimburse','pc_master','pc_dropdown','pc_relasi','pc_cash','pc_log','karyawan_options'];
+async function downloadBackupZip(){
+  if(typeof JSZip === 'undefined'){ toast('Library JSZip belum termuat. Cek koneksi internet.','error'); return; }
+  if(!SUPA_CONFIGURED){ toast('Backup per-tabel hanya tersedia saat terhubung ke Supabase.','warn'); return; }
+  const btn = document.querySelector('#md-backup');
+  const original = btn ? btn.innerHTML : '';
+  if(btn){ btn.disabled = true; btn.innerHTML = '<span class="material-symbols-rounded">hourglass_top</span>Menyiapkan…'; }
+  try{
+    const zip = new JSZip();
+    let withData=0, empty=0; const failed=[];
+    for(const t of BACKUP_TABLES){
+      let rows=[];
+      try{ const { data, error } = await supa.from(t).select('*'); if(error) throw error; rows = data||[]; }
+      catch(e){ failed.push(t); continue; }
+      if(t==='app_users') rows = rows.map(r=>{ const c={...r}; delete c.password_hash; delete c.password; delete c.pass; return c; });
+      zip.file(t + '.csv', rowsToCsv(rows));
+      if(rows.length) withData++; else empty++;
+    }
+    const blob = await zip.generateAsync({ type:'blob' });
+    const ts = new Date().toISOString().slice(0,10);
+    const fname = `backup-supabase-${ts}.zip`;
+    const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=fname; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(a.href);
+    toast(`Backup ZIP siap — ${withData} tabel berisi data${empty?`, ${empty} kosong`:''}${failed.length?`, ${failed.length} gagal/diblokir`:''}`,'success');
+    db.logActivity({ action:'backup.download', target_type:'backup', target_id:null, detail:`Backup ZIP per-tabel (${fname})` });
+  }catch(err){ console.error('[backup zip]', err); toast('Gagal membuat backup: '+(err.message||''),'error'); }
+  finally{ if(btn){ btn.disabled=false; btn.innerHTML=original; } }
 }
 
 /* ----- Backup Data (XLSX, multi-sheet) -----
@@ -7272,8 +7331,8 @@ async function viewAdminMaster(c){
       <p class="muted text-sm" style="margin:0;max-width:600px">
         Kelola master data sistem: Lokasi, Tujuan, dan Mata Anggaran. Untuk Kategori, Divisi, dan Departemen, gunakan menu tersendiri di sidebar.
       </p>
-      <button class="btn btn-accent btn-sm" id="md-backup" title="Download backup seluruh data ke XLSX">
-        <span class="material-symbols-rounded" style="font-size:18px">cloud_download</span>Backup Data
+      <button class="btn btn-accent btn-sm" id="md-backup" title="Download backup: satu file .csv per tabel, dibungkus jadi 1 ZIP — siap di-import ulang ke Supabase per tabel">
+        <span class="material-symbols-rounded" style="font-size:18px">cloud_download</span>Backup Data (ZIP)
       </button>
     </div>
     <div class="split-3">
@@ -7381,7 +7440,7 @@ async function viewAdminMaster(c){
   }
   await refresh();
 
-  $('#md-backup').addEventListener('click', () => downloadBackupXlsx());
+  $('#md-backup').addEventListener('click', () => downloadBackupZip());
   $('#add-lok').addEventListener('click', async () => {
     const v = $('#new-lok').value.trim(); if(!v) return;
     try{
@@ -10418,6 +10477,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   try{ await refreshKategoriKode(); }catch(err){ console.warn('[boot kategori]', err); }
   // v2.7: kalkulator mengambang
   try{ initCalculator(); }catch(err){ console.warn('[calc]', err); }
+  // v2.8: auto-hapus log aktivitas & log petty cash yang lebih tua dari 3 bulan (sekali per sesi tab)
+  try{
+    if(!sessionStorage.getItem('logs_purged')){
+      sessionStorage.setItem('logs_purged','1');
+      db.purgeOldLogs(90).catch(()=>{});
+    }
+  }catch(err){ console.warn('[purge logs]', err); }
   route();
 });
 
