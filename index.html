@@ -2754,7 +2754,14 @@ const db = {
           throw new Error('Login gagal: '+error.message);
         }
       } else if(data && data.length){
-        return data[0];
+        const u = data[0];
+        // v2: fn_login mungkin TIDAK mengembalikan allowed_pages → ambil terpisah,
+        // agar Hak Akses Halaman & peran workflow Petty Cash terbaca (selama ini hanya Superadmin yang lolos).
+        if(u && u.allowed_pages === undefined){
+          try{ const r = await supa.from('app_users').select('allowed_pages').eq('id', u.id).maybeSingle(); u.allowed_pages = (r && r.data && r.data.allowed_pages) || null; }
+          catch(_){ u.allowed_pages = null; }
+        }
+        return u;
       } else if(data){
         // RPC succeeded but returned no row → wrong credentials
         throw new Error('Username atau password salah');
@@ -10913,6 +10920,15 @@ document.addEventListener('DOMContentLoaded', async () => {
       db.purgeOldLogs(90).catch(()=>{});
     }
   }catch(err){ console.warn('[purge logs]', err); }
+  // v2: segarkan allowed_pages sesi yang sedang berjalan — mengatasi sesi lama / login via fn_login
+  // yang belum membawa Hak Akses & peran workflow Petty Cash (tanpa harus logout-login manual).
+  try{
+    const cur = session.get();
+    if(SUPA_CONFIGURED && cur && cur.id && cur.role!=='superadmin'){
+      const r = await supa.from('app_users').select('allowed_pages,role').eq('id', cur.id).maybeSingle();
+      if(r && r.data){ session.set({ ...cur, allowed_pages: r.data.allowed_pages||null, role: r.data.role||cur.role }); }
+    }
+  }catch(err){ console.warn('[boot session refresh]', err); }
   route();
 });
 
