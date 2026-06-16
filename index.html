@@ -1003,7 +1003,7 @@ table.t{
     </div>
   </section>
 
-  <section class="section" id="dashboard" style="padding-top:24px">
+  <section class="section" id="dashboard" style="padding-top:24px;padding-bottom:8px">
     <div class="section-inner">
       <div class="split-2 landing-info">
         <div class="card" id="tracker" style="margin:0">
@@ -1032,7 +1032,7 @@ table.t{
     </div>
   </section>
 
-  <section class="section" id="form">
+  <section class="section" id="form" style="padding-top:12px">
     <div class="section-inner">
       <div class="section-head">
         <div class="kicker">Formulir</div>
@@ -1470,12 +1470,16 @@ const PAGE_LABELS = {
   slatargets:'SLA Target', activity:'Log Aktivitas', version:'Riwayat Versi'
 };
 const ALL_PAGES = Object.keys(PAGE_LABELS);
+// v2: peran workflow Petty Cash — disimpan di allowed_pages tetapi TIDAK memengaruhi akses halaman/nav.
+const WF_PERMS = ['pc_pic_loket','pc_pembantu_kas','pc_pemegang_kas'];
 // Effective access: if a user has an explicit allowed_pages list, that list is authoritative
 // (Super Admin can grant/limit any page per account). Otherwise fall back to role defaults.
 function getAllowedPages(user){
   if(!user) return [];
   const ap = user.allowed_pages;
-  return (Array.isArray(ap) && ap.length) ? ap : null; // null = use role default
+  if(!Array.isArray(ap) || !ap.length) return null;     // null = use role default
+  const pages = ap.filter(p => !WF_PERMS.includes(p));   // peran workflow bukan halaman → abaikan utk routing
+  return pages.length ? pages : null;
 }
 function userCanAccess(user, route){
   if(!user) return false;
@@ -6608,8 +6612,8 @@ function pcWfDef(key){ return PC_WF.find(s=>s.key===key) || null; }
 function pcWfHasPerm(perm){
   const u=session.get(); if(!u) return false;
   if(u.role==='superadmin') return true;
-  const ap=getAllowedPages(u);
-  return ap ? ap.includes(perm) : false;   // peran workflow harus diberikan eksplisit via Hak Akses Halaman
+  const ap = Array.isArray(u.allowed_pages) ? u.allowed_pages : [];
+  return ap.includes(perm);   // dibaca langsung dari allowed_pages, lepas dari mode "Ikuti default role"
 }
 function pcWfAny(){ return pcWfHasPerm('pc_pic_loket')||pcWfHasPerm('pc_pembantu_kas')||pcWfHasPerm('pc_pemegang_kas'); }
 function pcSlaHours(stage){ const s=(_pcCache.sla||[]).find(x=>x.stage===stage); return s? (Number(s.sla_hours)||0) : 0; }
@@ -9089,13 +9093,20 @@ async function openUserModal(user, onDone){
             <span style="font-weight:500"><label class="chk-inline"><input type="checkbox" id="ap-default" ${getAllowedPages(user)?'':'checked'}/> Ikuti default role</label></span>
           </label>
           <div id="ap-list" class="ap-grid">
-            ${ALL_PAGES.map(p=>{
+            ${ALL_PAGES.filter(p=>!WF_PERMS.includes(p)).map(p=>{
               const ap=getAllowedPages(user);
               const checked = ap ? ap.includes(p) : (ROUTE_ROLES[p]||[]).includes(user?.role||'admin');
               return `<label class="ap-item"><input type="checkbox" class="ap-chk" value="${p}" ${checked?'checked':''}/> ${escapeHtml(PAGE_LABELS[p])}</label>`;
             }).join('')}
           </div>
           <span class="hint">Centang halaman yang boleh dibuka akun ini. Jika "Ikuti default role" aktif, akses mengikuti peran. <em>Super Admin selalu punya akses penuh.</em></span>
+        </div>
+        <div class="field full" style="margin-top:4px">
+          <label>Peran Workflow Petty Cash</label>
+          <div class="ap-grid">
+            ${WF_PERMS.map(p=>{ const on=(user&&Array.isArray(user.allowed_pages)?user.allowed_pages:[]).includes(p); return `<label class="ap-item"><input type="checkbox" class="wf-chk" value="${p}" ${on?'checked':''}/> ${escapeHtml(PAGE_LABELS[p])}</label>`; }).join('')}
+          </div>
+          <span class="hint">Tentukan siapa <strong>PIC Loket</strong>, <strong>Pembantu Pemegang Kas</strong>, dan <strong>Pemegang Kas</strong> untuk Proses Workflow Petty Cash. Berlaku independen dari "Ikuti default role" — akun cukup dicentang di sini agar bisa memproses workflow.</span>
         </div>
       </form>
     </div>
@@ -9121,7 +9132,13 @@ async function openUserModal(user, onDone){
   $('#u-save').addEventListener('click', async () => {
     const fd = new FormData($('#user-form'));
     const useDefault = $('#ap-default').checked;
-    const allowed_pages = useDefault ? null : $$('.ap-chk').filter(c=>c.checked).map(c=>c.value);
+    const wfPart = $$('.wf-chk').filter(c=>c.checked).map(c=>c.value);   // peran workflow Petty Cash
+    let allowed_pages;
+    if(useDefault){
+      allowed_pages = wfPart.length ? wfPart.slice() : null;             // halaman tetap default role; simpan peran workflow bila ada
+    } else {
+      allowed_pages = [...new Set([...$$('.ap-chk').filter(c=>c.checked).map(c=>c.value), ...wfPart])];
+    }
     try{
       if(isEdit){
         await db.updateUser(user.id, {
