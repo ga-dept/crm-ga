@@ -3851,7 +3851,10 @@ async function renderAdmin(page){
     // explicit access list: gate purely by it (dashboard always allowed)
     $$('#admin-nav .nav-item').forEach(it => {
       const route = it.dataset.route;
-      if(route !== 'dashboard' && !_ap.includes(route)){ it.style.display = 'none'; return; }
+      // v3.0 fix: hormati userCanAccess (mis. 'petty' selalu boleh) — bukan sekadar isi allowed_pages.
+      // Peran workflow Petty Cash (pc_pic_loket/pc_pembantu_kas/pc_pemegang_kas/pc_kadept) TIDAK punya
+      // entri halaman 'petty' di allowed_pages, sehingga pencocokan daftar saja akan keliru menyembunyikannya.
+      if(!userCanAccess(u, route)){ it.style.display = 'none'; return; }
       it.classList.toggle('active', route===page);
       it.addEventListener('click', e => { e.preventDefault(); navigate('/admin/'+route); });
     });
