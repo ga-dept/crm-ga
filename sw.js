@@ -7,7 +7,7 @@
    • Supabase API & all non-GET requests     → network only (never cached)
    Bump CACHE_VERSION on every deploy to invalidate old caches.
    ===================================================================== */
-const CACHE_VERSION = 'ga-hotline-v2.12.2';
+const CACHE_VERSION = 'ga-hotline-v3.0.0';
 const APP_SHELL = [
   './',
   './index.html',
