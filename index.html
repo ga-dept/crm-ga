@@ -413,6 +413,12 @@ button{font-family:inherit;cursor:pointer}
 .form-grid.cols-3{grid-template-columns:1fr 1fr 1fr}
 @media(max-width:820px){ .form-grid.cols-3{grid-template-columns:1fr} }
 .form-grid .full{grid-column:1/-1}
+/* v3.0.1: jaga form di dalam modal tetap multi-kolom pada laptop (≥768px),
+   meski aturan responsif global menjadikannya 1 kolom di ≤1024px. */
+@media(min-width:768px){
+  .modal .form-grid{grid-template-columns:1fr 1fr}
+  .modal .form-grid.cols-3{grid-template-columns:1fr 1fr 1fr}
+}
 
 /* ============================================================
    PUBLIC FOOTER (v2.2) — kartu gelap membulat ala referensi
@@ -3000,9 +3006,12 @@ function csvDownload(filename, rows){
   const escape = (v) => {
     if(v===null||v===undefined) return '';
     const s = String(v).replace(/"/g,'""');
-    return /[",\n]/.test(s) ? `"${s}"` : s;
+    return /[",\n\r;]/.test(s) ? `"${s}"` : s;
   };
-  const csv = [headers.join(','), ...rows.map(r => headers.map(h => escape(r[h])).join(','))].join('\n');
+  // v3.0.1: prepend "sep=," agar Excel (termasuk lokal Indonesia yang default-nya ";")
+  // tetap memisah ke KOLOM, bukan menumpuk ke bawah dalam satu kolom. Gunakan CRLF.
+  const body = [headers.join(','), ...rows.map(r => headers.map(h => escape(r[h])).join(','))].join('\r\n');
+  const csv = 'sep=,\r\n' + body;
   const blob = new Blob(['\ufeff'+csv], { type:'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -4320,7 +4329,7 @@ async function viewAdminDashboard(c){
 let _adminReqsCache = [];
 let _adminReqsState = {
   sort:'created_at', dir:'desc', page:1, pageSize:10, search:'',
-  filterStatus:'', filterKategori:'', filterSumber:'', filterPic:'', filterSla:''
+  filterStatus:'', filterKategori:'', filterSumber:'', filterPic:'', filterSla:'', filterDari:'', filterSampai:''
 };
 
 async function viewAdminRequests(c){
@@ -4361,6 +4370,11 @@ async function viewAdminRequests(c){
             <option value="late">Terlambat</option>
             <option value="na">Belum Selesai</option>
           </select>
+          <div class="flex gap-1" style="align-items:center"><span class="material-symbols-rounded" style="color:var(--text-mut);font-size:20px" title="Filter Tgl Dibuat">event</span>
+            <input type="date" class="input" id="req-filter-dari" title="Dari tanggal (Tgl Dibuat)" style="max-width:155px"/>
+            <span class="muted">s.d.</span>
+            <input type="date" class="input" id="req-filter-sampai" title="Sampai tanggal (Tgl Dibuat)" style="max-width:155px"/>
+          </div>
         </div>
         <div id="req-table-host"></div>
       </div>
@@ -4402,6 +4416,14 @@ async function viewAdminRequests(c){
   });
   $('#req-filter-sla').addEventListener('change', e => {
     _adminReqsState.filterSla = e.target.value; _adminReqsState.page = 1;
+    renderRequestsTable($('#req-table-host'), _adminReqsCache, { compact:false });
+  });
+  $('#req-filter-dari').addEventListener('change', e => {
+    _adminReqsState.filterDari = e.target.value; _adminReqsState.page = 1;
+    renderRequestsTable($('#req-table-host'), _adminReqsCache, { compact:false });
+  });
+  $('#req-filter-sampai').addEventListener('change', e => {
+    _adminReqsState.filterSampai = e.target.value; _adminReqsState.page = 1;
     renderRequestsTable($('#req-table-host'), _adminReqsCache, { compact:false });
   });
   $('#csv-req').addEventListener('click', async () => {
@@ -4476,6 +4498,8 @@ function renderRequestsTable(host, data, opts){
       return slaSt === s.filterSla;
     });
   }
+  if(s.filterDari)   rows = rows.filter(r => (r.created_at||'').slice(0,10) >= s.filterDari);
+  if(s.filterSampai) rows = rows.filter(r => (r.created_at||'').slice(0,10) <= s.filterSampai);
 
   // Sort
   rows.sort((a,b) => {
@@ -5390,10 +5414,10 @@ async function viewAdminRatings(c){
    remain overridable. */
 let _payMerged = [];
 let _fundsCache = [];
-let _payState = { page:1, pageSize:15, search:'', filterStatus:'', filterCategory:'', sort:'created_at', dir:'desc' };
+let _payState = { page:1, pageSize:15, search:'', filterStatus:'', filterCategory:'', filterDari:'', filterSampai:'', sort:'created_at', dir:'desc' };
 // v2.2: state khusus halaman Payment Non-GA
 let _payNonGA = [];
-let _payNonGAState = { page:1, pageSize:15, search:'', filterStatus:'', sort:'created_at', dir:'desc' };
+let _payNonGAState = { page:1, pageSize:15, search:'', filterStatus:'', filterDari:'', filterSampai:'', sort:'created_at', dir:'desc' };
 let _pngBulkSel = new Set();   // v2.6: pilihan hapus massal Payment Non-GA (Super Admin)
 
 // v2.2: ringkas "Terakhir diubah: <tgl> oleh <nama>" untuk payment non-GA
@@ -5453,6 +5477,11 @@ async function viewAdminPayments(c){
             <option value="">Semua Kategori</option>
             ${Object.keys(KATEGORI_KODE).map(k=>`<option>${escapeHtml(k)}</option>`).join('')}
           </select>
+          <div class="flex gap-1" style="align-items:center"><span class="material-symbols-rounded" style="color:var(--text-mut);font-size:20px" title="Filter Tgl Dibuat">event</span>
+            <input type="date" class="input" id="pay-filter-dari" title="Dari tanggal (Tgl Dibuat)" style="max-width:155px"/>
+            <span class="muted">s.d.</span>
+            <input type="date" class="input" id="pay-filter-sampai" title="Sampai tanggal (Tgl Dibuat)" style="max-width:155px"/>
+          </div>
         </div>
         <div id="pay-table-host"></div>
       </div>
@@ -5486,6 +5515,8 @@ async function viewAdminPayments(c){
   $('#pay-search').addEventListener('input', e => { _payState.search = e.target.value.toLowerCase(); _payState.page = 1; renderPaymentsTable(host); });
   $('#pay-filter-status').addEventListener('change', e => { _payState.filterStatus = e.target.value; _payState.page = 1; renderPaymentsTable(host); });
   $('#pay-filter-category').addEventListener('change', e => { _payState.filterCategory = e.target.value; _payState.page = 1; renderPaymentsTable(host); });
+  $('#pay-filter-dari').addEventListener('change', e => { _payState.filterDari = e.target.value; _payState.page = 1; renderPaymentsTable(host); });
+  $('#pay-filter-sampai').addEventListener('change', e => { _payState.filterSampai = e.target.value; _payState.page = 1; renderPaymentsTable(host); });
   $('#pay-refresh').addEventListener('click', () => load());
   $('#pay-csv').addEventListener('click', () => {
     const rows = filterPayments().map(m => {
@@ -5516,6 +5547,8 @@ function filterPayments(){
   }
   if(s.filterStatus)   rows = rows.filter(m => (m.ga_payment_status||'Not Complete Yet') === s.filterStatus);
   if(s.filterCategory) rows = rows.filter(m => m._req.kategori === s.filterCategory);
+  if(s.filterDari)   rows = rows.filter(m => (m._req.created_at||'').slice(0,10) >= s.filterDari);
+  if(s.filterSampai) rows = rows.filter(m => (m._req.created_at||'').slice(0,10) <= s.filterSampai);
 
   // Sorting: 'created_at' (default) or any payment column key, plus 'kode'/'pemesan'
   const dir = s.dir === 'asc' ? 1 : -1;
@@ -5872,6 +5905,11 @@ async function viewAdminPaymentsNonGA(c){
             <option value="">Semua Status</option>
             ${NON_GA_STATUSES.map(s=>`<option>${s}</option>`).join('')}
           </select>
+          <div class="flex gap-1" style="align-items:center"><span class="material-symbols-rounded" style="color:var(--text-mut);font-size:20px" title="Filter Tgl Dibuat">event</span>
+            <input type="date" class="input" id="png-filter-dari" title="Dari tanggal (Tgl Dibuat)" style="max-width:155px"/>
+            <span class="muted">s.d.</span>
+            <input type="date" class="input" id="png-filter-sampai" title="Sampai tanggal (Tgl Dibuat)" style="max-width:155px"/>
+          </div>
         </div>
         <div id="paynonga-table-host"></div>
       </div>
@@ -5898,6 +5936,8 @@ async function viewAdminPaymentsNonGA(c){
 
   $('#png-search').addEventListener('input', e => { _payNonGAState.search = e.target.value.toLowerCase(); _payNonGAState.page = 1; renderPaymentsNonGATable(host); });
   $('#png-filter-status').addEventListener('change', e => { _payNonGAState.filterStatus = e.target.value; _payNonGAState.page = 1; renderPaymentsNonGATable(host); });
+  $('#png-filter-dari').addEventListener('change', e => { _payNonGAState.filterDari = e.target.value; _payNonGAState.page = 1; renderPaymentsNonGATable(host); });
+  $('#png-filter-sampai').addEventListener('change', e => { _payNonGAState.filterSampai = e.target.value; _payNonGAState.page = 1; renderPaymentsNonGATable(host); });
   $('#png-refresh').addEventListener('click', () => load());
   $('#png-csv').addEventListener('click', () => {
     const rows = filterPaymentsNonGA().map(m => ({
@@ -5929,6 +5969,8 @@ function filterPaymentsNonGA(){
     );
   }
   if(s.filterStatus) rows = rows.filter(m => (m.non_ga_status||'On Progress') === s.filterStatus);
+  if(s.filterDari)   rows = rows.filter(m => (m._req.created_at||'').slice(0,10) >= s.filterDari);
+  if(s.filterSampai) rows = rows.filter(m => (m._req.created_at||'').slice(0,10) <= s.filterSampai);
   const dir = s.dir === 'asc' ? 1 : -1;
   const getVal = (m) => {
     if(s.sort === 'kode') return (m._req.kode_permintaan||'').toLowerCase();
@@ -8282,14 +8324,14 @@ function openKaryawanEdit(id, divisi, departemen, karyawan, onDone){
   const depOptions = (divId)=> departemen.filter(d=>!divId || d.divisi_id===divId);
   openModal(`
     <div class="modal-head"><h3>${isNew?'Tambah':'Edit'} Karyawan</h3><button class="btn-icon" onclick="closeModal()"><span class="material-symbols-rounded">close</span></button></div>
-    <div class="modal-body"><form id="kar-form"><div class="form-grid">
+    <div class="modal-body"><form id="kar-form"><div class="form-grid cols-3">
       <div class="field full field-required"><label>Nama Karyawan</label><input class="input" name="nama" value="${escapeHtml(k.nama||'')}" required/></div>
       <div class="field"><label>Jabatan</label><input class="input" name="jabatan" value="${escapeHtml(k.jabatan||'')}" placeholder="Mis. Staff GA"/></div>
       <div class="field"><label>Status</label><select class="select" name="active"><option value="true" ${k.active!==false?'selected':''}>Aktif</option><option value="false" ${k.active===false?'selected':''}>Nonaktif</option></select></div>
       <div class="field field-required"><label>Divisi</label><select class="select sel-search" name="divisi_id" id="kar-div"><option value="">— pilih —</option>${divisi.map(d=>`<option value="${d.id}" ${k.divisi_id===d.id?'selected':''}>${escapeHtml(d.name)}</option>`).join('')}</select></div>
       <div class="field field-required"><label>Departemen</label><select class="select sel-search" name="departemen_id" id="kar-dep"><option value="">— pilih —</option>${depOptions(k.divisi_id).map(d=>`<option value="${d.id}" ${k.departemen_id===d.id?'selected':''}>${escapeHtml(d.name)}</option>`).join('')}</select></div>
     </div></form></div>
-    <div class="modal-foot"><button class="btn btn-ghost" onclick="closeModal()">Batal</button><button class="btn btn-primary" id="kar-save"><span class="material-symbols-rounded">save</span>Simpan</button></div>`, 'lg');
+    <div class="modal-foot"><button class="btn btn-ghost" onclick="closeModal()">Batal</button><button class="btn btn-primary" id="kar-save"><span class="material-symbols-rounded">save</span>Simpan</button></div>`, 'xl');
 
   // Departemen mengikuti Divisi terpilih
   $('#kar-div').addEventListener('change', e=>{
@@ -8855,7 +8897,7 @@ async function viewAdminKendaraan(c){
         <button class="btn-icon" onclick="closeModal()"><span class="material-symbols-rounded">close</span></button>
       </div>
       <div class="modal-body">
-        <div class="form-grid">
+        <div class="form-grid cols-3">
           <div class="field field-required"><label>Nama Driver</label><input class="input" id="ko-f-driver" value="${escapeHtml(v.nama_driver||'')}"/></div>
           <div class="field"><label>No. HP</label><input class="input" id="ko-f-hp" value="${escapeHtml(v.no_hp||'')}"/></div>
           <div class="field field-required"><label>Nomor Polisi</label><input class="input" id="ko-f-nopol" value="${escapeHtml(v.nomor_polisi||'')}"/></div>
@@ -8923,7 +8965,7 @@ async function viewAdminKendaraan(c){
 
     $$('button[data-ko-edit]', host).forEach(b => b.addEventListener('click', () => {
       const item = filtered.find(x => x.id === b.dataset.koEdit);
-      openModal(modalForm(item), 'lg');
+      openModal(modalForm(item), 'xl');
       $('#ko-save').addEventListener('click', async () => {
         const row = readForm();
         if(!row.nama_driver){ toast('Nama driver wajib','warn'); return; }
@@ -8948,7 +8990,7 @@ async function viewAdminKendaraan(c){
 
   $('#ko-search').addEventListener('input', refresh);
   $('#ko-add').addEventListener('click', () => {
-    openModal(modalForm(null), 'lg');
+    openModal(modalForm(null), 'xl');
     $('#ko-save').addEventListener('click', async () => {
       const row = readForm();
       if(!row.nama_driver){ toast('Nama driver wajib','warn'); return; }
