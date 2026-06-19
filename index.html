@@ -9042,9 +9042,11 @@ async function viewAdminKendaraan(c){
 /* ============================================================
    v2.0: MANAJEMEN ANGGARAN
    Funds (kategori anggaran), top-up, CDP bulanan, dan laporan realisasi.
-   Realisasi = jumlah Grand Total pembayaran (anggaran GA) yang ditautkan
-   ke fund. Mengikuti format reporting 2024 (Anggaran vs Realisasi, by Fund,
-   CDP Rencana vs Realisasi, distribusi Invoice/Kas Kecil, by Lokasi).
+   Realisasi = Grand Total item berstatus 'Paid'. Forecast = seluruh item
+   (Not Complete Yet → Paid). Outstanding = item belum 'Submitted'/'Paid' &
+   berusia > 30 hari kalender. Tagihan Rutin GA & Petty Cash Fund GA dihitung
+   pada Forecast & Realisasi. Mengikuti format reporting 2024 (by Fund, CDP,
+   distribusi Invoice/Kas Kecil, by Lokasi).
    ============================================================ */
 const _BULAN = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
 function payGrandTotal(m){
@@ -9082,35 +9084,45 @@ async function viewAdminAnggaran(c){
   const idByName = {}; funds.forEach(f => { idByName[f.name] = f.id; });
   const anggaranByFund = {}; funds.forEach(f => anggaranByFund[f.id] = 0);
   topups.forEach(t => { if(anggaranByFund[t.fund_id]!==undefined) anggaranByFund[t.fund_id] += (Number(t.nominal)||0); });
-  const realisasiByFund = {}; funds.forEach(f => realisasiByFund[f.id] = 0);
-  let unassignedRealisasi = 0;
+  // v3.0.4: pemisahan Realisasi (Paid) vs Forecast (semua status) vs Outstanding (belum Submitted/Paid & >30 hari kalender).
+  const forecastByFund    = {}; funds.forEach(f => forecastByFund[f.id]    = 0);
+  const realisasiByFund   = {}; funds.forEach(f => realisasiByFund[f.id]   = 0);
+  const outstandingByFund = {}; funds.forEach(f => outstandingByFund[f.id] = 0);
+  let unassignedForecast = 0, unassignedRealisasi = 0, unassignedOutstanding = 0;
+  const _now = Date.now();
+  const _ageDays = (m)=>{ const dk=(m._req&&m._req.created_at)||m.submit_date||m.invoice_date||null; return dk ? (_now-new Date(dk).getTime())/86400000 : 0; };
   merged.forEach(m => {
     const gt = payGrandTotal(m);
-    const fid = idByName[m.mata_anggaran];   // payment stores the Mata Anggaran NAME
-    if(fid && realisasiByFund[fid] !== undefined) realisasiByFund[fid] += gt;
-    else unassignedRealisasi += gt;
+    const st = m.ga_payment_status || 'Not Complete Yet';
+    const fid = idByName[m.mata_anggaran];          // payment stores the Mata Anggaran NAME
+    const known = fid && forecastByFund[fid] !== undefined;
+    // Forecast = SEMUA status (Not Complete Yet → Paid)
+    if(known) forecastByFund[fid] += gt; else unassignedForecast += gt;
+    // Realisasi = hanya status 'Paid'
+    if(st === 'Paid'){ if(known) realisasiByFund[fid] += gt; else unassignedRealisasi += gt; }
+    // Outstanding = belum 'Submitted' maupun 'Paid' DAN usia > 30 hari kalender
+    if(st !== 'Submitted' && st !== 'Paid' && _ageDays(m) > 30){ if(known) outstandingByFund[fid] += gt; else unassignedOutstanding += gt; }
   });
-  // v2.3: tagihan rutin GA menambah realisasi (di-match by Mata Anggaran name).
-  // Dilacak terpisah (realisasiRutin*) agar pelaporan tetap bisa membedakannya.
+  // Tagihan rutin GA & petty cash Fund GA = pengeluaran yang sudah/komit terjadi →
+  // dihitung pada Forecast & Realisasi (tidak masuk Outstanding).
   let realisasiRutinTotal = 0;
   recurringGA.forEach(rp => {
-    const gt = Number(rp.nominal)||0;
-    realisasiRutinTotal += gt;
+    const gt = Number(rp.nominal)||0; realisasiRutinTotal += gt;
     const fid = idByName[rp.mata_anggaran];
-    if(fid && realisasiByFund[fid] !== undefined) realisasiByFund[fid] += gt;
-    else unassignedRealisasi += gt;
+    if(fid && forecastByFund[fid] !== undefined){ forecastByFund[fid] += gt; realisasiByFund[fid] += gt; }
+    else { unassignedForecast += gt; unassignedRealisasi += gt; }
   });
-  // v2.4: petty cash Fund GA juga menambah realisasi (match by Mata Anggaran name), dilacak terpisah.
   let realisasiPettyTotal = 0;
   pettyGA.forEach(p => {
-    const gt = Number(p.nominal)||0;
-    realisasiPettyTotal += gt;
+    const gt = Number(p.nominal)||0; realisasiPettyTotal += gt;
     const fid = idByName[p.mata_anggaran];
-    if(fid && realisasiByFund[fid] !== undefined) realisasiByFund[fid] += gt;
-    else unassignedRealisasi += gt;
+    if(fid && forecastByFund[fid] !== undefined){ forecastByFund[fid] += gt; realisasiByFund[fid] += gt; }
+    else { unassignedForecast += gt; unassignedRealisasi += gt; }
   });
-  const totalAnggaran = Object.values(anggaranByFund).reduce((a,b)=>a+b,0);
-  const totalRealisasi = Object.values(realisasiByFund).reduce((a,b)=>a+b,0) + unassignedRealisasi;
+  const totalAnggaran    = Object.values(anggaranByFund).reduce((a,b)=>a+b,0);
+  const totalForecast    = Object.values(forecastByFund).reduce((a,b)=>a+b,0) + unassignedForecast;
+  const totalRealisasi   = Object.values(realisasiByFund).reduce((a,b)=>a+b,0) + unassignedRealisasi;
+  const totalOutstanding = Object.values(outstandingByFund).reduce((a,b)=>a+b,0) + unassignedOutstanding;
   const totalSisa = totalAnggaran - totalRealisasi;
   const pct = totalAnggaran>0 ? Math.round(totalRealisasi/totalAnggaran*100) : 0;
 
@@ -9142,12 +9154,16 @@ async function viewAdminAnggaran(c){
     <div class="adm-stat-grid">
       <div class="stat-card"><div class="stat-icon" style="background:#FEF3C7;color:#92400E"><span class="material-symbols-rounded">savings</span></div>
         <div class="stat-body"><span class="stat-label">Total Anggaran</span><span class="stat-value" style="font-size:17px">${fmtRupiah(totalAnggaran)}</span></div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:#DBEAFE;color:#1E40AF"><span class="material-symbols-rounded">query_stats</span></div>
+        <div class="stat-body"><span class="stat-label">Forecast (semua status)</span><span class="stat-value" style="font-size:17px">${fmtRupiah(totalForecast)}</span></div></div>
       <div class="stat-card"><div class="stat-icon" style="background:#FEE2E2;color:#991B1B"><span class="material-symbols-rounded">trending_down</span></div>
-        <div class="stat-body"><span class="stat-label">Total Realisasi</span><span class="stat-value" style="font-size:17px">${fmtRupiah(totalRealisasi)}</span></div></div>
+        <div class="stat-body"><span class="stat-label">Realisasi (Paid)</span><span class="stat-value" style="font-size:17px">${fmtRupiah(totalRealisasi)}</span></div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:#FFEDD5;color:#9A3412"><span class="material-symbols-rounded">hourglass_top</span></div>
+        <div class="stat-body"><span class="stat-label">Outstanding (&gt;30 hari)</span><span class="stat-value" style="font-size:17px">${fmtRupiah(totalOutstanding)}</span></div></div>
       <div class="stat-card"><div class="stat-icon green"><span class="material-symbols-rounded">account_balance_wallet</span></div>
         <div class="stat-body"><span class="stat-label">Sisa Anggaran</span><span class="stat-value" style="font-size:17px">${fmtRupiah(totalSisa)}</span></div></div>
       <div class="stat-card"><div class="stat-icon purple"><span class="material-symbols-rounded">percent</span></div>
-        <div class="stat-body"><span class="stat-label">Terpakai</span><span class="stat-value">${pct}%</span></div></div>
+        <div class="stat-body"><span class="stat-label">Terpakai (Realisasi)</span><span class="stat-value">${pct}%</span></div></div>
     </div>
 
     <div class="card" style="margin-top:14px">
@@ -9158,27 +9174,30 @@ async function viewAdminAnggaran(c){
       <div class="card-body">
         <div class="table-wrap"><table class="t t-dense">
           <thead><tr>
-            <th>Fund</th><th style="text-align:right">Anggaran</th><th style="text-align:right">Realisasi</th>
-            <th style="text-align:right">Sisa</th><th style="width:140px">Terpakai</th><th style="width:160px;text-align:right">Aksi</th>
+            <th>Fund</th><th style="text-align:right">Anggaran</th><th style="text-align:right">Forecast</th><th style="text-align:right">Realisasi</th><th style="text-align:right">Outstanding</th>
+            <th style="text-align:right">Sisa</th><th style="width:120px">Terpakai</th><th style="width:80px;text-align:right">Aksi</th>
           </tr></thead>
           <tbody>
           ${funds.length ? funds.map(f=>{
-            const ang = anggaranByFund[f.id]||0, real = realisasiByFund[f.id]||0, sisa = ang-real;
+            const ang = anggaranByFund[f.id]||0, fore = forecastByFund[f.id]||0, real = realisasiByFund[f.id]||0, outs = outstandingByFund[f.id]||0, sisa = ang-real;
             const p = ang>0 ? Math.min(100, Math.round(real/ang*100)) : 0;
             const barColor = p>=90 ? '#DC2626' : (p>=70 ? '#F59E0B' : '#00A859');
             return `<tr>
               <td><strong>${escapeHtml(f.name)}</strong>${f.active===false?' <span class="badge status-ditolak">nonaktif</span>':''}${f.keterangan?`<div class="muted text-sm">${escapeHtml(f.keterangan)}</div>`:''}</td>
               <td style="text-align:right">${fmtRupiah(ang)}</td>
+              <td style="text-align:right;color:#1E40AF">${fmtRupiah(fore)}</td>
               <td style="text-align:right">${fmtRupiah(real)}</td>
+              <td style="text-align:right;color:${outs>0?'#9A3412':'inherit'}">${outs>0?fmtRupiah(outs):'—'}</td>
               <td style="text-align:right;color:${sisa<0?'#DC2626':'inherit'}">${fmtRupiah(sisa)}</td>
               <td><div style="height:8px;border-radius:6px;background:#EDF1F7;overflow:hidden"><div style="height:100%;width:${p}%;background:${barColor}"></div></div><span class="text-sm muted">${p}%</span></td>
               <td style="text-align:right;white-space:nowrap">
                 <button class="btn-icon" data-ang-topup="${f.id}" title="Top-up anggaran" style="color:var(--mrt-green)"><span class="material-symbols-rounded">add_card</span></button>
               </td>
             </tr>`;
-          }).join('') : `<tr><td colspan="6" class="empty-row">Belum ada Mata Anggaran. Tambahkan di Master Data → Anggaran.</td></tr>`}
-          ${unassignedRealisasi>0?`<tr style="background:#FEF9F2"><td><em>Tanpa mata anggaran</em></td><td style="text-align:right">—</td><td style="text-align:right">${fmtRupiah(unassignedRealisasi)}</td><td colspan="3" class="muted text-sm">Tetapkan "Number Fund (Mata Anggaran)" pada pembayaran terkait via menu Payment.</td></tr>`:''}
+          }).join('') : `<tr><td colspan="8" class="empty-row">Belum ada Mata Anggaran. Tambahkan di Master Data → Anggaran.</td></tr>`}
+          ${unassignedForecast>0?`<tr style="background:#FEF9F2"><td><em>Tanpa mata anggaran</em></td><td style="text-align:right">—</td><td style="text-align:right;color:#1E40AF">${fmtRupiah(unassignedForecast)}</td><td style="text-align:right">${fmtRupiah(unassignedRealisasi)}</td><td style="text-align:right;color:#9A3412">${unassignedOutstanding>0?fmtRupiah(unassignedOutstanding):'—'}</td><td colspan="3" class="muted text-sm">Tetapkan "Number Fund (Mata Anggaran)" pada pembayaran terkait via menu Payment.</td></tr>`:''}
           </tbody></table></div>
+        <p class="muted text-sm" style="margin-top:10px"><span class="material-symbols-rounded" style="font-size:16px;vertical-align:-3px">info</span> <strong>Realisasi</strong> = item berstatus <em>Paid</em>. &nbsp;<strong>Forecast</strong> = seluruh item (Not Complete Yet → Paid). &nbsp;<strong>Outstanding</strong> = item yang belum <em>Submitted</em>/<em>Paid</em> &amp; berusia &gt; 30 hari kalender. Tagihan Rutin &amp; Petty Cash Fund GA dihitung pada Forecast &amp; Realisasi. <strong>Sisa</strong> = Anggaran − Realisasi.</p>
       </div>
     </div>
 
@@ -9246,6 +9265,7 @@ async function viewAdminAnggaran(c){
       data:{ labels:fundLabels.map(l=>l.length>16?l.slice(0,15)+'…':l),
         datasets:[
           {label:'Anggaran', data:funds.map(f=>anggaranByFund[f.id]||0), backgroundColor:'#D9B26A', borderRadius:6},
+          {label:'Forecast', data:funds.map(f=>forecastByFund[f.id]||0), backgroundColor:'#1F5C99', borderRadius:6},
           {label:'Realisasi', data:funds.map(f=>realisasiByFund[f.id]||0), backgroundColor:'#C9622B', borderRadius:6}
         ]},
       options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11}}},tooltip:{callbacks:{label:(x)=>x.dataset.label+': '+fmtRupiah(x.parsed.y)}}},scales:{x:{ticks:{font:{size:9}}},y:{beginAtZero:true,ticks:{callback:v=>'Rp '+Number(v).toLocaleString('id-ID'),font:{size:8}}}}}
