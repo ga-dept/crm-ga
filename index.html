@@ -7461,8 +7461,8 @@ function pcSppDocHtml(d){
   const _dataRow=(l)=>`<tr style="border-bottom:1px solid #000;">
         <td style="padding:2px;text-align:center;border-bottom:1px solid #000;">${accRow(String(l.kode_akun||'').split(''))}</td>
         <td style="padding:2px;text-align:center;border-bottom:1px solid #000;">${escapeHtml(l.cost_center||'')}</td>
-        <td style="padding:2px;text-align:center;border-bottom:1px solid #000;">${escapeHtml(l.nomor_kegiatan||'')}</td>
-        <td style="padding:2px;text-align:left;border-bottom:1px solid #000;">${escapeHtml(l.uraian||'')}</td>
+        <td style="padding:2px;text-align:center;vertical-align:middle;word-break:break-word;overflow-wrap:anywhere;border-bottom:1px solid #000;">${escapeHtml(l.nomor_kegiatan||'')}</td>
+        <td style="padding:2px;text-align:center;vertical-align:middle;word-break:break-word;overflow-wrap:anywhere;border-bottom:1px solid #000;">${escapeHtml(l.uraian||'')}</td>
         <td style="padding:2px;text-align:right;border-bottom:1px solid #000;white-space:nowrap;">Rp &nbsp;&nbsp; ${(Number(l.jumlah)||0).toLocaleString('id-ID')}</td></tr>`;
   const _pad = Math.max(0, 5 - _lines.length);
   const _rowsHtml = _lines.map(_dataRow).join('') + Array.from({length:_pad}).map(()=>emptyRow).join('');
@@ -7490,7 +7490,7 @@ function pcSppDocHtml(d){
       <tr style="border-bottom:1px solid #000;"><td rowspan="${_rspan}" style="width:20px;vertical-align:top;padding:2px 2px 0 0;font-weight:700;">3.</td>
         <th style="text-align:center;width:100px;padding:2px;border-bottom:1px solid #000;">Kode Akun</th>
         <th style="text-align:center;width:75px;padding:2px;border-bottom:1px solid #000;">Cost Center</th>
-        <th style="text-align:center;width:60px;padding:2px;border-bottom:1px solid #000;">Nomor Kegiatan</th>
+        <th style="text-align:center;width:82px;padding:2px;border-bottom:1px solid #000;word-break:break-word;">Nomor Kegiatan</th>
         <th style="text-align:center;padding:2px;border-bottom:1px solid #000;">Uraian Pengeluaran</th>
         <th style="text-align:center;width:110px;padding:2px;border-bottom:1px solid #000;">Jumlah yang Diminta</th></tr>
       ${_rowsHtml}
@@ -7503,12 +7503,12 @@ function pcSppDocHtml(d){
     <table style="border-collapse:collapse;width:100%;font-size:9px;margin-bottom:5px;table-layout:fixed;">
       <tr><th style="border:1px solid #000;border-bottom:none;padding:2px;text-align:center;width:50%;">Disetujui oleh</th><th style="border:1px solid #000;border-bottom:none;padding:2px;text-align:center;width:50%;">Diajukan oleh</th></tr>
       <tr><td style="border:1px solid #000;border-top:none;border-bottom:none;height:64px;vertical-align:bottom;padding:4px 10px 6px;"><div style="border-bottom:1px solid #000;width:70%;margin:0 auto;"></div></td><td style="border:1px solid #000;border-top:none;border-bottom:none;height:64px;vertical-align:bottom;padding:4px 10px 6px;"><div style="border-bottom:1px solid #000;width:70%;margin:0 auto;"></div></td></tr>
-      <tr><td style="border:1px solid #000;border-top:none;text-align:center;padding:2px;"><div style="font-size:8px;font-style:italic;">General Affair Department Head</div><div style="font-weight:600;">M. Ardhan Rafsanjani</div></td><td style="border:1px solid #000;border-top:none;text-align:center;padding:2px;"><div style="font-weight:600;">${escapeHtml(d.pic||'Siti Zahratus Sholihat')}</div></td></tr></table>
+      <tr><td style="border:1px solid #000;border-top:none;text-align:center;padding:2px;"><div style="font-size:8px;font-style:italic;">${escapeHtml(d.dh_title||'General Affair Department Head')}</div><div style="font-weight:600;">${escapeHtml(d.dh_name||'M. Ardhan Rafsanjani')}</div></td><td style="border:1px solid #000;border-top:none;text-align:center;padding:2px;"><div style="font-weight:600;">${escapeHtml(d.pic||'Siti Zahratus Sholihat')}</div></td></tr></table>
     <div style="font-size:9px;margin-bottom:2px;">Persetujuan Permintaan Pembayaran :</div>
     <table style="border-collapse:collapse;width:100%;font-size:9px;table-layout:fixed;">
       <tr><th style="border:1px solid #000;border-bottom:none;padding:2px;text-align:center;width:50%;">Disetujui oleh</th><th style="border:1px solid #000;border-bottom:none;padding:2px;text-align:center;width:50%;">Diverifikasi oleh</th></tr>
       <tr><td style="border:1px solid #000;border-top:none;border-bottom:none;height:64px;vertical-align:bottom;padding:4px 10px 6px;"><div style="border-bottom:1px solid #000;width:70%;margin:0 auto;"></div></td><td style="border:1px solid #000;border-top:none;border-bottom:none;height:64px;vertical-align:bottom;padding:4px 10px 6px;"><div style="border-bottom:1px solid #000;width:70%;margin:0 auto;"></div></td></tr>
-      <tr><td style="border:1px solid #000;border-top:none;text-align:center;padding:2px;">&nbsp;</td><td style="border:1px solid #000;border-top:none;text-align:center;padding:2px;">&nbsp;</td></tr></table>
+      <tr><td style="border:1px solid #000;border-top:none;text-align:center;padding:2px;"><div style="font-weight:600;">${escapeHtml(d.appr2_name||'')}</div></td><td style="border:1px solid #000;border-top:none;text-align:center;padding:2px;"><div style="font-weight:600;">${escapeHtml(d.verif_name||'')}</div></td></tr></table>
   </div>`;
 }
 /* v2.8: generator nomor SPP berurutan — format NNN/SPP/GA-MRT/<bulan romawi>/<tahun> */
@@ -7518,13 +7518,27 @@ function pcGenSppNo(){
   (_pcCache.reimburse||[]).forEach(r=>{ const m=String(r.no_spp||'').match(/^\s*(\d+)/); if(m){ const n=parseInt(m[1],10); if(n>max) max=n; } });
   return String(max+1).padStart(3,'0')+'/SPP/GA-MRT/'+roman[now.getMonth()+1]+'/'+now.getFullYear();
 }
+/* v3.0.3: penandatangan SPP dapat diubah (mis. pergantian Kepala Departemen). Disimpan di pc_dropdown grup 'spp_ttd' — tanpa tabel baru. */
+function pcSppTtd(){
+  const row=(_pcCache.dropdown||[]).find(d=>d.grup==='spp_ttd');
+  let o={}; if(row){ try{ o=JSON.parse(row.nilai||'{}'); }catch(_){ o={}; } }
+  return Object.assign({ dh_title:'General Affair Department Head', dh_name:'M. Ardhan Rafsanjani', pic_name:'Siti Zahratus Sholihat', appr2_name:'', verif_name:'' }, o);
+}
+async function pcSppTtdSave(o){
+  const row=(_pcCache.dropdown||[]).find(d=>d.grup==='spp_ttd');
+  if(row) await pcdb.update('dropdown', row.id, { nilai: JSON.stringify(o) });
+  else await pcdb.insert('dropdown', { grup:'spp_ttd', nilai: JSON.stringify(o) });
+  await pcLoadAll();
+}
 function pcRenderSPP(host){
   const opts = _pcCache.reimburse;
   let cur = _pcSppData || opts[0] || {};
   let noSpp = (cur.no_spp||'').trim() || pcGenSppNo();
   const defaultLine = (c)=>({ kode_akun:(c&&c.kode_akun)||'610112004', cost_center:(c&&c.cost_center)||'MJ00053200', nomor_kegiatan:(c&&c.nomor_kegiatan)||'', uraian:(c&&(c.uraian||c.kegiatan))||'', jumlah:Number(c&&c.nominal)||0 });
   if(!Array.isArray(_pcSppLines) || !_pcSppLines.length) _pcSppLines = [defaultLine(cur)];
-  const docData = ()=>Object.assign({}, cur, { no_spp:noSpp, lines:_pcSppLines });
+  let ttd = pcSppTtd(); if(cur && cur.pic && ttd.pic_name==='Siti Zahratus Sholihat') ttd.pic_name = cur.pic;
+  const docData = ()=>Object.assign({}, cur, { no_spp:noSpp, lines:_pcSppLines,
+    dh_title:ttd.dh_title, dh_name:ttd.dh_name, pic:ttd.pic_name, appr2_name:ttd.appr2_name, verif_name:ttd.verif_name });
   host.innerHTML = `
     <div class="card"><div class="card-body">
       <div class="flex gap-2 mb-3" style="flex-wrap:wrap;align-items:center">
@@ -7547,6 +7561,20 @@ function pcRenderSPP(host){
         <tfoot><tr style="font-weight:700"><td colspan="4" style="text-align:right">Total</td><td style="text-align:right" id="pc-spp-line-total" class="mono">Rp 0</td><td></td></tr></tfoot>
         </table></div>
         <p class="muted text-sm" style="margin:8px 0 0"><span class="material-symbols-rounded" style="font-size:16px;vertical-align:-3px">info</span> Baris di sini mengisi tabel <strong>Kode Akun / Uraian Pengeluaran</strong> dan <strong>Total</strong> pada dokumen SPP di bawah. Tambah, ubah, atau hapus baris sesuai kebutuhan.</p>
+      </div></div>
+
+      <div class="card" style="margin:0 0 14px;border:1px solid var(--border)"><div class="card-head" style="padding:10px 14px">
+        <h3 style="font-size:14px"><span class="material-symbols-rounded" style="vertical-align:-5px;color:var(--mrt-blue);font-size:19px">draw</span> Penandatangan SPP</h3>
+        <button class="btn btn-primary btn-sm" id="pc-spp-ttd-save"><span class="material-symbols-rounded" style="font-size:18px">save</span>Simpan Penandatangan</button>
+      </div><div class="card-body" style="padding:12px 14px">
+        <div class="form-grid cols-3">
+          <div class="field"><label>Disetujui oleh — Jabatan</label><input class="input pc-ttd" id="ttd-dh-title" data-k="dh_title" value="${escapeHtml(ttd.dh_title)}"/></div>
+          <div class="field"><label>Disetujui oleh — Nama (Kepala Departemen GA)</label><input class="input pc-ttd" id="ttd-dh-name" data-k="dh_name" value="${escapeHtml(ttd.dh_name)}"/></div>
+          <div class="field"><label>Diajukan oleh — Nama</label><input class="input pc-ttd" id="ttd-pic" data-k="pic_name" value="${escapeHtml(ttd.pic_name)}"/></div>
+          <div class="field"><label>Persetujuan — Disetujui oleh (Nama)</label><input class="input pc-ttd" id="ttd-appr2" data-k="appr2_name" value="${escapeHtml(ttd.appr2_name)}"/></div>
+          <div class="field"><label>Persetujuan — Diverifikasi oleh (Nama)</label><input class="input pc-ttd" id="ttd-verif" data-k="verif_name" value="${escapeHtml(ttd.verif_name)}"/></div>
+        </div>
+        <p class="muted text-sm" style="margin:8px 0 0"><span class="material-symbols-rounded" style="font-size:16px;vertical-align:-3px">info</span> Nama penandatangan tersimpan & dipakai untuk semua SPP. Ubah di sini saat ada <strong>pergantian Kepala Departemen</strong>, lalu klik <strong>Simpan Penandatangan</strong>.</p>
       </div></div>
 
       <div style="background:#eef1f6;padding:14px;border-radius:10px;overflow:auto"><div id="pc-spp-mount" style="box-shadow:0 4px 18px rgba(0,0,0,.12)">${pcSppDocHtml(docData())}</div></div>
@@ -7605,6 +7633,12 @@ function pcRenderSPP(host){
     w.document.write(`<!DOCTYPE html><html><head><title>SPP</title><meta charset="utf-8"><style>@page{size:A4 portrait;margin:0}body{margin:0}@media print{body{-webkit-print-color-adjust:exact}}</style></head><body onload="window.print()">${html}</body></html>`);
     w.document.close();
     pcdb.log('spp.print', (cur&&cur.kode)||'');
+  });
+  $$('.pc-ttd', host).forEach(inp=>inp.addEventListener('input', e=>{ ttd[e.target.dataset.k]=e.target.value; renderDoc(); }));
+  const ttdBtn=$('#pc-spp-ttd-save'); if(ttdBtn) ttdBtn.addEventListener('click', async ()=>{
+    if(!pcCanManage()){ toast('Anda tidak punya izin mengubah data petty cash','warn'); return; }
+    try{ await pcSppTtdSave({ dh_title:ttd.dh_title, dh_name:ttd.dh_name, pic_name:ttd.pic_name, appr2_name:ttd.appr2_name, verif_name:ttd.verif_name }); toast('Penandatangan SPP tersimpan','success'); }
+    catch(err){ toast('Gagal menyimpan: '+(err.message||''),'error'); }
   });
 }
 
@@ -9815,15 +9849,20 @@ async function viewAdminSlaTargets(c){
         <td><span class="tag">${escapeHtml(s.key)}</span></td>
         <td>${t?`<strong style="color:var(--mrt-blue)">${t.sla_hours}</strong> <span class="text-sm muted">(≈ ${fmtDurationHours(t.sla_hours)})</span>`:'<span class="text-sm muted">— belum diset —</span>'}</td>
         <td><span class="text-sm muted">${t&&t.updated_at?fmtDateTime(t.updated_at):'—'}</span></td>
-        <td style="text-align:right">${t?`<button class="btn-icon" data-pcsla="${t.id}" title="Edit"><span class="material-symbols-rounded">edit</span></button>`:`<button class="btn btn-sm btn-primary" data-pcnew="${s.key}">Set</button>`}</td>
+        <td style="text-align:right">${t?`<button class="btn-icon" data-pcsla="${t.id}" title="Edit"><span class="material-symbols-rounded">edit</span></button><button class="btn-icon" data-pcsladel="${t.id}" title="Hapus"><span class="material-symbols-rounded">delete</span></button>`:`<button class="btn btn-sm btn-primary" data-pcnew="${s.key}">Set</button>`}</td>
       </tr>`; }).join('')}
       </tbody></table></div>
       <p class="muted text-sm" style="margin-top:8px"><span class="material-symbols-rounded" style="font-size:16px;vertical-align:-3px">info</span> SLA <strong>PIC Loket</strong> (dan tahap lain) diatur di baris ini. Bila tombol <em>Set</em> gagal, tabel <code>pc_sla_targets</code> belum dibuat — jalankan SQL migrasi Workflow Petty Cash.</p>`;
     $$('button[data-pcsla]', host).forEach(b=>b.addEventListener('click', ()=>{ const t=rows.find(x=>x.id===b.dataset.pcsla); openPcSlaEdit(t, renderPcSla); }));
+    $$('button[data-pcsladel]', host).forEach(b=>b.addEventListener('click', async ()=>{
+      if(!confirm('Hapus target SLA tahap ini?')) return;
+      try{ await pcdb.remove('sla_targets', b.dataset.pcsladel); toast('SLA tahap dihapus','success'); renderPcSla(); }
+      catch(err){ toast('Gagal menghapus: '+(err.message||''),'error'); }
+    }));
     $$('button[data-pcnew]', host).forEach(b=>b.addEventListener('click', async ()=>{
       const key=b.dataset.pcnew; const def=PC_WF.find(s=>s.key===key);
       try{ await pcdb.insert('sla_targets', { stage:key, label:def?def.label:key, sla_hours:defH[key]||24, updated_at:new Date().toISOString() }); toast('SLA tahap dibuat','success'); renderPcSla(); }
-      catch(err){ toast('Gagal (jalankan SQL migrasi dulu): '+(err.message||''),'error'); }
+      catch(err){ toast('Gagal menyimpan SLA: '+(err.message||'')+' — jika "violates RLS policy", jalankan migrasi v3 (menonaktifkan RLS pc_sla_targets).','error'); }
     }));
   }
   function openPcSlaEdit(t, onDone){
