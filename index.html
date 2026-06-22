@@ -198,6 +198,7 @@ button{font-family:inherit;cursor:pointer}
   backdrop-filter:blur(2px);
 }
 .modal-backdrop.show{display:flex;animation:fadeIn .2s ease}
+#modal-content{width:100%;display:flex;justify-content:center}
 .modal{
   background:#fff;border-radius:18px;
   width:100%;max-width:820px;
@@ -1282,6 +1283,7 @@ table.t{
             <a class="nav-item" data-route="payments_nonga"><span class="material-symbols-rounded">request_quote</span><span class="nav-label">Payment Non-GA</span></a>
             <a class="nav-item" data-route="recurring"><span class="material-symbols-rounded">event_repeat</span><span class="nav-label">Pembayaran Rutin</span></a>
             <a class="nav-item" data-route="petty"><span class="material-symbols-rounded">account_balance_wallet</span><span class="nav-label">Petty Cash</span></a>
+            <a class="nav-item" data-route="vendor"><span class="material-symbols-rounded">store</span><span class="nav-label">Manajemen Vendor</span></a>
             <a class="nav-item" data-route="anggaran" data-allowed-roles="superadmin,admin"><span class="material-symbols-rounded">savings</span><span class="nav-label">Manajemen Anggaran</span></a>
           </div>
         </div>
@@ -1446,6 +1448,7 @@ const ROUTE_ROLES = {
   payments_nonga: ['superadmin','admin','pic','admin_payment'],
   recurring:  ['superadmin','admin','pic','admin_payment'],
   petty:      ['superadmin','admin','pic','admin_payment'],
+  vendor:     ['superadmin','admin','pic','admin_payment'],
   karyawan:   ['superadmin','admin'],
   pettydropdown: ['superadmin','admin'],
   masterdata: ['superadmin','admin'],
@@ -1466,6 +1469,7 @@ const PAGE_LABELS = {
   ratings:'Daftar Penilaian', payments:'Payment', anggaran:'Manajemen Anggaran',
   payments_nonga:'Payment Non-GA',
   recurring:'Pembayaran Rutin',
+  vendor:'Manajemen Vendor',
   pc_pic_loket:'Petty Cash — PIC Loket (workflow)',
   pc_pembantu_kas:'Petty Cash — Pembantu Pemegang Kas (workflow)',
   pc_pemegang_kas:'Petty Cash — Pemegang Kas (workflow)',
@@ -1873,7 +1877,15 @@ const demo = (() => {
     {id:'kar5', nama:'Zamal Ardika', divisi_id:'div1', departemen_id:'dep1', jabatan:'Driver', active:true}
   ];
 
-  return { requests, ratings, notifications, lokasi, lokasiKerja, tujuan, users, version, activityLogs, slaTargets, mataAnggaran, divisi, departemen, kategori, kendaraan, karyawan, anggaranFunds, anggaranTopups, cdpPlans, approvals, payments, recurringPayments, seq, todayKey, nextCode };
+  // v3.0.5: Master Vendor
+  const vendorOptions = [
+    {id:'ven1', nama_perusahaan:'PT Telkom Indonesia', nama_pic:'Andi Wijaya',  alamat:'Jl. Japati No. 1, Bandung',       no_hp:'022-4521000',  created_at:iso(today)},
+    {id:'ven2', nama_perusahaan:'PLN (Persero)',        nama_pic:'Siti Aminah',  alamat:'Jl. Trunojoyo Blok M-1, Jakarta', no_hp:'021-7261122',  created_at:iso(today)},
+    {id:'ven3', nama_perusahaan:'Telkomsel',            nama_pic:'Budi Hartono', alamat:'Telkomsel Smart Office, Jakarta', no_hp:'021-52960000', created_at:iso(today)},
+    {id:'ven4', nama_perusahaan:'PT Astragraphia Tbk',  nama_pic:'Rina Kusuma',  alamat:'Jl. Kramat Raya 43, Jakarta',     no_hp:'021-3909190',  created_at:iso(today)}
+  ];
+
+  return { requests, ratings, notifications, lokasi, lokasiKerja, tujuan, users, version, activityLogs, slaTargets, mataAnggaran, divisi, departemen, kategori, kendaraan, karyawan, vendorOptions, anggaranFunds, anggaranTopups, cdpPlans, approvals, payments, recurringPayments, seq, todayKey, nextCode };
 })();
 
 /* ============================================================
@@ -2029,6 +2041,27 @@ const db = {
   async deleteRecurring(id){
     if(!SUPA_CONFIGURED){ demo.recurringPayments = demo.recurringPayments.filter(r => r.id !== id); return; }
     const { error } = await supa.from('recurring_payments').delete().eq('id',id);
+    if(error) throw error;
+  },
+  /* ---- Master Vendor (v3.0.5) ---- */
+  async listVendor(){
+    if(!SUPA_CONFIGURED) return [...demo.vendorOptions].sort((a,b)=>(a.nama_perusahaan||'').localeCompare(b.nama_perusahaan||'','id'));
+    const { data, error } = await supa.from('vendor_options').select('*').order('nama_perusahaan',{ascending:true});
+    if(error) throw error; return data || [];
+  },
+  async insertVendor(payload){
+    if(!SUPA_CONFIGURED){ const row={ id:'ven'+(demo.vendorOptions.length+1)+Date.now(), created_at:new Date().toISOString(), ...payload }; demo.vendorOptions.push(row); return row; }
+    const { data, error } = await supa.from('vendor_options').insert(payload).select().single();
+    if(error) throw error; return data;
+  },
+  async updateVendor(id, patch){
+    if(!SUPA_CONFIGURED){ const i=demo.vendorOptions.findIndex(v=>v.id===id); if(i>=0) demo.vendorOptions[i]={...demo.vendorOptions[i],...patch}; return demo.vendorOptions[i]; }
+    const { data, error } = await supa.from('vendor_options').update(patch).eq('id',id).select().single();
+    if(error) throw error; return data;
+  },
+  async deleteVendor(id){
+    if(!SUPA_CONFIGURED){ demo.vendorOptions = demo.vendorOptions.filter(v=>v.id!==id); return; }
+    const { error } = await supa.from('vendor_options').delete().eq('id',id);
     if(error) throw error;
   },
   // Generic notification insert (dipakai reminder Pembayaran Rutin → bell)
@@ -3115,7 +3148,7 @@ const BACKUP_TABLES = ['app_users','counters','requests','ratings','version_hist
   'lokasi_options','tujuan_options','lokasi_kerja_options','activity_logs','sla_targets',
   'mata_anggaran_options','divisi_options','departemen_options','kategori_options','approvals',
   'payments','kendaraan_options','anggaran_funds','anggaran_topups','cdp_plans','recurring_payments',
-  'pc_reimburse','pc_master','pc_dropdown','pc_relasi','pc_cash','pc_log','karyawan_options'];
+  'pc_reimburse','pc_master','pc_dropdown','pc_relasi','pc_cash','pc_log','karyawan_options','vendor_options'];
 async function downloadBackupZip(){
   if(typeof JSZip === 'undefined'){ toast('Library JSZip belum termuat. Cek koneksi internet.','error'); return; }
   if(!SUPA_CONFIGURED){ toast('Backup per-tabel hanya tersedia saat terhubung ke Supabase.','warn'); return; }
@@ -3950,6 +3983,7 @@ async function renderAdmin(page){
     payments_nonga:'Payment Non-GA',
     recurring:'Pembayaran Rutin',
     petty:'Petty Cash',
+    vendor:'Manajemen Vendor',
     masterdata:'Master Data',
     kategori:'Kategori Pemesanan',
     divisi:'Divisi',
@@ -3991,6 +4025,7 @@ async function renderAdmin(page){
   else if(page==='payments')   await viewAdminPayments(c);
   else if(page==='payments_nonga') await viewAdminPaymentsNonGA(c);
   else if(page==='recurring')  await viewAdminRecurring(c);
+  else if(page==='vendor')     await viewAdminVendor(c);
   else if(page==='petty')      await viewAdminPetty(c);
   else if(page==='anggaran')   await viewAdminAnggaran(c);
   else if(page==='masterdata') await viewAdminMaster(c);
@@ -4814,7 +4849,7 @@ async function openRequestEdit(id){
   if(!mayEdit){ toast('Hanya Superadmin atau PIC yang ditugaskan yang dapat mengubah permintaan ini.','warn'); return; }
   const [lok, tuj, picUsers, ma, divs, deps] = await Promise.all([
     db.listLokasi(), db.listTujuan(), db.listPicUsers(),
-    db.listMataAnggaran(), db.listDivisi(), db.listDepartemen()
+    db.listMataAnggaran(), db.listDivisi(), db.listDepartemen(), loadVendors().catch(()=>[])
   ]);
 
   // Resolve the divisi for the existing departemen (if any), so the dropdown starts correct
@@ -4904,7 +4939,9 @@ async function openRequestEdit(id){
             <span class="hint">Wajib diisi. Akan tampil di halaman tracking pemohon.</span>
           </div>
           <div class="field"><label>Total Anggaran (Rp)</label><input class="input" name="total_anggaran" id="ed-anggaran" inputmode="numeric" value="${r.total_anggaran?'Rp '+Number(r.total_anggaran).toLocaleString('id-ID'):''}"/></div>
-          <div class="field"><label>Nama Vendor</label><input class="input" name="nama_vendor" value="${escapeHtml(r.nama_vendor||'')}"/></div>
+          <div class="field"><label>Nama Vendor</label>
+            <select class="select" name="nama_vendor">${vendorOptionsHtml(r.nama_vendor)}</select>
+            <span class="hint">Belum ada? Tambahkan di menu <strong>Manajemen Vendor</strong>.</span></div>
           <div class="field"><label>PIC GA${me?.role === 'pic' ? ' <span class="hint" style="color:var(--text-mut)">(read-only)</span>' : ''}</label>
             <select class="select" name="pic_user_id" id="ed-pic"${me?.role === 'pic' ? ' disabled' : ''}>
               <option value="">— Belum ditugaskan —</option>
@@ -5457,6 +5494,7 @@ async function viewAdminPayments(c){
         <div class="flex gap-2">
           <button class="btn btn-ghost btn-sm" id="pay-refresh"><span class="material-symbols-rounded" style="font-size:18px">refresh</span>Muat Ulang</button>
           <button class="btn btn-ghost btn-sm" id="pay-csv"><span class="material-symbols-rounded" style="font-size:18px">download</span>Download CSV</button>
+          <button class="btn btn-primary btn-sm" id="pay-add"><span class="material-symbols-rounded" style="font-size:18px">add</span>Tambah Tagihan</button>
         </div>
       </div>
       <div class="card-body">
@@ -5518,6 +5556,7 @@ async function viewAdminPayments(c){
   $('#pay-filter-dari').addEventListener('change', e => { _payState.filterDari = e.target.value; _payState.page = 1; renderPaymentsTable(host); });
   $('#pay-filter-sampai').addEventListener('change', e => { _payState.filterSampai = e.target.value; _payState.page = 1; renderPaymentsTable(host); });
   $('#pay-refresh').addEventListener('click', () => load());
+  $('#pay-add').addEventListener('click', () => openTagihanBaru(() => load()));
   $('#pay-csv').addEventListener('click', () => {
     const rows = filterPayments().map(m => {
       const row = { Kode_Permintaan: m._req.kode_permintaan, Pemesan: m._req.nama_pemesan, Status_Permintaan: m._req.status };
@@ -5633,6 +5672,71 @@ function renderPaymentsTable(host){
   }));
 }
 
+/* v3.0.5: Tambah Tagihan langsung di menu Payment — membuat permintaan (Anggaran GA)
+   tanpa melalui form permintaan publik, lalu masuk ke daftar Payment & dapat dilengkapi. */
+async function openTagihanBaru(onDone){
+  const me = session.get();
+  const [funds] = await Promise.all([ db.listMataAnggaran().catch(()=>[]), loadVendors().catch(()=>[]) ]);
+  const katNames = Object.keys(KATEGORI_KODE);
+  const today = new Date().toISOString().slice(0,10);
+  openModal(`
+    <div class="modal-head"><h3><span class="material-symbols-rounded" style="vertical-align:-6px;color:var(--mrt-blue)">receipt_long</span> Tambah Tagihan (Payment)</h3>
+      <button class="btn-icon" onclick="closeModal()"><span class="material-symbols-rounded">close</span></button></div>
+    <div class="modal-body">
+      <div style="margin-bottom:12px;padding:10px 12px;background:var(--mrt-blue-soft);border-radius:10px;font-size:13px">Membuat tagihan/pembayaran langsung (<strong>Anggaran GA</strong>) tanpa melalui form permintaan. Entri akan muncul di daftar Payment dan dapat dilengkapi dokumennya lewat tombol <strong>Edit</strong>.</div>
+      <form id="tg-form"><div class="form-grid">
+        <div class="field field-required"><label>Kategori</label>
+          <select class="select" name="kategori" id="tg-kat" required><option value="">— pilih —</option>${katNames.map(k=>`<option value="${escapeHtml(k)}">${escapeHtml(k)} (${escapeHtml(KATEGORI_KODE[k]||'')})</option>`).join('')}</select></div>
+        <div class="field field-required"><label>Vendor</label>
+          <select class="select" name="nama_vendor">${vendorOptionsHtml('')}</select>
+          <span class="hint">Belum ada? Tambahkan di menu <strong>Manajemen Vendor</strong>.</span></div>
+        <div class="field full field-required"><label>Nama Kegiatan / Deskripsi</label><input class="input" name="nama_kegiatan" required placeholder="Mis. Pembayaran jasa kebersihan Mei 2026"/></div>
+        <div class="field"><label>Lokasi / Kebutuhan</label><input class="input" name="lokasi_kebutuhan" placeholder="Mis. Kantor Pusat"/></div>
+        <div class="field"><label>Tanggal Tagihan</label><input class="input" type="date" name="tanggal" value="${today}"/></div>
+        <div class="field"><label>Number Fund (Mata Anggaran)</label>
+          <select class="select" name="mata_anggaran"><option value="">(kosong)</option>${funds.map(f=>`<option value="${escapeHtml(f.name)}">${f.kode?escapeHtml(f.kode)+' - ':''}${escapeHtml(f.name)}</option>`).join('')}</select></div>
+        <div class="field field-required"><label>Nominal (Grand Total)</label><input class="input" name="nominal" id="tg-nominal" inputmode="numeric" placeholder="Rp 0"/></div>
+        <div class="field"><label>PIC Pembuat</label><input class="input" value="${escapeHtml(me?.full_name||'')}" disabled/></div>
+      </div></form>
+    </div>
+    <div class="modal-foot"><button class="btn btn-ghost" onclick="closeModal()">Batal</button><button class="btn btn-primary" id="tg-save"><span class="material-symbols-rounded">save</span>Simpan &amp; Buka Payment</button></div>
+  `,'xl');
+  $('#tg-nominal').addEventListener('input', e=>{ const d=e.target.value.replace(/\D/g,''); e.target.value=d?'Rp '+Number(d).toLocaleString('id-ID'):''; });
+  $('#tg-save').addEventListener('click', async ()=>{
+    const fd=new FormData($('#tg-form'));
+    const kategori=(fd.get('kategori')||'').toString();
+    const nama_kegiatan=(fd.get('nama_kegiatan')||'').toString().trim();
+    const nominal=Number((fd.get('nominal')||'').toString().replace(/\D/g,''))||0;
+    if(!kategori){ toast('Kategori wajib dipilih','warn'); return; }
+    if(!nama_kegiatan){ toast('Nama kegiatan wajib diisi','warn'); return; }
+    if(nominal<=0){ toast('Nominal wajib diisi','warn'); return; }
+    const kode_kode = KATEGORI_KODE[kategori] || 'GA';
+    const btn=$('#tg-save'); btn.disabled=true; btn.innerHTML='<span class="material-symbols-rounded">hourglass_top</span>Menyimpan…';
+    try{
+      let kode; try{ kode = await db.generateCode(kode_kode); }catch(_){ kode = kode_kode+'-'+Date.now(); }
+      const vendor=(fd.get('nama_vendor')||'').toString().trim()||null;
+      const mata=(fd.get('mata_anggaran')||'').toString()||null;
+      const tgl=(fd.get('tanggal')||'')||null;
+      const lokasi=(fd.get('lokasi_kebutuhan')||'').toString().trim()||null;
+      const reqPayload={
+        kode_permintaan:kode, kategori, kategori_kode:kode_kode,
+        sumber_pemesanan:'Tagihan Manual',
+        nama_pemesan: me?.full_name || 'Admin',
+        nama_kegiatan, detail_kebutuhan:nama_kegiatan,
+        lokasi_kebutuhan:lokasi, tanggal_kebutuhan:tgl, status:'Selesai',
+        total_anggaran:nominal, nama_vendor:vendor, mata_anggaran:mata,
+        pakai_anggaran_ga:true, nama_pic_ga: me?.full_name||null, pic_user_id: (me?.role==='pic'? me.id : null)
+      };
+      const ins=await db.insertRequest(reqPayload);
+      try{ await db.upsertPayment(ins.id, { activity_name:nama_kegiatan, vendor_name:vendor, mata_anggaran:mata, grand_total:nominal, location:lokasi, ga_payment_status:'Not Complete Yet', submit_date:tgl }); }catch(_){}
+      db.logActivity({ action:'payment.tagihan_baru', target_type:'request', target_id:ins.id, detail:`Tambah tagihan ${kode} (${kategori}, ${fmtRupiah(nominal)})` });
+      closeModal(); toast('Tagihan dibuat: '+kode,'success');
+      if(typeof onDone==='function') await onDone();
+      setTimeout(()=>{ try{ openPaymentEdit(ins.id); }catch(_){} }, 300);
+    }catch(err){ console.error(err); toast('Gagal membuat tagihan: '+(err.message||''),'error'); btn.disabled=false; btn.innerHTML='<span class="material-symbols-rounded">save</span>Simpan &amp; Buka Payment'; }
+  });
+}
+
 function openPaymentEdit(requestId){
   const m = _payMerged.find(x => x.request_id === requestId);
   if(!m){ toast('Data tidak ditemukan','error'); return; }
@@ -5714,7 +5818,7 @@ function openPaymentEdit(requestId){
       <button class="btn btn-ghost" onclick="closeModal()">${paidLock?'Tutup':'Batal'}</button>
       ${paidLock?'':'<button class="btn btn-primary" id="pay-save"><span class="material-symbols-rounded">save</span>Simpan</button>'}
     </div>
-  `, 'xl');
+  `, 'xxl');
 
   if(paidLock) return; // locked: nothing editable to wire
 
@@ -6099,6 +6203,15 @@ function renderPaymentsNonGATable(host){
    • Nominal GA menambah realisasi anggaran (lihat Manajemen Anggaran).
    ============================================================ */
 let _recurringCache = [];
+let _vendorCache = [];
+async function loadVendors(force){ if(force || !_vendorCache.length){ try{ _vendorCache = await db.listVendor(); }catch(e){ _vendorCache = []; } } return _vendorCache; }
+// <option> daftar vendor (value = nama perusahaan). `current` disertakan walau tak ada di master (kompat data lama).
+function vendorOptionsHtml(current){
+  const names = _vendorCache.map(v=>v.nama_perusahaan);
+  const cur = (current||'').trim();
+  if(cur && !names.includes(cur)) names.unshift(cur);
+  return `<option value="">— pilih vendor —</option>` + names.map(n=>`<option value="${escapeHtml(n)}" ${cur===n?'selected':''}>${escapeHtml(n)}</option>`).join('');
+}
 let _recurringState = { page:1, pageSize:15, search:'', filterStatus:'', filterJenis:'', filterSource:'', filterDue:'', sort:'tanggal_jatuh_tempo', dir:'asc' };
 let _recurringChecked = false;   // pop-up reminder hanya sekali per sesi halaman
 
@@ -6120,6 +6233,73 @@ function recurringDueBadge(rp){
   if(d <= 7)  return `<span class="badge status-belum">H-${d}</span>`;
   if(d <= 14) return `<span class="badge status-tersedia">H-${d}</span>`;
   return `<span class="badge gray">H-${d}</span>`;
+}
+
+/* ============================================================
+   MANAJEMEN VENDOR (v3.0.5) — master vendor untuk seluruh peran.
+   Dipakai pada Tambah Tagihan Rutin, Edit Permintaan, Tambah Tagihan (Payment), dll.
+   ============================================================ */
+async function viewAdminVendor(c){
+  c.innerHTML = `<div class="card"><div class="card-body"><div class="muted">Memuat vendor…</div></div></div>`;
+  let list=[]; try{ list = await loadVendors(true); }catch(e){ list=[]; }
+  c.innerHTML = `
+    <div class="card"><div class="card-head">
+      <h3><span class="material-symbols-rounded" style="vertical-align:-6px;color:var(--mrt-blue)">store</span> Manajemen Vendor</h3>
+      <button class="btn btn-primary btn-sm" id="ven-add"><span class="material-symbols-rounded">add</span>Tambah Vendor</button>
+    </div><div class="card-body">
+      <p class="muted text-sm" style="margin:-4px 0 12px"><span class="material-symbols-rounded" style="font-size:16px;vertical-align:-3px">info</span> Daftar vendor dipakai pada form <strong>Tambah Tagihan Rutin</strong>, <strong>Edit Permintaan</strong>, <strong>Tambah Tagihan</strong> (Payment), dan lainnya. Jika vendor belum ada, tambahkan di sini terlebih dahulu.</p>
+      <div class="toolbar" style="margin-bottom:10px;display:flex;gap:8px;flex-wrap:wrap"><input id="ven-search" class="input" placeholder="Cari perusahaan / PIC…" style="max-width:320px"/></div>
+      <div class="table-wrap"><table class="t">
+        <thead><tr><th>Nama Perusahaan</th><th>Nama PIC</th><th>Alamat</th><th>Nomor HP</th><th style="width:90px;text-align:right">Aksi</th></tr></thead>
+        <tbody id="ven-body"></tbody>
+      </table></div>
+    </div></div>`;
+  const renderRows = (rows)=>{
+    const body=$('#ven-body'); if(!body) return;
+    body.innerHTML = rows.length ? rows.map(v=>`<tr>
+      <td><strong>${escapeHtml(v.nama_perusahaan)}</strong></td>
+      <td>${escapeHtml(v.nama_pic||'—')}</td>
+      <td>${escapeHtml(v.alamat||'—')}</td>
+      <td>${escapeHtml(v.no_hp||'—')}</td>
+      <td style="text-align:right;white-space:nowrap">
+        <button class="btn-icon" data-ven-edit="${v.id}" title="Edit"><span class="material-symbols-rounded">edit</span></button>
+        <button class="btn-icon" data-ven-del="${v.id}" title="Hapus"><span class="material-symbols-rounded">delete</span></button>
+      </td></tr>`).join('') : `<tr><td colspan="5" class="empty-row">Belum ada vendor. Klik "Tambah Vendor".</td></tr>`;
+    $$('button[data-ven-edit]',body).forEach(b=>b.addEventListener('click',()=>openVendorEdit(list.find(x=>x.id===b.dataset.venEdit), ()=>viewAdminVendor(c))));
+    $$('button[data-ven-del]',body).forEach(b=>b.addEventListener('click',async ()=>{
+      if(!confirm('Hapus vendor ini?')) return;
+      try{ await db.deleteVendor(b.dataset.venDel); await loadVendors(true); toast('Vendor dihapus','success'); viewAdminVendor(c); }
+      catch(err){ toast('Gagal menghapus: '+(err.message||''),'error'); }
+    }));
+  };
+  renderRows(list);
+  $('#ven-add').addEventListener('click', ()=>openVendorEdit(null, ()=>viewAdminVendor(c)));
+  $('#ven-search').addEventListener('input', e=>{ const q=e.target.value.toLowerCase(); renderRows(list.filter(v=>(`${v.nama_perusahaan} ${v.nama_pic||''}`).toLowerCase().includes(q))); });
+}
+function openVendorEdit(v, onDone){
+  const isNew=!v;
+  openModal(`
+    <div class="modal-head"><h3><span class="material-symbols-rounded" style="vertical-align:-6px;color:var(--mrt-blue)">store</span> ${isNew?'Tambah':'Edit'} Vendor</h3>
+      <button class="btn-icon" onclick="closeModal()"><span class="material-symbols-rounded">close</span></button></div>
+    <div class="modal-body"><form id="ven-form"><div class="form-grid">
+      <div class="field full field-required"><label>Nama Perusahaan</label><input class="input" name="nama_perusahaan" value="${escapeHtml(v?.nama_perusahaan||'')}" required/></div>
+      <div class="field"><label>Nama PIC</label><input class="input" name="nama_pic" value="${escapeHtml(v?.nama_pic||'')}"/></div>
+      <div class="field"><label>Nomor HP</label><input class="input" name="no_hp" value="${escapeHtml(v?.no_hp||'')}"/></div>
+      <div class="field full"><label>Alamat</label><textarea class="textarea" name="alamat" style="min-height:64px">${escapeHtml(v?.alamat||'')}</textarea></div>
+    </div></form></div>
+    <div class="modal-foot"><button class="btn btn-ghost" onclick="closeModal()">Batal</button><button class="btn btn-primary" id="ven-save"><span class="material-symbols-rounded">save</span>Simpan</button></div>
+  `,'lg');
+  $('#ven-save').addEventListener('click', async ()=>{
+    const fd=new FormData($('#ven-form'));
+    const nama=(fd.get('nama_perusahaan')||'').toString().trim();
+    if(!nama){ toast('Nama perusahaan wajib diisi','warn'); return; }
+    const payload={ nama_perusahaan:nama, nama_pic:(fd.get('nama_pic')||'').toString().trim()||null, alamat:(fd.get('alamat')||'').toString().trim()||null, no_hp:(fd.get('no_hp')||'').toString().trim()||null };
+    try{
+      if(isNew){ await db.insertVendor(payload); db.logActivity({action:'vendor.create',target_type:'vendor',detail:`Tambah vendor ${nama}`}); }
+      else { await db.updateVendor(v.id, payload); db.logActivity({action:'vendor.update',target_type:'vendor',target_id:v.id,detail:`Update vendor ${nama}`}); }
+      await loadVendors(true); closeModal(); toast('Vendor tersimpan','success'); onDone&&onDone();
+    }catch(err){ toast('Gagal menyimpan: '+(err.message||''),'error'); }
+  });
 }
 
 async function viewAdminRecurring(c){
@@ -6322,7 +6502,7 @@ async function openRecurringEdit(id, onDone){
   const rp = isNew ? null : _recurringCache.find(x => x.id === id);
   if(!isNew && !rp){ toast('Data tidak ditemukan','error'); return; }
   const canStatus = !!me && ['admin_payment','superadmin'].includes(me.role);
-  const [funds, picUsers] = await Promise.all([ db.listMataAnggaran().catch(()=>[]), db.listPicUsers().catch(()=>[]) ]);
+  const [funds, picUsers] = await Promise.all([ db.listMataAnggaran().catch(()=>[]), db.listPicUsers().catch(()=>[]), loadVendors().catch(()=>[]) ]);
 
   const cur = {
     nama: rp?.nama || '', jenis: rp?.jenis || '', vendor: rp?.vendor || '',
@@ -6330,7 +6510,13 @@ async function openRecurringEdit(id, onDone){
     mata_anggaran: rp?.mata_anggaran || '', pic_user_id: rp?.pic_user_id || (me?.role==='pic'? me.id : ''),
     tanggal_jatuh_tempo: rp?.tanggal_jatuh_tempo || '',
     ga_status: rp?.ga_status || 'Not Complete Yet', non_ga_status: rp?.non_ga_status || 'On Progress',
-    keterangan: rp?.keterangan || ''
+    keterangan: rp?.keterangan || '',
+    proforma_number: rp?.proforma_number || '', proforma_date: (rp?.proforma_date||'').toString().slice(0,10),
+    pr_number: rp?.pr_number || '', pr_date: (rp?.pr_date||'').toString().slice(0,10),
+    po_number: rp?.po_number || '', po_date: (rp?.po_date||'').toString().slice(0,10),
+    gr_number: rp?.gr_number || '', gr_date: (rp?.gr_date||'').toString().slice(0,10),
+    invoice_number: rp?.invoice_number || '', invoice_date: (rp?.invoice_date||'').toString().slice(0,10),
+    description_fund: rp?.description_fund || ''
   };
   const nominalDisp = cur.nominal ? 'Rp ' + Number(cur.nominal).toLocaleString('id-ID') : '';
 
@@ -6349,7 +6535,8 @@ async function openRecurringEdit(id, onDone){
             <datalist id="rp-jenis-list">${[...new Set([...RECURRING_JENIS, ..._recurringCache.map(r=>r.jenis).filter(Boolean)])].map(j=>`<option value="${escapeHtml(j)}"></option>`).join('')}</datalist>
             <span class="hint">Pilih dari saran atau ketik jenis baru sendiri.</span></div>
           <div class="field"><label>Vendor / Penyedia</label>
-            <input class="input" name="vendor" value="${escapeHtml(cur.vendor)}" placeholder="Mis. Telkomsel"/></div>
+            <select class="select" name="vendor">${vendorOptionsHtml(cur.vendor)}</select>
+            <span class="hint">Belum ada? Tambahkan di menu <strong>Manajemen Vendor</strong>.</span></div>
           <div class="field field-required"><label>Nominal (Rp)</label>
             <input class="input" name="nominal" id="rp-nominal" inputmode="numeric" value="${escapeHtml(nominalDisp)}" placeholder="Rp 0"/></div>
           <div class="field field-required"><label>Tanggal Jatuh Tempo (paling lambat)</label>
@@ -6377,6 +6564,18 @@ async function openRecurringEdit(id, onDone){
                 const sel = (cur.pakai_anggaran_ga?cur.ga_status:cur.non_ga_status)===o?'selected':''; return `<option ${sel}>${o}</option>`;
               }).join('')}
             </select></div>
+          <div class="field full" style="margin-top:4px;border-top:1px solid var(--border);padding-top:10px"><strong style="font-size:13px;color:var(--mrt-blue)">Dokumen Pengadaan</strong> <span class="muted text-sm">(opsional — seperti pada Update Payment)</span></div>
+          <div class="field"><label>Proforma Invoice Number</label><input class="input" name="proforma_number" value="${escapeHtml(cur.proforma_number)}"/></div>
+          <div class="field"><label>Proforma Invoice Date</label><input class="input" type="date" name="proforma_date" value="${escapeHtml(cur.proforma_date)}"/></div>
+          <div class="field"><label>PR Number</label><input class="input" name="pr_number" value="${escapeHtml(cur.pr_number)}"/></div>
+          <div class="field"><label>PR Date</label><input class="input" type="date" name="pr_date" value="${escapeHtml(cur.pr_date)}"/></div>
+          <div class="field"><label>PO Number</label><input class="input" name="po_number" value="${escapeHtml(cur.po_number)}"/></div>
+          <div class="field"><label>PO Date</label><input class="input" type="date" name="po_date" value="${escapeHtml(cur.po_date)}"/></div>
+          <div class="field"><label>GR Number</label><input class="input" name="gr_number" value="${escapeHtml(cur.gr_number)}"/></div>
+          <div class="field"><label>GR Date</label><input class="input" type="date" name="gr_date" value="${escapeHtml(cur.gr_date)}"/></div>
+          <div class="field"><label>Invoice Number</label><input class="input" name="invoice_number" value="${escapeHtml(cur.invoice_number)}"/></div>
+          <div class="field"><label>Invoice Date</label><input class="input" type="date" name="invoice_date" value="${escapeHtml(cur.invoice_date)}"/></div>
+          <div class="field full"><label>Description Fund</label><textarea class="textarea" name="description_fund" style="min-height:56px">${escapeHtml(cur.description_fund)}</textarea></div>
           <div class="field full"><label>Keterangan</label>
             <textarea class="textarea" name="keterangan" style="min-height:64px">${escapeHtml(cur.keterangan)}</textarea></div>
         </div>
@@ -6386,7 +6585,7 @@ async function openRecurringEdit(id, onDone){
       <button class="btn btn-ghost" onclick="closeModal()">Batal</button>
       <button class="btn btn-primary" id="rp-save"><span class="material-symbols-rounded">save</span>Simpan</button>
     </div>
-  `, 'lg');
+  `, 'xl');
 
   // Rupiah formatter
   $('#rp-nominal').addEventListener('input', e => {
@@ -6426,7 +6625,13 @@ async function openRecurringEdit(id, onDone){
       tanggal_jatuh_tempo: due,
       ga_status: isGA ? newStatus : (rp?.ga_status||'Not Complete Yet'),
       non_ga_status: !isGA ? newStatus : (rp?.non_ga_status||'On Progress'),
-      keterangan: (fd.get('keterangan')||'').toString().trim()||null
+      keterangan: (fd.get('keterangan')||'').toString().trim()||null,
+      proforma_number:(fd.get('proforma_number')||'').toString().trim()||null, proforma_date:(fd.get('proforma_date')||'')||null,
+      pr_number:(fd.get('pr_number')||'').toString().trim()||null, pr_date:(fd.get('pr_date')||'')||null,
+      po_number:(fd.get('po_number')||'').toString().trim()||null, po_date:(fd.get('po_date')||'')||null,
+      gr_number:(fd.get('gr_number')||'').toString().trim()||null, gr_date:(fd.get('gr_date')||'')||null,
+      invoice_number:(fd.get('invoice_number')||'').toString().trim()||null, invoice_date:(fd.get('invoice_date')||'')||null,
+      description_fund:(fd.get('description_fund')||'').toString().trim()||null
     };
     // jejak perubahan status
     const prevStatus = rp ? (rp.pakai_anggaran_ga?rp.ga_status:rp.non_ga_status) : null;
