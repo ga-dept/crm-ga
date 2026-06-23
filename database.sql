@@ -1,487 +1,491 @@
--- =====================================================================
--- GA HOTLINE PORTAL - DATABASE SCHEMA
--- PostgreSQL / Supabase
--- =====================================================================
--- Run this entire file in the Supabase SQL Editor.
--- Order of execution: extensions -> tables -> functions -> triggers
--- -> RLS policies -> seed data -> storage bucket.
--- =====================================================================
+-- WARNING: This schema is for context only and is not meant to be run.
+-- Table order and constraints may not be valid for execution.
 
--- ---------- EXTENSIONS -----------------------------------------------
-create extension if not exists "pgcrypto";   -- gen_random_uuid(), crypt()
-
--- ---------- DROP (idempotent re-runs) --------------------------------
-drop view  if exists v_request_summary cascade;
-drop table if exists notifications     cascade;
-drop table if exists ratings           cascade;
-drop table if exists requests          cascade;
-drop table if exists app_users         cascade;
-drop table if exists lokasi_options    cascade;
-drop table if exists lokasi_kerja_options cascade;
-drop table if exists tujuan_options    cascade;
-drop table if exists activity_logs     cascade;
-drop table if exists version_history   cascade;
-drop table if exists counters          cascade;
-
--- ---------- TABLES ---------------------------------------------------
-
--- Lookup: locations (editable from Admin)
-create table lokasi_options (
-  id         uuid primary key default gen_random_uuid(),
-  name       text not null unique,
-  created_at timestamptz default now()
+CREATE TABLE public.lokasi_options (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  name text NOT NULL UNIQUE,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT lokasi_options_pkey PRIMARY KEY (id)
 );
-
--- Lookup: work locations for GA personnel (editable from Admin)
-create table lokasi_kerja_options (
-  id         uuid primary key default gen_random_uuid(),
-  name       text not null unique,
-  created_at timestamptz default now()
+CREATE TABLE public.tujuan_options (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  name text NOT NULL UNIQUE,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT tujuan_options_pkey PRIMARY KEY (id)
 );
-
--- Lookup: purposes (editable from Admin)
-create table tujuan_options (
-  id         uuid primary key default gen_random_uuid(),
-  name       text not null unique,
-  created_at timestamptz default now()
+CREATE TABLE public.app_users (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  username text NOT NULL UNIQUE,
+  password_hash text NOT NULL,
+  full_name text NOT NULL,
+  role text NOT NULL DEFAULT 'admin'::text CHECK (role = ANY (ARRAY['superadmin'::text, 'admin'::text, 'pic'::text, 'admin_payment'::text])),
+  active boolean DEFAULT true,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  jabatan text,
+  lokasi_kerja text,
+  allowed_pages jsonb,
+  CONSTRAINT app_users_pkey PRIMARY KEY (id)
 );
-
--- App users (admins / PIC GA) - separate from Supabase auth for simplicity
-create table app_users (
-  id            uuid primary key default gen_random_uuid(),
-  username      text not null unique,
-  password_hash text not null,
-  full_name     text not null,
-  role          text not null check (role in ('superadmin','admin','pic')) default 'admin',
-  jabatan       text,
-  lokasi_kerja  text,
-  active        boolean default true,
-  created_at    timestamptz default now(),
-  updated_at    timestamptz default now()
+CREATE TABLE public.counters (
+  day_key text NOT NULL,
+  last_seq integer NOT NULL DEFAULT 0,
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT counters_pkey PRIMARY KEY (day_key)
 );
-
--- Daily counter for request code generation (DDMMYYYY####)
-create table counters (
-  day_key    text primary key,   -- e.g. '12052026'
-  last_seq   integer not null default 0,
-  updated_at timestamptz default now()
+CREATE TABLE public.requests (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  kode_permintaan text NOT NULL UNIQUE,
+  kode_smartoffice text,
+  kategori text NOT NULL,
+  kategori_kode text NOT NULL,
+  sumber_pemesanan text NOT NULL,
+  nama_pemesan text NOT NULL,
+  nama_kegiatan text,
+  lokasi_kebutuhan text,
+  tujuan_kebutuhan text,
+  tanggal_kebutuhan date NOT NULL,
+  detail_kebutuhan text NOT NULL,
+  estimasi_harga bigint DEFAULT 0,
+  lampiran_url text,
+  status text NOT NULL DEFAULT 'Belum Dikonfirmasi'::text CHECK (status = ANY (ARRAY['Belum Dikonfirmasi'::text, 'Mencari Penyedia'::text, 'Sedang Disiapkan'::text, 'Tersedia'::text, 'Selesai'::text, 'Ditolak'::text])),
+  keterangan text,
+  total_anggaran bigint DEFAULT 0,
+  nama_vendor text,
+  nama_pic_ga text,
+  estimasi_penyelesaian date,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  pic_user_id uuid,
+  bukti_foto_url text,
+  bukti_tt_url text,
+  completed_at timestamp with time zone,
+  completed_at_edited_by uuid,
+  completed_at_edited_at timestamp with time zone,
+  completed_at_edit_reason text,
+  divisi text,
+  departemen text,
+  mata_anggaran text,
+  pakai_anggaran_ga boolean NOT NULL DEFAULT true,
+  kendaraan_detail jsonb,
+  CONSTRAINT requests_pkey PRIMARY KEY (id),
+  CONSTRAINT requests_completed_at_edited_by_fkey FOREIGN KEY (completed_at_edited_by) REFERENCES public.app_users(id),
+  CONSTRAINT requests_pic_user_id_fkey FOREIGN KEY (pic_user_id) REFERENCES public.app_users(id)
 );
-
--- Main requests table
-create table requests (
-  id                     uuid primary key default gen_random_uuid(),
-  kode_permintaan        text not null unique,   -- e.g. FB-120520260001
-  kode_smartoffice       text,                   -- manual entry for FB/EV/OS/DP
-
-  kategori               text not null check (kategori in (
-                            'Food and Beverage',
-                            'Direct Purchase',
-                            'Fasilitas Kantor dan Identitas Karyawan',
-                            'Seragam',
-                            'Office Supply',
-                            'Event Support')),
-  kategori_kode          text not null,          -- FB / DP / FAC / UFM / OS / EV
-
-  sumber_pemesanan       text not null,          -- WhatsApp / SmartOffice / Walk-in / dst
-  nama_pemesan           text not null,
-  nama_kegiatan          text,
-  lokasi_kebutuhan       text,
-  tujuan_kebutuhan       text,
-  tanggal_kebutuhan      date not null,
-  detail_kebutuhan       text not null,
-  estimasi_harga         bigint default 0,       -- rupiah
-  lampiran_url           text,                   -- storage URL
-
-  -- Admin-managed fields
-  status                 text not null default 'Belum Dikonfirmasi'
-                          check (status in (
-                            'Belum Dikonfirmasi',
-                            'Mencari Penyedia',
-                            'Sedang Disiapkan',
-                            'Tersedia',
-                            'Selesai',
-                            'Ditolak')),
-  keterangan             text,
-  total_anggaran         bigint default 0,
-  nama_vendor            text,
-  nama_pic_ga            text,
-  pic_user_id            uuid references app_users(id) on delete set null,
-  estimasi_penyelesaian  date,
-
-  created_at             timestamptz default now(),
-  updated_at             timestamptz default now()
+CREATE TABLE public.ratings (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  request_id uuid NOT NULL UNIQUE,
+  rating integer NOT NULL CHECK (rating >= 1 AND rating <= 5),
+  kritik_saran text,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT ratings_pkey PRIMARY KEY (id),
+  CONSTRAINT ratings_request_id_fkey FOREIGN KEY (request_id) REFERENCES public.requests(id)
 );
-
-create index idx_requests_kategori  on requests(kategori);
-create index idx_requests_status    on requests(status);
-create index idx_requests_created   on requests(created_at desc);
-create index idx_requests_kode      on requests(kode_permintaan);
-create index idx_requests_pic       on requests(pic_user_id);
-
--- Ratings table (1 rating per request)
-create table ratings (
-  id            uuid primary key default gen_random_uuid(),
-  request_id    uuid not null references requests(id) on delete cascade,
-  rating        integer not null check (rating between 1 and 5),
-  kritik_saran  text,
-  created_at    timestamptz default now(),
-  unique(request_id)
+CREATE TABLE public.version_history (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  version text NOT NULL,
+  release_date date NOT NULL,
+  changes text NOT NULL,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT version_history_pkey PRIMARY KEY (id)
 );
-
-create index idx_ratings_request on ratings(request_id);
-
--- Notifications table — populated by trigger when a PIC is assigned/changed
-create table notifications (
-  id          uuid primary key default gen_random_uuid(),
-  user_id     uuid not null references app_users(id) on delete cascade,
-  request_id  uuid references requests(id) on delete cascade,
-  type        text not null,        -- 'assigned' | 'status_change' | 'general'
-  title       text not null,
-  body        text,
-  read_at     timestamptz,          -- null = unread
-  created_at  timestamptz default now()
+CREATE TABLE public.notifications (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  request_id uuid,
+  type text NOT NULL,
+  title text NOT NULL,
+  body text,
+  read_at timestamp with time zone,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT notifications_pkey PRIMARY KEY (id),
+  CONSTRAINT notifications_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.app_users(id),
+  CONSTRAINT notifications_request_id_fkey FOREIGN KEY (request_id) REFERENCES public.requests(id)
 );
-create index idx_notif_user    on notifications(user_id, read_at);
-create index idx_notif_created on notifications(created_at desc);
-
--- Activity logs — append-only audit trail of admin actions
-create table activity_logs (
-  id          uuid primary key default gen_random_uuid(),
-  user_id     uuid references app_users(id) on delete set null,
-  username    text,                   -- denormalized snapshot (in case user is deleted)
-  full_name   text,
-  action      text not null,          -- e.g. 'login', 'request.update', 'user.create'
-  target_type text,                   -- 'request' | 'user' | 'lokasi' | 'tujuan' | 'auth'
-  target_id   text,                   -- id of the affected row (uuid as text)
-  detail      text,                   -- human-readable description
-  meta        jsonb,                  -- optional structured data
-  created_at  timestamptz default now()
+CREATE TABLE public.lokasi_kerja_options (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  name text NOT NULL UNIQUE,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT lokasi_kerja_options_pkey PRIMARY KEY (id)
 );
-create index idx_actlog_user    on activity_logs(user_id);
-create index idx_actlog_created on activity_logs(created_at desc);
-create index idx_actlog_action  on activity_logs(action);
-
--- Version history
-create table version_history (
-  id           uuid primary key default gen_random_uuid(),
-  version      text not null,
-  release_date date not null,
-  changes      text not null,
-  created_at   timestamptz default now()
+CREATE TABLE public.activity_logs (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid,
+  username text,
+  full_name text,
+  action text NOT NULL,
+  target_type text,
+  target_id text,
+  detail text,
+  meta jsonb,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT activity_logs_pkey PRIMARY KEY (id),
+  CONSTRAINT activity_logs_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.app_users(id)
 );
-
--- ---------- FUNCTIONS / TRIGGERS -------------------------------------
-
--- updated_at auto-touch
-create or replace function fn_touch_updated_at() returns trigger as $$
-begin
-  new.updated_at := now();
-  return new;
-end;
-$$ language plpgsql;
-
-create trigger trg_requests_updated   before update on requests
-  for each row execute function fn_touch_updated_at();
-create trigger trg_app_users_updated  before update on app_users
-  for each row execute function fn_touch_updated_at();
-
--- Generate next request code: <PREFIX>-DDMMYYYY####
--- Atomically increments a per-day counter.
-create or replace function fn_generate_request_code(p_prefix text)
-returns text as $$
-declare
-  v_day_key text := to_char(now() at time zone 'Asia/Jakarta', 'DDMMYYYY');
-  v_seq     int;
-begin
-  insert into counters(day_key, last_seq)
-       values (v_day_key, 1)
-  on conflict (day_key) do update
-       set last_seq = counters.last_seq + 1,
-           updated_at = now()
-  returning last_seq into v_seq;
-
-  return p_prefix || '-' || v_day_key || lpad(v_seq::text, 4, '0');
-end;
-$$ language plpgsql;
-
--- Notification trigger: when a PIC user is assigned (or changed) to a
--- request, drop a notification into the inbox for that user.
-create or replace function fn_notify_pic_assign() returns trigger as $$
-declare
-  v_changed boolean := false;
-begin
-  if tg_op = 'INSERT' and new.pic_user_id is not null then
-    v_changed := true;
-  elsif tg_op = 'UPDATE' and new.pic_user_id is not null
-        and (old.pic_user_id is distinct from new.pic_user_id) then
-    v_changed := true;
-  end if;
-
-  if v_changed then
-    insert into notifications (user_id, request_id, type, title, body)
-    values (
-      new.pic_user_id, new.id, 'assigned',
-      'Anda ditugaskan sebagai PIC',
-      'Permintaan ' || new.kode_permintaan || ' (' || new.kategori || ') dari '
-        || new.nama_pemesan || ' baru saja ditugaskan kepada Anda.'
-    );
-  end if;
-  return new;
-end;
-$$ language plpgsql;
-
-drop trigger if exists trg_notify_pic on requests;
-create trigger trg_notify_pic
-  after insert or update of pic_user_id on requests
-  for each row execute function fn_notify_pic_assign();
-
--- Public-safe view used by landing-page tracker (hides sensitive admin fields
--- that some teams may consider internal; keep what user needs to see).
-create or replace view v_request_summary as
-select
-  id,
-  kode_permintaan,
-  kategori,
-  nama_pemesan,
-  nama_kegiatan,
-  tanggal_kebutuhan,
-  status,
-  keterangan,
-  nama_pic_ga,
-  estimasi_penyelesaian,
-  created_at
-from requests;
-
--- ---------- ROW LEVEL SECURITY ---------------------------------------
--- Keep things simple and demo-friendly:
---  * Public can SELECT requests (needed for tracker) and INSERT requests
---    (needed for the public form).
---  * Public can SELECT/INSERT ratings (needed for the rating link page).
---  * Updates/deletes and user table changes happen from the Admin UI
---    while RLS is permissive; production deployments should swap to a
---    Supabase service role + Edge Function for admin mutations.
--- ---------------------------------------------------------------------
-alter table requests        enable row level security;
-alter table ratings         enable row level security;
-alter table notifications   enable row level security;
-alter table activity_logs   enable row level security;
-alter table app_users       enable row level security;
-alter table lokasi_options  enable row level security;
-alter table lokasi_kerja_options enable row level security;
-alter table tujuan_options  enable row level security;
-alter table version_history enable row level security;
-alter table counters        enable row level security;
-
--- Permissive policies for the anon role (demo / internal portal scope).
-create policy p_requests_all        on requests              for all using (true) with check (true);
-create policy p_ratings_all         on ratings               for all using (true) with check (true);
-create policy p_notifications_all   on notifications         for all using (true) with check (true);
-create policy p_activity_all        on activity_logs         for all using (true) with check (true);
-create policy p_app_users_all       on app_users             for all using (true) with check (true);
-create policy p_lokasi_all          on lokasi_options        for all using (true) with check (true);
-create policy p_lokasi_kerja_all    on lokasi_kerja_options  for all using (true) with check (true);
-create policy p_tujuan_all          on tujuan_options        for all using (true) with check (true);
-create policy p_version_all         on version_history       for all using (true) with check (true);
-create policy p_counters_all        on counters              for all using (true) with check (true);
-
--- Login helper: returns user row if credentials match (bcrypt compare).
-create or replace function fn_login(p_user text, p_pass text)
-returns table(id uuid, username text, full_name text, role text,
-              jabatan text, lokasi_kerja text) as $$
-  select id, username, full_name, role, jabatan, lokasi_kerja
-    from app_users
-   where username = p_user
-     and active = true
-     and password_hash = crypt(p_pass, password_hash)
-   limit 1;
-$$ language sql security definer;
-
--- Create user with bcrypt-hashed password.
-create or replace function fn_create_user(
-  p_username text, p_password text, p_full_name text, p_role text,
-  p_jabatan text default null, p_lokasi_kerja text default null)
-returns app_users as $$
-declare v_row app_users;
-begin
-  insert into app_users(username, password_hash, full_name, role, jabatan, lokasi_kerja)
-       values (p_username, crypt(p_password, gen_salt('bf')), p_full_name, p_role,
-               p_jabatan, p_lokasi_kerja)
-    returning * into v_row;
-  return v_row;
-end;
-$$ language plpgsql security definer;
-
--- Update a user's password (rehashes with bcrypt).
-create or replace function fn_set_password(p_user_id uuid, p_password text)
-returns void as $$
-  update app_users
-     set password_hash = crypt(p_password, gen_salt('bf')),
-         updated_at = now()
-   where id = p_user_id;
-$$ language sql security definer;
-
--- Allow anon role to call these helpers
-grant execute on function fn_login(text, text)            to anon, authenticated;
-grant execute on function fn_create_user(text, text, text, text, text, text) to anon, authenticated;
-grant execute on function fn_set_password(uuid, text)     to anon, authenticated;
-grant execute on function fn_generate_request_code(text)  to anon, authenticated;
-
--- ---------- SEED DATA ------------------------------------------------
-
--- Default users (passwords stored as bcrypt hash via pgcrypto)
-insert into app_users (username, password_hash, full_name, role, jabatan, lokasi_kerja)
-values
-  ('admin',     crypt('admin123', gen_salt('bf')), 'Super Admin',     'superadmin',
-     'Head of General Affairs', 'Wisma Nusantara'),
-  ('ga.budi',   crypt('budi123',  gen_salt('bf')), 'Budi Santoso',    'admin',
-     'GA Coordinator',          'Wisma Nusantara'),
-  ('ga.siti',   crypt('siti123',  gen_salt('bf')), 'Siti Nurhaliza',  'pic',
-     'GA Officer',              'Depo Lebak Bulus'),
-  ('ga.rian',   crypt('rian123',  gen_salt('bf')), 'Rian Pratama',    'pic',
-     'GA Officer',              'Transport Hub'),
-  ('ga.dewi',   crypt('dewi123',  gen_salt('bf')), 'Dewi Anggraini',  'pic',
-     'GA Officer',              'JB Tower');
-
--- Locations
-insert into lokasi_options (name) values
-  ('Lantai 1 - Lobby Utama'),
-  ('Lantai 5 - Meeting Room A'),
-  ('Lantai 5 - Meeting Room B'),
-  ('Lantai 7 - Ruang Direksi'),
-  ('Lantai 10 - Open Space'),
-  ('Lantai 12 - Pantry'),
-  ('Depo Lebak Bulus'),
-  ('Depo Velodrome'),
-  ('Stasiun Bundaran HI');
-
--- Work locations for GA personnel (separate from Lokasi Kebutuhan)
-insert into lokasi_kerja_options (name) values
-  ('Wisma Nusantara'),
-  ('Transport Hub'),
-  ('Depo Lebak Bulus'),
-  ('JB Tower');
-
--- Purposes
-insert into tujuan_options (name) values
-  ('Rapat Internal'),
-  ('Rapat dengan Vendor'),
-  ('Rapat dengan Stakeholder Eksternal'),
-  ('Training / Workshop'),
-  ('Townhall / Gathering'),
-  ('Operasional Harian'),
-  ('Event Khusus'),
-  ('Kebutuhan Karyawan Baru');
-
--- Version history
-insert into version_history (version, release_date, changes) values
-  ('1.0.0', '2026-05-01', 'Rilis pertama portal GA Hotline: input permintaan, tracking publik, dashboard admin.'),
-  ('1.1.0', '2026-05-08', 'Tambah fitur penilaian kepuasan via tautan & halaman Daftar Penilaian.'),
-  ('1.2.0', '2026-05-12', 'Manajemen master data lokasi & tujuan, ekspor CSV, role-based user management.'),
-  ('1.3.0', '2026-05-14', 'Mass upload CSV permintaan, notifikasi lonceng, halaman Tiket Saya per personil GA, kolom jabatan & lokasi kerja di user, filter per kolom di Daftar Permintaan, persistent session.'),
-  ('1.4.0', '2026-05-16', 'Master data Lokasi Kerja terpisah, halaman Log Aktivitas, download tanda terima PDF saat status Tersedia, QR Code penilaian di tanda terima.');
-
--- Sample requests (so the dashboard is not empty on first run)
-do $$
-declare
-  v_code text;
-  v_pic_budi uuid := (select id from app_users where username='ga.budi');
-  v_pic_siti uuid := (select id from app_users where username='ga.siti');
-  v_pic_rian uuid := (select id from app_users where username='ga.rian');
-begin
-  v_code := fn_generate_request_code('FB');
-  insert into requests (kode_permintaan, kategori, kategori_kode, sumber_pemesanan,
-                        nama_pemesan, nama_kegiatan, lokasi_kebutuhan, tujuan_kebutuhan,
-                        tanggal_kebutuhan, detail_kebutuhan, estimasi_harga,
-                        kode_smartoffice, status, pic_user_id, nama_pic_ga)
-  values (v_code, 'Food and Beverage', 'FB', 'WhatsApp',
-          'Rina Wulandari', 'Rapat Bulanan Divisi Operasional',
-          'Lantai 5 - Meeting Room A', 'Rapat Internal',
-          current_date + 2, 'Snack box untuk 20 orang + air mineral', 1500000,
-          'SO-FB-2026-0091', 'Mencari Penyedia',
-          v_pic_siti, 'Siti Nurhaliza');
-
-  v_code := fn_generate_request_code('OS');
-  insert into requests (kode_permintaan, kategori, kategori_kode, sumber_pemesanan,
-                        nama_pemesan, nama_kegiatan, lokasi_kebutuhan, tujuan_kebutuhan,
-                        tanggal_kebutuhan, detail_kebutuhan, estimasi_harga,
-                        kode_smartoffice, status, pic_user_id, nama_pic_ga)
-  values (v_code, 'Office Supply', 'OS', 'SmartOffice',
-          'Andi Pratama', 'Restock ATK Lantai 10',
-          'Lantai 10 - Open Space', 'Operasional Harian',
-          current_date + 5, 'Kertas A4 5 rim, pulpen 2 box, sticky notes 10 pack', 750000,
-          'SO-OS-2026-0118', 'Sedang Disiapkan',
-          v_pic_budi, 'Budi Santoso');
-
-  v_code := fn_generate_request_code('UFM');
-  insert into requests (kode_permintaan, kategori, kategori_kode, sumber_pemesanan,
-                        nama_pemesan, nama_kegiatan, lokasi_kebutuhan, tujuan_kebutuhan,
-                        tanggal_kebutuhan, detail_kebutuhan, estimasi_harga, status,
-                        total_anggaran, nama_vendor, nama_pic_ga, pic_user_id,
-                        estimasi_penyelesaian, keterangan)
-  values (v_code, 'Seragam', 'UFM', 'WhatsApp',
-          'Dewi Lestari', 'Pengadaan Seragam Karyawan Baru Batch Mei',
-          'Lantai 7 - Ruang Direksi', 'Kebutuhan Karyawan Baru',
-          current_date + 14, 'Seragam kerja size S/M/L untuk 12 karyawan baru', 8400000,
-          'Selesai', 8200000, 'PT Garmen Sejahtera', 'Budi Santoso', v_pic_budi,
-          current_date - 1, 'Seragam sudah diterima lengkap di Lt.7.');
-
-  v_code := fn_generate_request_code('EV');
-  insert into requests (kode_permintaan, kategori, kategori_kode, sumber_pemesanan,
-                        nama_pemesan, nama_kegiatan, lokasi_kebutuhan, tujuan_kebutuhan,
-                        tanggal_kebutuhan, detail_kebutuhan, estimasi_harga,
-                        kode_smartoffice, status, total_anggaran, nama_vendor, nama_pic_ga)
-  values (v_code, 'Event Support', 'EV', 'SmartOffice',
-          'Hendra Wijaya', 'Townhall Q2 2026',
-          'Lantai 1 - Lobby Utama', 'Townhall / Gathering',
-          current_date + 21, 'Panggung, sound system, dekorasi, snack 200 pax', 35000000,
-          'SO-EV-2026-0021', 'Belum Dikonfirmasi', 0, null, null);
-
-  v_code := fn_generate_request_code('DP');
-  insert into requests (kode_permintaan, kategori, kategori_kode, sumber_pemesanan,
-                        nama_pemesan, lokasi_kebutuhan, tujuan_kebutuhan,
-                        tanggal_kebutuhan, detail_kebutuhan, estimasi_harga,
-                        kode_smartoffice, status, pic_user_id, nama_pic_ga)
-  values (v_code, 'Direct Purchase', 'DP', 'WhatsApp',
-          'Maya Sari', 'Lantai 12 - Pantry', 'Operasional Harian',
-          current_date + 1, 'Pembelian galon air + dispenser pantry', 1200000,
-          'SO-DP-2026-0307', 'Tersedia',
-          v_pic_rian, 'Rian Pratama');
-
-  v_code := fn_generate_request_code('FAC');
-  insert into requests (kode_permintaan, kategori, kategori_kode, sumber_pemesanan,
-                        nama_pemesan, lokasi_kebutuhan, tujuan_kebutuhan,
-                        tanggal_kebutuhan, detail_kebutuhan, estimasi_harga, status,
-                        keterangan)
-  values (v_code, 'Fasilitas Kantor dan Identitas Karyawan', 'FAC', 'WhatsApp',
-          'Reza Firmansyah', 'Lantai 7 - Ruang Direksi', 'Kebutuhan Karyawan Baru',
-          current_date + 7, 'Cetak ID card untuk 5 karyawan baru', 250000,
-          'Ditolak', 'Permintaan duplikat dengan permintaan sebelumnya.');
-end $$;
-
--- Sample rating for the completed request
-insert into ratings (request_id, rating, kritik_saran)
-select id, 5, 'Pelayanan sangat cepat dan vendor sangat kooperatif. Terima kasih!'
-from requests where status = 'Selesai' limit 1;
-
--- ---------- STORAGE BUCKET (for attachments) -------------------------
--- Run separately in Supabase Dashboard > Storage if bucket doesn't exist:
---   bucket name : ga-attachments
---   public      : true
--- Then this policy makes uploads work from anon clients:
-insert into storage.buckets (id, name, public)
-values ('ga-attachments', 'ga-attachments', true)
-on conflict (id) do nothing;
-
-drop policy if exists "public upload"   on storage.objects;
-drop policy if exists "public read"     on storage.objects;
-create policy "public upload" on storage.objects for insert
-  with check (bucket_id = 'ga-attachments');
-create policy "public read"   on storage.objects for select
-  using (bucket_id = 'ga-attachments');
-
--- =====================================================================
--- DONE. Default admin credential:
---   username : admin
---   password : admin123
--- (Change immediately after first login from the User Management page.)
--- =====================================================================
+CREATE TABLE public.sla_targets (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  kategori text NOT NULL UNIQUE,
+  kategori_kode text NOT NULL,
+  target_hours integer NOT NULL DEFAULT 24,
+  description text,
+  updated_at timestamp with time zone DEFAULT now(),
+  updated_by uuid,
+  CONSTRAINT sla_targets_pkey PRIMARY KEY (id),
+  CONSTRAINT sla_targets_updated_by_fkey FOREIGN KEY (updated_by) REFERENCES public.app_users(id)
+);
+CREATE TABLE public.mata_anggaran_options (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  name text NOT NULL UNIQUE,
+  kode text,
+  description text,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT mata_anggaran_options_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.divisi_options (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  name text NOT NULL UNIQUE,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT divisi_options_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.departemen_options (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  name text NOT NULL,
+  divisi_id uuid NOT NULL,
+  created_at timestamp with time zone DEFAULT now(),
+  kepala_departemen_user_id uuid,
+  CONSTRAINT departemen_options_pkey PRIMARY KEY (id),
+  CONSTRAINT departemen_options_divisi_id_fkey FOREIGN KEY (divisi_id) REFERENCES public.divisi_options(id),
+  CONSTRAINT departemen_options_kepala_departemen_user_id_fkey FOREIGN KEY (kepala_departemen_user_id) REFERENCES public.app_users(id)
+);
+CREATE TABLE public.kategori_options (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  name text NOT NULL UNIQUE,
+  kode text NOT NULL UNIQUE,
+  default_sla_hours integer NOT NULL DEFAULT 24,
+  active boolean NOT NULL DEFAULT true,
+  description text,
+  created_at timestamp with time zone DEFAULT now(),
+  created_by uuid,
+  CONSTRAINT kategori_options_pkey PRIMARY KEY (id),
+  CONSTRAINT kategori_options_created_by_fkey FOREIGN KEY (created_by) REFERENCES public.app_users(id)
+);
+CREATE TABLE public.approvals (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  request_id uuid NOT NULL,
+  approval_type text NOT NULL,
+  requested_by uuid NOT NULL,
+  requested_at timestamp with time zone NOT NULL DEFAULT now(),
+  approver_user_id uuid,
+  status text NOT NULL DEFAULT 'pending'::text CHECK (status = ANY (ARRAY['pending'::text, 'approved'::text, 'rejected'::text, 'cancelled'::text])),
+  decided_at timestamp with time zone,
+  decided_by uuid,
+  reason text,
+  meta jsonb,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT approvals_pkey PRIMARY KEY (id),
+  CONSTRAINT approvals_request_id_fkey FOREIGN KEY (request_id) REFERENCES public.requests(id),
+  CONSTRAINT approvals_requested_by_fkey FOREIGN KEY (requested_by) REFERENCES public.app_users(id),
+  CONSTRAINT approvals_approver_user_id_fkey FOREIGN KEY (approver_user_id) REFERENCES public.app_users(id),
+  CONSTRAINT approvals_decided_by_fkey FOREIGN KEY (decided_by) REFERENCES public.app_users(id)
+);
+CREATE TABLE public.payments (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  request_id uuid NOT NULL UNIQUE,
+  fund_owner text,
+  vendor_name text,
+  pic_user_name text,
+  tanggal_permintaan date,
+  tanggal_kebutuhan date,
+  location text,
+  sub_location text,
+  directorate text,
+  division text,
+  department text,
+  category text,
+  sub_category text,
+  administrator text,
+  user_sap text,
+  proforma_number text,
+  proforma_date date,
+  pr_number text,
+  pr_date date,
+  po_number text,
+  po_date date,
+  gr_number text,
+  gr_date date,
+  invoice_number text,
+  invoice_date date,
+  submit_date date,
+  cost_type text,
+  cost_purpose text,
+  jenis_pembayaran text,
+  quantity numeric,
+  price bigint,
+  grand_total bigint,
+  status text NOT NULL DEFAULT 'Belum Diproses'::text CHECK (status = ANY (ARRAY['Belum Diproses'::text, 'Diproses'::text, 'Menunggu Pembayaran'::text, 'Lunas'::text, 'Dibatalkan'::text])),
+  note text,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  activity_name text,
+  fund text,
+  description_fund text,
+  ga_payment_status text NOT NULL DEFAULT 'Not Complete Yet'::text CHECK (ga_payment_status = ANY (ARRAY['Not Complete Yet'::text, 'Submitted'::text, 'Verified'::text, 'Revision'::text, 'Paid'::text])),
+  fund_id uuid,
+  mata_anggaran text,
+  subsidi text,
+  non_ga_status text,
+  non_ga_note text,
+  non_ga_last_changed_at timestamp with time zone,
+  non_ga_last_changed_by text,
+  CONSTRAINT payments_pkey PRIMARY KEY (id),
+  CONSTRAINT payments_request_id_fkey FOREIGN KEY (request_id) REFERENCES public.requests(id),
+  CONSTRAINT payments_fund_fk FOREIGN KEY (fund_id) REFERENCES public.anggaran_funds(id)
+);
+CREATE TABLE public.kendaraan_options (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  nama_driver text NOT NULL,
+  no_hp text,
+  nomor_polisi text,
+  posisi text,
+  ownership text,
+  ev_status text,
+  ga_ge text,
+  keterangan text,
+  active boolean NOT NULL DEFAULT true,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT kendaraan_options_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.anggaran_funds (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  name text NOT NULL,
+  keterangan text,
+  active boolean NOT NULL DEFAULT true,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT anggaran_funds_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.anggaran_topups (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  fund_id uuid,
+  nominal bigint NOT NULL DEFAULT 0,
+  tanggal date NOT NULL DEFAULT CURRENT_DATE,
+  sumber text,
+  keterangan text,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT anggaran_topups_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.cdp_plans (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  fund_id uuid,
+  tahun integer NOT NULL,
+  bulan integer NOT NULL CHECK (bulan >= 1 AND bulan <= 12),
+  rencana bigint NOT NULL DEFAULT 0,
+  keterangan text,
+  CONSTRAINT cdp_plans_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.recurring_payments (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  nama text NOT NULL,
+  jenis text,
+  vendor text,
+  nominal numeric DEFAULT 0,
+  pakai_anggaran_ga boolean DEFAULT true,
+  mata_anggaran text,
+  pic_user_id uuid,
+  pic_user_name text,
+  tanggal_jatuh_tempo date,
+  ga_status text DEFAULT 'Not Complete Yet'::text,
+  non_ga_status text DEFAULT 'On Progress'::text,
+  keterangan text,
+  last_changed_at timestamp with time zone,
+  last_changed_by text,
+  last_warned_threshold integer,
+  created_at timestamp with time zone DEFAULT now(),
+  created_by uuid,
+  proforma_number text,
+  proforma_date date,
+  pr_number text,
+  pr_date date,
+  po_number text,
+  po_date date,
+  gr_number text,
+  gr_date date,
+  invoice_number text,
+  invoice_date date,
+  description_fund text,
+  CONSTRAINT recurring_payments_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.pc_reimburse (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  tipe text NOT NULL,
+  kode text,
+  loket text,
+  penerima text,
+  tanggal date,
+  kategori text,
+  departemen text,
+  kegiatan text,
+  rekening text,
+  no_polisi text,
+  driver text,
+  km_awal numeric,
+  km_akhir numeric,
+  nominal numeric DEFAULT 0,
+  sumber text DEFAULT 'Fund GA'::text,
+  mata_anggaran text,
+  status text DEFAULT 'Input'::text,
+  pic text,
+  verif boolean DEFAULT false,
+  tgl_verif date,
+  trf_tgl date,
+  cash_tgl date,
+  no_spp text,
+  detail jsonb,
+  keterangan text,
+  created_at timestamp with time zone DEFAULT now(),
+  wf_stage text DEFAULT 'pic_loket'::text,
+  wf_user text,
+  wf_file_formulir text,
+  wf_file_invoice text,
+  wf_file_pendukung text,
+  wf_pic_at timestamp with time zone,
+  wf_pic_by text,
+  wf_verif_status text,
+  wf_verif_catatan text,
+  wf_transfer_req_date date,
+  wf_verif_at timestamp with time zone,
+  wf_verif_by text,
+  wf_konfirmasi boolean DEFAULT false,
+  wf_kelengkapan boolean DEFAULT false,
+  wf_sumber_biaya text,
+  wf_nominal_disetujui bigint,
+  wf_file_bukti_pk text,
+  wf_pk_at timestamp with time zone,
+  wf_pk_by text,
+  wf_revisi_finance boolean DEFAULT false,
+  wf_revisi_date date,
+  wf_nominal_penyesuaian bigint,
+  wf_no_spp_penyesuaian text,
+  wf_spp_at timestamp with time zone,
+  wf_spp_by text,
+  wf_nominal_pengembalian bigint,
+  wf_pengembalian_date date,
+  wf_rek_asal text,
+  wf_nama_pengembalian text,
+  wf_sumber_kas_tujuan text,
+  wf_final_status text,
+  wf_return_at timestamp with time zone,
+  wf_return_by text,
+  wf_kadept_at timestamp with time zone,
+  wf_kadept_by text,
+  wf_kadept_decision text,
+  wf_kadept_reason text,
+  jenis_penggunaan text DEFAULT 'Reimbursement'::text,
+  media_kas text,
+  metode_pengeluaran text,
+  pos text,
+  tgl_nota date,
+  outstanding boolean DEFAULT false,
+  no_kuitansi text,
+  kuitansi_url text,
+  lap_perjalanan_url text,
+  CONSTRAINT pc_reimburse_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.pc_master (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  tipe text NOT NULL,
+  no_sap text,
+  no_trx text,
+  wilayah text,
+  tanggal date,
+  deskripsi text,
+  pengguna text,
+  departemen text,
+  divisi text,
+  no_polisi text,
+  sub_kategori text,
+  kategori text,
+  gl_account text,
+  no_fund text,
+  desc_fund text,
+  no_formulir text,
+  cost_center text,
+  total_biaya numeric DEFAULT 0,
+  created_at timestamp with time zone DEFAULT now(),
+  km_awal numeric,
+  km_akhir numeric,
+  CONSTRAINT pc_master_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.pc_dropdown (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  grup text NOT NULL,
+  nilai text NOT NULL,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT pc_dropdown_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.pc_relasi (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  jenis_biaya text NOT NULL,
+  gl_account text,
+  no_fund text,
+  cost_center text,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT pc_relasi_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.pc_cash (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  tanggal date,
+  tipe text,
+  uraian text,
+  nominal numeric DEFAULT 0,
+  keterangan text,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT pc_cash_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.pc_log (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  waktu timestamp with time zone DEFAULT now(),
+  user text,
+  aksi text,
+  detail text,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT pc_log_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.karyawan_options (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  nama text NOT NULL,
+  jabatan text,
+  divisi_id uuid,
+  departemen_id uuid,
+  active boolean DEFAULT true,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT karyawan_options_pkey PRIMARY KEY (id),
+  CONSTRAINT karyawan_options_divisi_id_fkey FOREIGN KEY (divisi_id) REFERENCES public.divisi_options(id),
+  CONSTRAINT karyawan_options_departemen_id_fkey FOREIGN KEY (departemen_id) REFERENCES public.departemen_options(id)
+);
+CREATE TABLE public.karyawan_import (
+  nama text,
+  jabatan text,
+  divisi text,
+  departemen text,
+  active boolean DEFAULT true
+);
+CREATE TABLE public.pc_sla_targets (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  stage text NOT NULL UNIQUE,
+  label text,
+  sla_hours integer NOT NULL DEFAULT 24,
+  updated_at timestamp with time zone DEFAULT now(),
+  updated_by uuid,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT pc_sla_targets_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.vendor_options (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  nama_perusahaan text NOT NULL,
+  nama_pic text,
+  alamat text,
+  no_hp text,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT vendor_options_pkey PRIMARY KEY (id)
+);
