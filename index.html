@@ -1250,6 +1250,7 @@ table.t{
         <form id="login-form">
           <div class="field"><label>Username</label><input type="text" class="input" name="username" required autocomplete="username" /></div>
           <div class="field"><label>Password</label><div style="position:relative"><input type="password" class="input" name="password" required autocomplete="current-password" style="padding-right:42px" /><button type="button" class="pw-eye" onclick="togglePw(this)" tabindex="-1" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text-2);display:flex;padding:4px"><span class="material-symbols-rounded" style="font-size:20px">visibility</span></button></div></div>
+          <div id="login-recaptcha" style="margin:2px 0 14px;min-height:78px"></div>
           <button type="submit" class="btn btn-primary" style="width:100%" id="login-btn"><span class="material-symbols-rounded">login</span>Masuk</button>
           <p class="text-sm muted center mt-4" style="margin-bottom:0">
             <a href="#/">← Kembali ke halaman utama</a>
@@ -1418,6 +1419,54 @@ const SUPA_CONFIGURED = !SUPABASE_URL.includes('YOUR-PROJECT-REF');
 const supa = SUPA_CONFIGURED
   ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
   : null;
+
+// v3.2 (rev 6): pelacak IP & device untuk Log Aktivitas (anti-fraud)
+let _clientIp = null;
+async function pcFetchClientIp(){
+  if(_clientIp) return _clientIp;
+  try{
+    const r = await fetch('https://api.ipify.org?format=json', { cache:'no-store' });
+    if(r.ok){ const j = await r.json(); _clientIp = j && j.ip ? j.ip : null; }
+  }catch(_){ /* offline / diblokir → biarkan null */ }
+  return _clientIp;
+}
+function pcDeviceName(){
+  const ua = navigator.userAgent || '';
+  let os = 'Unknown OS';
+  if(/Windows NT 10/.test(ua)) os='Windows 10/11'; else if(/Windows/.test(ua)) os='Windows';
+  else if(/Android/.test(ua)) os='Android'; else if(/iPhone|iPad|iPod/.test(ua)) os='iOS';
+  else if(/Mac OS X/.test(ua)) os='macOS'; else if(/Linux/.test(ua)) os='Linux';
+  let br = 'Unknown Browser';
+  if(/Edg\//.test(ua)) br='Edge'; else if(/OPR\/|Opera/.test(ua)) br='Opera';
+  else if(/Chrome\//.test(ua)) br='Chrome'; else if(/Firefox\//.test(ua)) br='Firefox';
+  else if(/Safari\//.test(ua)) br='Safari';
+  const mobile = /Mobi|Android|iPhone|iPad/.test(ua) ? 'Mobile' : 'Desktop';
+  return `${br} · ${os} · ${mobile}`;
+}
+
+// v3.2 (rev 7): Google reCAPTCHA v2 (checkbox) di halaman login.
+// Catatan: hanya SITE KEY yang berada di sisi klien (memang publik). Secret key TIDAK disimpan di file ini —
+// secret hanya untuk verifikasi token di sisi server (mis. Supabase Edge Function), lihat catatan rilis.
+const RECAPTCHA_SITE_KEY = '6LeoGTAtAAAAANvTCa4rOrIOGaM-LTKo3AFzPsD_';
+let _loginCaptchaId = null;
+let _recaptchaLoading = false;
+function pcRenderRecaptcha(){
+  const el = document.getElementById('login-recaptcha');
+  if(!el || !RECAPTCHA_SITE_KEY) return;
+  _loginCaptchaId = null; el.innerHTML = '';
+  const doRender = ()=>{ try{ if(window.grecaptcha && grecaptcha.render){ _loginCaptchaId = grecaptcha.render('login-recaptcha', { sitekey: RECAPTCHA_SITE_KEY }); } }catch(err){ console.warn('[recaptcha]', err); } };
+  if(window.grecaptcha && window.grecaptcha.render){ doRender(); return; }
+  window.__onRecaptchaLoad = doRender;
+  if(!_recaptchaLoading && !document.getElementById('recaptcha-api')){
+    _recaptchaLoading = true;
+    const s = document.createElement('script');
+    s.id = 'recaptcha-api';
+    s.src = 'https://www.google.com/recaptcha/api.js?onload=__onRecaptchaLoad&render=explicit';
+    s.async = true; s.defer = true;
+    s.onerror = ()=>{ el.innerHTML = '<span class="text-sm muted">Gagal memuat reCAPTCHA (periksa koneksi internet).</span>'; };
+    document.head.appendChild(s);
+  }
+}
 
 /* ---------- CONSTANTS ---------- */
 // v1.7: KATEGORI_KODE used to be a hardcoded constant. Now it's a live object that mirrors
@@ -2175,6 +2224,8 @@ const db = {
       target_type:entry.target_type || null,
       target_id:  entry.target_id   ? String(entry.target_id) : null,
       detail:     entry.detail      || null,
+      ip_address: entry.ip_address  || _clientIp || null,
+      user_agent: entry.user_agent  || pcDeviceName(),
       meta:       entry.meta        || null
     };
     if(!SUPA_CONFIGURED){
@@ -3298,6 +3349,7 @@ async function downloadBackupXlsx(){
     addSheet('ActivityLogs',  (logs||[]).map(l => ({
       ID:l.id, Waktu:l.created_at, User_ID:l.user_id||'', Username:l.username||'',
       Action:l.action, Target_Type:l.target_type||'', Target_ID:l.target_id||'',
+      IP_Address:l.ip_address||'', Device:l.user_agent||'',
       Detail:l.detail||''
     })));
     addSheet('SlaTargets',    (slas||[]).map(s => ({
@@ -3850,20 +3902,28 @@ function setupRequestForm(){
    ============================================================ */
 function renderLogin(){
   mount('tpl-login');
+  pcRenderRecaptcha();   // v3.2 (rev 7): tampilkan Google reCAPTCHA
   $('#login-form').addEventListener('submit', async (e) => {
     e.preventDefault();
+    // v3.2 (rev 7): wajib lolos reCAPTCHA bila widget berhasil tampil.
+    // Jika reCAPTCHA gagal dimuat (offline/diblokir), login tidak dikunci agar tidak terjadi lockout.
+    let capToken = '';
+    try{ if(window.grecaptcha && _loginCaptchaId!==null) capToken = grecaptcha.getResponse(_loginCaptchaId); }catch(_){}
+    if(RECAPTCHA_SITE_KEY && _loginCaptchaId!==null && !capToken){ toast('Mohon selesaikan verifikasi "Saya bukan robot" terlebih dahulu','warn'); return; }
     const btn = $('#login-btn');
     btn.disabled = true; btn.innerHTML = '<span class="material-symbols-rounded">hourglass_top</span>Memproses...';
     try{
       const fd = new FormData(e.target);
       const user = await db.loginUser(fd.get('username').trim(), fd.get('password'));
       session.set(user);
+      await Promise.race([pcFetchClientIp(), new Promise(r=>setTimeout(r,2000))]);  // v3.2: pastikan IP tercatat di log login
       db.logActivity({ action:'auth.login', target_type:'auth', target_id:user.id, detail:'Login berhasil' });
       toast('Selamat datang, '+user.full_name,'success');
       navigate('/admin/dashboard');
     }catch(err){
       console.error(err);
       toast(err.message || 'Login gagal','error');
+      try{ if(window.grecaptcha && _loginCaptchaId!==null) grecaptcha.reset(_loginCaptchaId); }catch(_){}
     }finally{
       btn.disabled = false; btn.innerHTML = '<span class="material-symbols-rounded">login</span>Masuk';
     }
@@ -6859,9 +6919,9 @@ const pcdb = {
     if(error) throw error;
   },
   async log(aksi, detail){
-    const u = session.get();
-    const row = { waktu:new Date().toISOString(), user:u?.full_name||'-', aksi, detail:detail||'' };
-    try{ await this.insert('log', row); }catch(e){ console.warn('[pc log]', e); }
+    // v3.2 (rev 6): log Petty Cash digabung ke Log Aktivitas umum (sekaligus mencatat IP & device)
+    try{ await db.logActivity({ action:'petty.'+aksi, target_type:'petty_cash', target_id:null, detail:detail||'' }); }
+    catch(e){ console.warn('[pc log]', e); }
   }
 };
 
@@ -6875,6 +6935,14 @@ function pcGenKode(tipe){
   let max = 199; // sehingga entri pertama menjadi 200
   arr.forEach(r => { const n = parseInt((r.kode||'').split('-')[1]||'0',10); if(n>max) max=n; });
   return `${prefix}-${max+1}`;
+}
+// v3.1: deteksi error "kode kembar" (unique violation) agar bisa di-retry dengan nomor berikutnya
+function pcIsDupKodeErr(err){
+  if(!err) return false;
+  const code = String(err.code||err.status||'');
+  const msg = ((err.message||'')+' '+(err.details||'')+' '+(err.hint||'')).toLowerCase();
+  return code==='23505' || msg.includes('duplicate key') || msg.includes('already exists')
+      || msg.includes('unique constraint') || (msg.includes('kode') && msg.includes('unique'));
 }
 function pcStageIndex(s){ return PC_STAGES.indexOf(s); }
 function pcCanManage(){
@@ -7047,12 +7115,15 @@ let _pcCache = { reimburse:[], master:[], dropdown:[], relasi:[], log:[], cash:[
 let _pcMasters = { lokasiKerja:[], divisi:[], departemen:[], karyawan:[], kategori:[] };
 let _pcTab = 'dashboard';
 let _pcReimTipe = 'KRT';     // sub-tab KRT/KND di Reimbursement & Master
+let _pcReimJenis = '';       // v3.2: filter Uang Muka / Reimbursement di Master Data — rev 5
 let _pcMasterTipe = 'KRT';
 let _pcMasterSort = { key:'tanggal', dir:'desc' };   // v2.9: sort kolom Master Data Petty Cash
 let _pcSppData = null;       // reimbursement terpilih untuk SPP
 let _pcSppLines = [];        // v2.9: rincian baris SPP (Kode Akun + Uraian Pengeluaran) yang dapat di-CRUD
 // v2.8: state Report Rekap (port dari index-pettycash)
 let _pcRekapTipe = 'KRT';
+let _pcRekapJenis = '';      // v3.2: filter Uang Muka / Reimbursement (kosong = semua) — rev 5
+let _pcRekapKode = '';       // v3.2: filter No. Pengajuan (RT/KO) — rev 4
 let _pcRekapLokasi = '';
 let _pcRekapDari = '';
 let _pcRekapSampai = '';
@@ -7086,7 +7157,7 @@ async function viewAdminPetty(c){
     <div class="pc-tabs" id="pc-tabs" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px">
       ${[['dashboard','Dashboard','dashboard'],['form','Form Input','add_box'],
          ['master','Master Data','dataset'],['report','Report','assessment'],['spp','SPP','print'],
-         ['cash','Posisi Kas','account_balance'],['log','Log History','history']]
+         ['cash','Posisi Kas','account_balance']]
         .map(([k,label,ic]) => `<button class="btn btn-sm pc-tab-btn" data-tab="${k}" style="${k===_pcTab?'background:var(--mrt-blue);color:#fff':'background:#fff;color:var(--text-2);border:1px solid var(--border)'}">
           <span class="material-symbols-rounded" style="font-size:17px">${ic}</span>${label}</button>`).join('')}
     </div>
@@ -7114,7 +7185,7 @@ function renderPettyTab(){
   else if(_pcTab==='spp') pcRenderSPP(host);
   else if(_pcTab==='report') pcRenderReport(host);
   else if(_pcTab==='cash') pcRenderCash(host);
-  else if(_pcTab==='log') pcRenderLog(host);
+  else { _pcTab='dashboard'; pcRenderDashboard(host); }   // v3.2: tab "Log History" Petty Cash dihapus → log digabung ke Log Aktivitas umum
   try{ enhanceSearchable(host); }catch(e){}
 }
 
@@ -7195,6 +7266,12 @@ function pcRenderReimburse(host){
         </div>
       </div>
       <div class="card-body">
+        <div class="flex gap-2 mb-3" style="flex-wrap:wrap;align-items:center">
+          <span class="muted text-sm" style="margin-right:2px">Jenis:</span>
+          <button class="btn btn-sm pc-rj" data-jenis="" style="${_pcReimJenis===''?'background:var(--mrt-blue);color:#fff':'background:#fff;border:1px solid var(--border);color:var(--text-2)'}">Semua</button>
+          <button class="btn btn-sm pc-rj" data-jenis="Reimbursement" style="${_pcReimJenis==='Reimbursement'?'background:#047857;color:#fff':'background:#fff;border:1px solid var(--border);color:var(--text-2)'}"><span class="material-symbols-rounded" style="font-size:16px">receipt_long</span>Reimbursement</button>
+          <button class="btn btn-sm pc-rj" data-jenis="Uang Muka" style="${_pcReimJenis==='Uang Muka'?'background:#3730a3;color:#fff':'background:#fff;border:1px solid var(--border);color:var(--text-2)'}"><span class="material-symbols-rounded" style="font-size:16px">account_balance_wallet</span>Uang Muka</button>
+        </div>
         <div class="toolbar"><div class="search"><span class="material-symbols-rounded">search</span>
           <input class="input" id="pc-reim-search" placeholder="Cari kode / penerima / kegiatan..."/></div>
           <select class="select" id="pc-reim-status" style="max-width:200px"><option value="">Semua Status</option>${PC_STAGES.concat(['Revisi']).map(s=>`<option>${s}</option>`).join('')}</select>
@@ -7204,6 +7281,7 @@ function pcRenderReimburse(host){
       </div>
     </div>`;
   $$('.pc-rt', host).forEach(b => b.addEventListener('click', () => { _pcReimTipe=b.dataset.rt; pcRenderReimburse(host); }));
+  $$('.pc-rj', host).forEach(b => b.addEventListener('click', () => { _pcReimJenis=b.dataset.jenis; pcRenderReimburse(host); }));
   const search=$('#pc-reim-search'), fstat=$('#pc-reim-status'), fwil=$('#pc-reim-wil');
   const draw = () => pcDrawReimTable($('#pc-reim-host'), { q:(search.value||'').toLowerCase(), status:fstat.value, wil:fwil.value });
   [search,fstat,fwil].forEach(el => el.addEventListener('input', draw));
@@ -7218,6 +7296,7 @@ function pcRenderReimburse(host){
 function pcDrawReimTable(host, f){
   const manage = pcCanManage();
   let rows = _pcCache.reimburse.filter(r => r.tipe===_pcReimTipe);
+  if(_pcReimJenis) rows = rows.filter(r => (r.jenis_penggunaan||'Reimbursement')===_pcReimJenis);
   if(f.q) rows = rows.filter(r => (r.kode+' '+r.penerima+' '+(r.kegiatan||'')+' '+(r.driver||'')).toLowerCase().includes(f.q));
   if(f.status) rows = rows.filter(r => r.status===f.status);
   if(f.wil) rows = rows.filter(r => r.loket===f.wil);
@@ -7347,12 +7426,42 @@ function pcViewPdf(url, title){
 }
 // v3.1: label tahap yang menyesuaikan jenis penggunaan (Uang Muka vs Reimbursement) — 6 tahap tetap
 function pcJenisOf(r){ return (r && r.jenis_penggunaan==='Uang Muka') ? 'Uang Muka' : 'Reimbursement'; }
+// v3.2: label tiap tahap dibedakan per jenis penggunaan (6 tahap tetap, narasi berbeda)
+const PC_WF_LABELS = {
+  'Reimbursement': {
+    pic_loket:'Penerimaan & Pencatatan Bukti', verifikasi_ppk:'Verifikasi Loket (cocokkan bukti)',
+    approval_kadept:'Persetujuan', transfer_pk:'Validasi Pemegang Kas',
+    spp_ppk:'Penerbitan SPP & No. SAP', pengembalian_pk:'Pencairan ke Karyawan'
+  },
+  'Uang Muka': {
+    pic_loket:'Pengajuan Dokumen Pertanggungjawaban', verifikasi_ppk:'Verifikasi Dokumen',
+    approval_kadept:'Persetujuan', transfer_pk:'Konfirmasi Pemegang Kas',
+    spp_ppk:'Penerbitan SPP & No. SAP', pengembalian_pk:'Pengembalian Selisih'
+  }
+};
 function pcWfLabel(key, jenis){
   const d = pcWfDef(key); if(!d) return '';
-  if(jenis==='Reimbursement' && key==='pengembalian_pk') return 'Pencairan ke Karyawan';
-  return d.label;
+  const m = PC_WF_LABELS[jenis==='Uang Muka'?'Uang Muka':'Reimbursement'];
+  return (m && m[key]) ? m[key] : d.label;
 }
 function pcWfPrevKey(stage){ const i = pcWfIndex(stage); return i>0 ? PC_WF[i-1].key : null; }
+// v3.2: peran workflow Petty Cash yang dimiliki user saat ini (untuk banner transparansi izin — rev 1)
+function pcMyWfRoles(){
+  const lab={pc_pic_loket:'PIC Loket',pc_pembantu_kas:'Pembantu Pemegang Kas',pc_pemegang_kas:'Pemegang Kas',pc_kadept:'Kepala Departemen GA'};
+  const u=session.get(); if(!u) return [];
+  if(u.role==='superadmin') return ['Super Admin (akses penuh)'];
+  const ap=Array.isArray(u.allowed_pages)?u.allowed_pages:[];
+  return WF_PERMS.filter(p=>ap.includes(p)).map(p=>lab[p]);
+}
+// v3.2: info pengembalian terakhir (rev 2) — untuk banner alasan yang terlihat semua role
+function pcReturnInfo(r){
+  if(r && (r.status==='Revisi')){
+    if(r.wf_return_reason) return { from:r.wf_return_from||'', reason:r.wf_return_reason };
+    if(r.wf_verif_status==='tidak' && r.wf_verif_catatan) return { from:'verifikasi_ppk', reason:r.wf_verif_catatan };
+    if(r.wf_kadept_decision==='tolak' && r.wf_kadept_reason) return { from:'approval_kadept', reason:r.wf_kadept_reason };
+  }
+  return null;
+}
 
 function pcReimProcess(id){
   const r=_pcCache.reimburse.find(x=>x.id===id); if(!r) return;
@@ -7430,11 +7539,16 @@ function pcReimProcess(id){
     </div>`;
     if(k==='spp_ppk') return `<div class="form-grid">
       <div class="field field-required"><label>Nomor SPP</label><input class="input" id="wf-nospp" value="${escapeHtml(r.no_spp||'')}" placeholder="022/SPP/GA-MRT/III/2026"/></div>
+      <div class="field field-required"><label>No. SAP <span class="muted text-sm">(dasar Report Rekap)</span></label><input class="input" id="wf-no-sap" value="${escapeHtml(r.no_sap||'')}" placeholder="cth: 1900001234"/></div>
+      <div class="field"><label>No. GL Account</label><input class="input" id="wf-gl" value="${escapeHtml(r.gl_account||'')}" placeholder="cth: 6xxxxx"/></div>
+      <div class="field"><label>No. Fund</label><input class="input" id="wf-fund" value="${escapeHtml(r.no_fund||'')}"/></div>
+      <div class="field"><label>Wilayah</label><input class="input" id="wf-wilayah" value="${escapeHtml(r.wilayah||r.loket||'')}"/></div>
+      <div class="field full"><label>Deskripsi (untuk Rekap)</label><input class="input" id="wf-deskripsi" value="${escapeHtml(r.deskripsi||r.kegiatan||r.kategori||'')}"/></div>
       <div class="field"><label>Revisi Finance?</label><select class="select" id="wf-revisi"><option value="tidak" ${!r.wf_revisi_finance?'selected':''}>Tidak</option><option value="ya" ${r.wf_revisi_finance?'selected':''}>Ya</option></select></div>
       <div class="field" id="wf-revisi-date-wrap" style="${r.wf_revisi_finance?'':'display:none'}"><label>Tanggal Revisi</label><input class="input" type="date" id="wf-revisi-date" value="${escapeHtml(r.wf_revisi_date||'')}"/></div>
       <div class="field"><label>Nominal Penyesuaian</label><input class="input pc-money-wf" id="wf-nom-peny" inputmode="numeric" value="${moneyVal(r.wf_nominal_penyesuaian)}"/></div>
       <div class="field"><label>No. SPP Penyesuaian</label><input class="input" id="wf-nospp-peny" value="${escapeHtml(r.wf_no_spp_penyesuaian||'')}"/></div>
-    </div>`;
+    </div><p class="muted text-sm" style="margin-top:6px"><span class="material-symbols-rounded" style="font-size:16px;vertical-align:-3px">info</span> Isi <strong>No. SAP</strong> di sini agar transaksi muncul di <strong>Report Rekap — Penggunaan Kas Kecil</strong>.</p>`;
     if(k==='pengembalian_pk'){
       const isReim = jenis==='Reimbursement';
       return `<div class="form-grid">
@@ -7453,7 +7567,7 @@ function pcReimProcess(id){
   if(stage===PC_WF_DONE){
     activeHtml = `<div style="text-align:center;padding:12px;background:${r.wf_final_status==='cancel'?'#fee2e2':'#dcfce7'};border-radius:10px;color:${r.wf_final_status==='cancel'?'#991b1b':'#166534'};font-weight:600"><span class="material-symbols-rounded" style="vertical-align:-5px">${r.wf_final_status==='cancel'?'cancel':'verified'}</span> Workflow ${r.wf_final_status==='cancel'?'dibatalkan (Cancel)':'selesai (Done)'}</div>`;
   } else if(!canAct){
-    activeHtml = `<div style="padding:12px 14px;background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;color:#9a3412"><span class="material-symbols-rounded" style="vertical-align:-5px">hourglass_top</span> Tahap aktif: <strong>${pcWfLabel(stage, jenis)}</strong> — menunggu <strong>${def.role}</strong>. Akun Anda tidak memiliki izin untuk tahap ini.</div>`;
+    activeHtml = `<div style="padding:12px 14px;background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;color:#9a3412"><span class="material-symbols-rounded" style="vertical-align:-5px">hourglass_top</span> Tahap aktif: <strong>${pcWfLabel(stage, jenis)}</strong> — hanya dapat diproses oleh <strong>${def.role}</strong>. ${pcMyWfRoles().length?`<span class="muted">Peran Anda: ${pcMyWfRoles().map(escapeHtml).join(', ')}.</span>`:'<span class="muted">Akun Anda belum diberi peran workflow Petty Cash.</span>'}</div>`;
   } else {
     const start=pcWfStageStart(r,stage), h=pcSlaHours(stage);
     activeHtml = `<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin:4px 0 8px"><strong style="font-size:14px;color:var(--mrt-blue)">${curIdx+1}. ${pcWfLabel(stage, jenis)} <span class="muted" style="font-weight:500">— ${def.role}</span></strong>${pcWfSlaBadge(start,h,null)}</div><form id="wf-form" onsubmit="return false">${activeFormHtml(stage)}</form>`;
@@ -7474,9 +7588,16 @@ function pcReimProcess(id){
         : 'Karyawan menalangi lebih dulu. Setelah dokumen tervalidasi, dana pengganti dicairkan ke rekening karyawan.'}</div></div>
   </div>`;
 
+  // v3.2: banner alasan pengembalian yang terlihat semua role (rev 2)
+  const retInfo = pcReturnInfo(r);
+  const returnBanner = retInfo ? `<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:10px;margin-bottom:12px;background:#fef2f2;border:1px solid #fecaca;color:#991b1b">
+    <span class="material-symbols-rounded">undo</span>
+    <div style="font-size:12.5px;line-height:1.5"><strong>Dokumen dikembalikan${retInfo.from?` dari tahap "${escapeHtml(pcWfLabel(retInfo.from, jenis))}"`:''}</strong><div>Alasan: ${escapeHtml(retInfo.reason)}</div></div>
+  </div>` : '';
+
   openModal(`
     <div class="modal-head"><h3><span class="material-symbols-rounded" style="vertical-align:-6px;color:var(--mrt-blue)">conveyor_belt</span> Proses Workflow — ${escapeHtml(r.kode)}</h3><button class="btn-icon" onclick="closeModal()"><span class="material-symbols-rounded">close</span></button></div>
-    <div class="modal-body">${flowBanner}${stepper}${pcDocPanelHtml(r)}${doneHtml}${activeHtml}</div>
+    <div class="modal-body">${flowBanner}${returnBanner}${stepper}${pcDocPanelHtml(r)}${doneHtml}${activeHtml}</div>
     <div class="modal-foot">${footHtml}</div>`,'xl');
 
   // v3.1: buka dokumen lampiran via pop-up PDF viewer (tidak menutup modal workflow)
@@ -7484,11 +7605,14 @@ function pcReimProcess(id){
   // v3.1: kembalikan transaksi ke tahap sebelumnya — alasan wajib
   if($('#wf-return')) $('#wf-return').addEventListener('click', async ()=>{
     if(!prevKey) return;
+    const curDef = pcWfDef(stage);
+    if(!curDef || !pcWfHasPerm(curDef.perm)){ toast('Akun Anda tidak berwenang mengembalikan dari tahap ini','error'); return; }
     const reason = (prompt('Alasan mengembalikan ke tahap sebelumnya (wajib diisi):')||'').trim();
     if(!reason){ toast('Alasan wajib diisi untuk mengembalikan dokumen','warn'); return; }
     const nowIso = new Date().toISOString(); const who = me?.full_name||'-';
     const note = `[Dikembalikan dari "${pcWfLabel(stage,jenis)}" ke "${pcWfLabel(prevKey,jenis)}" oleh ${who} · ${fmtDateTime(nowIso)}] ${reason}`;
-    const patch = { wf_stage: prevKey, status:'Revisi', keterangan: (r.keterangan ? r.keterangan+'\n' : '') + note };
+    const patch = { wf_stage: prevKey, status:'Revisi', wf_return_reason: reason, wf_return_from: stage,
+                    keterangan: (r.keterangan ? r.keterangan+'\n' : '') + note };
     try{
       await pcdb.update('reimburse', id, patch);
       pcdb.log('reimburse.workflow.return', `${r.kode} · ${stage} → ${prevKey} · ${reason}`);
@@ -7519,6 +7643,8 @@ function pcReimProcess(id){
     return res && res.url ? res.url : null;
   }
   async function submitStage(){
+    const curDef = pcWfDef(stage);
+    if(!curDef || !pcWfHasPerm(curDef.perm)){ toast('Akun Anda tidak berwenang memproses tahap ini'+(curDef?` (hanya ${curDef.role})`:''),'error'); return; }
     const nowIso=new Date().toISOString(); const who=me?.full_name||'-';
     let patch={};
     try{
@@ -7547,6 +7673,9 @@ function pcReimProcess(id){
         const rev=val('wf-revisi')==='ya';
         patch={ no_spp:val('wf-nospp')||null, wf_revisi_finance:rev, wf_revisi_date: rev?(val('wf-revisi-date')||null):null,
           wf_nominal_penyesuaian:money('wf-nom-peny'), wf_no_spp_penyesuaian:val('wf-nospp-peny')||null,
+          no_sap:val('wf-no-sap')||null, gl_account:val('wf-gl')||null, no_fund:val('wf-fund')||null,
+          wilayah:val('wf-wilayah')||r.loket||null, deskripsi:val('wf-deskripsi')||r.kegiatan||r.kategori||null,
+          total_biaya: (r.wf_nominal_disetujui||r.nominal||0),
           wf_spp_at:nowIso, wf_spp_by:who, wf_stage:'pengembalian_pk', status:'SPP Terbit' };
       } else if(stage==='pengembalian_pk'){
         const fin=val('wf-final')||'done';
@@ -7599,7 +7728,14 @@ function pcRenderForm(host){
         <div class="field"><label>Sumber Dana</label><select class="select" name="sumber">${PC_SUMBER.map(s=>`<option>${s}</option>`).join('')}</select></div>
         <div class="field"><label>Mata Anggaran (untuk GA)</label><select class="select" name="mata_anggaran" id="pc-form-ma"><option value="">(kosong)</option></select>
           <span class="hint">Nominal Fund GA menambah realisasi anggaran.</span></div>
-        <div class="field"><label>Jenis Penggunaan</label><select class="select" name="jenis_penggunaan">${PC_JENIS.map(j=>`<option ${j==='Reimbursement'?'selected':''}>${j}</option>`).join('')}</select></div>
+        <div class="field full"><label>Jenis Penggunaan — pilih alur</label>
+          <input type="hidden" name="jenis_penggunaan" id="pc-jenis-val" value="Reimbursement"/>
+          <div class="flex gap-2" style="flex-wrap:wrap">
+            <button type="button" class="pc-jenis-btn" data-jenis="Reimbursement" style="flex:1;min-width:200px;padding:12px 14px;border-radius:10px;border:2px solid #047857;background:#ecfdf5;color:#065f46;font-weight:700;cursor:pointer;text-align:left"><span class="material-symbols-rounded" style="vertical-align:-5px">receipt_long</span> Reimbursement</button>
+            <button type="button" class="pc-jenis-btn" data-jenis="Uang Muka" style="flex:1;min-width:200px;padding:12px 14px;border-radius:10px;border:2px solid var(--border);background:#fff;color:var(--text-2);font-weight:700;cursor:pointer;text-align:left"><span class="material-symbols-rounded" style="vertical-align:-5px">account_balance_wallet</span> Uang Muka</button>
+          </div>
+          <p class="muted text-sm" id="pc-jenis-desc" style="margin-top:6px">Karyawan menalangi lebih dulu; dana pengganti dicairkan ke rekening karyawan setelah dokumen tervalidasi.</p>
+        </div>
         <div class="field"><label>Media Kas (penyimpanan)</label><select class="select" name="media_kas"><option value="">— pilih —</option>${PC_MEDIA.map(m=>`<option>${m}</option>`).join('')}</select>
           <span class="hint">Media kas <strong>≠</strong> Sumber Dana (Fund/anggaran).</span></div>
         <div class="field"><label>Metode Pengeluaran</label><select class="select" name="metode_pengeluaran"><option value="">— pilih —</option>${PC_METODE.map(m=>`<option>${m}</option>`).join('')}</select></div>
@@ -7618,6 +7754,19 @@ function pcRenderForm(host){
   $$('.pc-money', host).forEach(inp=>inp.addEventListener('input', e=>{ const d=e.target.value.replace(/\D/g,''); e.target.value=d?'Rp '+Number(d).toLocaleString('id-ID'):''; pcKndTotal(host); }));
   function pcKndTotal(h){ const tot=$('#pc-knd-total',h); if(!tot) return; let s=0; $$('.pc-knd',h).forEach(i=>s+=Number((i.value||'').replace(/\D/g,''))||0); tot.value='Rp '+s.toLocaleString('id-ID'); }
   $('#pc-form-reset').addEventListener('click', ()=>pcRenderForm(host));
+  // v3.2: pemilih jenis penggunaan menonjol (rev 5)
+  $$('.pc-jenis-btn', host).forEach(b=>b.addEventListener('click', ()=>{
+    const j=b.dataset.jenis; const hv=$('#pc-jenis-val'); if(hv) hv.value=j;
+    $$('.pc-jenis-btn', host).forEach(x=>{
+      const on=x.dataset.jenis===j; const um=x.dataset.jenis==='Uang Muka';
+      x.style.borderColor = on ? (um?'#3730a3':'#047857') : 'var(--border)';
+      x.style.background   = on ? (um?'#eef2ff':'#ecfdf5') : '#fff';
+      x.style.color        = on ? (um?'#3730a3':'#065f46') : 'var(--text-2)';
+    });
+    const d=$('#pc-jenis-desc'); if(d) d.textContent = j==='Uang Muka'
+      ? 'Kas keluar lebih dulu (pinjaman via GAAS Form). Pertanggungjawaban memakai angka aktual final; selisih dikembalikan di tahap akhir.'
+      : 'Karyawan menalangi lebih dulu; dana pengganti dicairkan ke rekening karyawan setelah dokumen tervalidasi.';
+  }));
   $('#pc-form-save').addEventListener('click', async ()=>{
     if(!pcCanManage()){ toast('Hanya PIC Loket / Pembantu Pemegang Kas / Pemegang Kas yang dapat membuat pengajuan','warn'); return; }
     const fd=new FormData($('#pc-form'));
@@ -7635,7 +7784,7 @@ function pcRenderForm(host){
     }
     // v3.0: penghentian transaksi pergantian tahun 30 Des – 2 Jan (SOP SLA #12)
     if(pcInYearEndFreeze()){ toast('Periode penghentian transaksi pergantian tahun (30 Des – 2 Jan). Transaksi Kas Kecil dihentikan sementara (SOP SLA #12).','warn'); return; }
-    const row = { tipe, kode:pcGenKode(tipe), loket:fd.get('loket'), penerima, tanggal:fd.get('tanggal'),
+    const row = { tipe, loket:fd.get('loket'), penerima, tanggal:fd.get('tanggal'),
       kategori:fd.get('kategori')||null, departemen:fd.get('departemen')||null, rekening:fd.get('rekening')||null,
       nominal, sumber:fd.get('sumber'), mata_anggaran: fd.get('sumber')==='Fund GA' ? (fd.get('mata_anggaran')||null) : null,
       jenis_penggunaan: jenis, media_kas: fd.get('media_kas')||null, metode_pengeluaran: fd.get('metode_pengeluaran')||null,
@@ -7644,8 +7793,22 @@ function pcRenderForm(host){
       no_polisi: tipe==='KND'?(fd.get('no_polisi')||null):null, driver: tipe==='KND'?(fd.get('driver')||null):null,
       km_awal: tipe==='KND'?(Number(fd.get('km_awal'))||null):null, km_akhir: tipe==='KND'?(Number(fd.get('km_akhir'))||null):null,
       detail, status:'Input', verif:false, no_spp:'', keterangan:fd.get('keterangan')||null };
-    try{ const ins=await pcdb.insert('reimburse', row); pcdb.log('reimburse.create', ins.kode); await pcLoadAll(); toast('Transaksi tersimpan: '+ins.kode,'success'); _pcTab='master'; renderPettyTab(); $$('#pc-tabs .pc-tab-btn').forEach(x=>{const on=x.dataset.tab==='master'; x.style.cssText=on?'background:var(--mrt-blue);color:#fff':'background:#fff;color:var(--text-2);border:1px solid var(--border)';}); }
-    catch(err){ toast('Gagal: '+(err.message||''),'error'); }
+    // v3.1: anti kode kembar saat input bersamaan. Penjamin sebenarnya = UNIQUE(kode) di DB.
+    // Jika insert ditolak karena kode bentrok, muat ulang data terbaru, ambil nomor berikutnya, ulangi (maks 6x).
+    const saveBtn = $('#pc-form-save'); if(saveBtn) saveBtn.disabled = true;
+    let ins=null, lastErr=null;
+    for(let attempt=0; attempt<6; attempt++){
+      row.kode = pcGenKode(tipe);
+      try{ ins = await pcdb.insert('reimburse', row); break; }
+      catch(err){
+        lastErr = err;
+        if(pcIsDupKodeErr(err)){ await pcLoadAll(); continue; }   // bentrok → data terbaru + nomor baru
+        if(saveBtn) saveBtn.disabled = false;
+        toast('Gagal: '+(err.message||''),'error'); return;
+      }
+    }
+    if(!ins){ if(saveBtn) saveBtn.disabled = false; toast('Gagal mendapatkan kode unik setelah beberapa percobaan. Silakan simpan ulang.','error'); return; }
+    pcdb.log('reimburse.create', ins.kode); await pcLoadAll(); toast('Transaksi tersimpan: '+ins.kode,'success'); _pcTab='master'; renderPettyTab(); $$('#pc-tabs .pc-tab-btn').forEach(x=>{const on=x.dataset.tab==='master'; x.style.cssText=on?'background:var(--mrt-blue);color:#fff':'background:#fff;color:var(--text-2);border:1px solid var(--border)';});
   });
 }
 
@@ -7895,9 +8058,12 @@ function pcRenderSPP(host){
 function pcFmtTgl(d){ if(!d) return '—'; try{ return new Date(d).toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'}); }catch(e){ return String(d); } }
 function pcRekapRows(){
   const tipe=_pcRekapTipe;
-  return (_pcCache.master||[]).filter(m=>{
+  // v3.2: sumber data Rekap = transaksi pc_reimburse (bukan pc_master lama) — rev 3
+  return (_pcCache.reimburse||[]).filter(m=>{
     if(m.tipe!==tipe) return false;
-    if(_pcRekapLokasi && (m.wilayah||'')!==_pcRekapLokasi) return false;
+    if(_pcRekapJenis && (m.jenis_penggunaan||'Reimbursement')!==_pcRekapJenis) return false;   // rev 5
+    if(_pcRekapKode && !String(m.kode||'').toLowerCase().includes(_pcRekapKode.toLowerCase())) return false; // rev 4
+    if(_pcRekapLokasi && (m.wilayah||m.loket||'')!==_pcRekapLokasi) return false;
     if(_pcRekapSap.length && !_pcRekapSap.includes(m.no_sap||'')) return false;
     const t=(m.tanggal||'').slice(0,10);
     if(_pcRekapDari && t && t<_pcRekapDari) return false;
@@ -7905,10 +8071,14 @@ function pcRekapRows(){
     return true;
   }).sort((a,b)=>String(a.tanggal||'').localeCompare(String(b.tanggal||'')));
 }
+// v3.2: nilai-nilai turunan untuk Rekap dari baris transaksi (fallback agar data lama tetap tampil)
+function pcRekapTotal(m){ return Number(m.total_biaya || m.wf_nominal_disetujui || m.nominal || 0); }
+function pcRekapWilayah(m){ return m.wilayah || m.loket || ''; }
+function pcRekapDeskripsi(m){ return m.deskripsi || m.kegiatan || m.kategori || ''; }
 function pcRekapDocHtml(){
   const tipe=_pcRekapTipe;
   const rows=pcRekapRows();
-  const total=rows.reduce((a,m)=>a+(Number(m.total_biaya)||0),0);
+  const total=rows.reduce((a,m)=>a+pcRekapTotal(m),0);
   const judul = tipe==='KRT' ? 'REKAP PENGGUNAAN KAS KECIL KERUMAHTANGGAAN' : 'REKAP PENGGUNAAN KAS KECIL KENDARAAN OPERASIONAL';
   let dari=_pcRekapDari, sampai=_pcRekapSampai;
   if(!dari || !sampai){ const ts=rows.map(m=>(m.tanggal||'').slice(0,10)).filter(Boolean).sort(); if(ts.length){ dari=dari||ts[0]; sampai=sampai||ts[ts.length-1]; } }
@@ -7924,23 +8094,23 @@ function pcRekapDocHtml(){
   const bodyRows = rows.length ? rows.map((m,i)=> isKND ? `<tr>
       <td style="${td}text-align:center;">${i+1}</td>
       <td style="${td}text-align:center;white-space:nowrap;">${pcFmtTgl(m.tanggal)}</td>
-      <td style="${td}">${escapeHtml(m.wilayah||'—')}</td>
+      <td style="${td}">${escapeHtml(pcRekapWilayah(m)||'—')}</td>
       <td style="${td}">${escapeHtml(m.no_sap||'—')}</td>
-      <td style="${td}">${escapeHtml(m.deskripsi||'—')}</td>
+      <td style="${td}">${escapeHtml(pcRekapDeskripsi(m)||'—')}</td>
       <td style="${td}">${escapeHtml(m.no_polisi||'—')}</td>
-      <td style="${td}">${escapeHtml(m.no_formulir||'—')}</td>
+      <td style="${td}">${escapeHtml(m.no_formulir||m.kode||'—')}</td>
       <td style="${td}text-align:right;">${km(m.km_awal)}</td>
       <td style="${td}text-align:right;">${km(m.km_akhir)}</td>
-      <td style="${td}text-align:right;white-space:nowrap;">Rp ${(Number(m.total_biaya)||0).toLocaleString('id-ID')}</td></tr>` : `<tr>
+      <td style="${td}text-align:right;white-space:nowrap;">Rp ${pcRekapTotal(m).toLocaleString('id-ID')}</td></tr>` : `<tr>
       <td style="${td}text-align:center;">${i+1}</td>
       <td style="${td}text-align:center;white-space:nowrap;">${pcFmtTgl(m.tanggal)}</td>
-      <td style="${td}">${escapeHtml(m.wilayah||'—')}</td>
+      <td style="${td}">${escapeHtml(pcRekapWilayah(m)||'—')}</td>
       <td style="${td}white-space:nowrap;">${escapeHtml(support)}</td>
       <td style="${td}">${escapeHtml(m.no_sap||'—')}</td>
       <td style="${td}">${escapeHtml(m.gl_account||'—')}</td>
       <td style="${td}">${escapeHtml(m.no_fund||'—')}</td>
-      <td style="${td}">${escapeHtml(m.deskripsi||'—')}</td>
-      <td style="${td}text-align:right;white-space:nowrap;">Rp ${(Number(m.total_biaya)||0).toLocaleString('id-ID')}</td></tr>`).join('')
+      <td style="${td}">${escapeHtml(pcRekapDeskripsi(m)||'—')}</td>
+      <td style="${td}text-align:right;white-space:nowrap;">Rp ${pcRekapTotal(m).toLocaleString('id-ID')}</td></tr>`).join('')
     : `<tr><td colspan="${colCount}" style="border:1px solid #e2e8f0;padding:14px;text-align:center;color:#64748b;">Tidak ada transaksi pada filter ini</td></tr>`;
   return `<div id="pc-rekap-doc" style="background:#fff;padding:22px 26px;font-family:'Inter',Arial,sans-serif;color:#0F1B2D;min-width:680px;">
     <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:6px;">
@@ -7989,8 +8159,8 @@ function pcRekapDocHtml(){
 }
 function pcRenderReport(host){
   const all=_pcCache.reimburse;
-  // v2.9: opsi filter No. SAP untuk Rekap (distinct dari Master Data sesuai tipe)
-  const _rkBase = (_pcCache.master||[]).filter(m=>m.tipe===_pcRekapTipe);
+  // v3.2: opsi filter No. SAP untuk Rekap diambil dari transaksi (pc_reimburse) sesuai tipe & jenis — rev 3
+  const _rkBase = (_pcCache.reimburse||[]).filter(m=>m.tipe===_pcRekapTipe && (!_pcRekapJenis || (m.jenis_penggunaan||'Reimbursement')===_pcRekapJenis));
   const sapOptions = [...new Set(_rkBase.map(m=>m.no_sap).filter(Boolean))].sort((a,b)=>String(a).localeCompare(String(b),'id'));
   _pcRekapSap = _pcRekapSap.filter(s=>sapOptions.includes(s));   // buang pilihan yang tak relevan di tipe ini
   const total=all.reduce((a,r)=>a+(Number(r.nominal)||0),0);
@@ -8027,7 +8197,14 @@ function pcRenderReport(host){
           <button class="btn btn-sm pc-rkt" data-rt="KRT" style="${_pcRekapTipe==='KRT'?'background:var(--mrt-blue);color:#fff':'background:#fff;border:1px solid var(--border);color:var(--text-2)'}">Kerumahtanggaan</button>
           <button class="btn btn-sm pc-rkt" data-rt="KND" style="${_pcRekapTipe==='KND'?'background:var(--mrt-blue);color:#fff':'background:#fff;border:1px solid var(--border);color:var(--text-2)'}">Kendaraan</button>
         </div>
+        <div class="flex gap-2 mb-3" style="flex-wrap:wrap;align-items:center">
+          <span class="muted text-sm" style="margin-right:2px">Jenis:</span>
+          <button class="btn btn-sm pc-rkj" data-jenis="" style="${_pcRekapJenis===''?'background:var(--mrt-blue);color:#fff':'background:#fff;border:1px solid var(--border);color:var(--text-2)'}">Semua</button>
+          <button class="btn btn-sm pc-rkj" data-jenis="Reimbursement" style="${_pcRekapJenis==='Reimbursement'?'background:#047857;color:#fff':'background:#fff;border:1px solid var(--border);color:var(--text-2)'}">Reimbursement</button>
+          <button class="btn btn-sm pc-rkj" data-jenis="Uang Muka" style="${_pcRekapJenis==='Uang Muka'?'background:#3730a3;color:#fff':'background:#fff;border:1px solid var(--border);color:var(--text-2)'}">Uang Muka</button>
+        </div>
         <div class="form-grid" style="margin-bottom:8px">
+          <div class="field"><label>No. Pengajuan (RT/KO)</label><input class="input" id="pc-rekap-kode" value="${escapeHtml(_pcRekapKode)}" placeholder="cth: RT-200 / KO-201"/></div>
           <div class="field"><label>Lokasi</label><select class="select sel-search" id="pc-rekap-lok"><option value="">— Semua Lokasi —</option>${pcWilayah().map(w=>`<option ${_pcRekapLokasi===w?'selected':''}>${escapeHtml(w)}</option>`).join('')}</select></div>
           <div class="field"><label>Periode (Dari — Sampai)</label><div class="flex gap-2"><input class="input" type="date" id="pc-rekap-dari" value="${escapeHtml(_pcRekapDari)}"/><input class="input" type="date" id="pc-rekap-sampai" value="${escapeHtml(_pcRekapSampai)}"/></div></div>
           <div class="field"><label>Pembantu Kas</label><input class="input" id="pc-rk-ppk" value="${escapeHtml(_pcRekapNama.ppk)}"/></div>
@@ -8041,11 +8218,11 @@ function pcRenderReport(host){
               <span class="badge gray" id="pc-rk-sap-count">${_pcRekapSap.length} dipilih</span>
             </div>
             <div id="pc-rk-sap-list" style="max-height:128px;overflow:auto;border:1px solid var(--border);border-radius:8px;padding:8px;display:flex;flex-wrap:wrap;gap:6px 18px">
-              ${sapOptions.length ? sapOptions.map(s=>`<label class="text-sm" style="display:inline-flex;align-items:center;gap:6px;white-space:nowrap;cursor:pointer"><input type="checkbox" class="pc-rk-sap" value="${escapeHtml(s)}" ${_pcRekapSap.includes(s)?'checked':''}/> ${escapeHtml(s)}</label>`).join('') : '<span class="muted text-sm">Belum ada No. SAP pada Master Data tipe ini</span>'}
+              ${sapOptions.length ? sapOptions.map(s=>`<label class="text-sm" style="display:inline-flex;align-items:center;gap:6px;white-space:nowrap;cursor:pointer"><input type="checkbox" class="pc-rk-sap" value="${escapeHtml(s)}" ${_pcRekapSap.includes(s)?'checked':''}/> ${escapeHtml(s)}</label>`).join('') : '<span class="muted text-sm">Belum ada No. SAP pada transaksi tipe ini — isi di tahap Penerbitan SPP</span>'}
             </div>
           </div>
         </div>
-        <p class="muted text-sm" style="margin:-2px 0 10px"><span class="material-symbols-rounded" style="font-size:16px;vertical-align:-3px">info</span> Data rekap diambil dari <strong>Master Data</strong> Petty Cash (No SAP, Cost Center, Deskripsi, Total) sesuai Tipe, Lokasi &amp; Periode di atas. Nama pengesahan dapat disunting.</p>
+        <p class="muted text-sm" style="margin:-2px 0 10px"><span class="material-symbols-rounded" style="font-size:16px;vertical-align:-3px">info</span> Data rekap diambil dari <strong>transaksi Petty Cash</strong> (No. SAP, GL Account, No. Fund, Deskripsi, Total) sesuai Tipe, Jenis, No. Pengajuan, Lokasi &amp; Periode di atas. No. SAP diisi pada tahap <strong>Penerbitan SPP</strong>. Nama pengesahan dapat disunting.</p>
         <div style="background:#eef1f6;padding:14px;border-radius:10px;overflow:auto"><div id="pc-rekap-mount" style="box-shadow:0 4px 18px rgba(0,0,0,.12)">${pcRekapDocHtml()}</div></div>
       </div></div>`;
   if(typeof Chart!=='undefined'){
@@ -8057,6 +8234,8 @@ function pcRenderReport(host){
   /* --- Report Rekap (v2.8) --- */
   const remountRekap=()=>{ const m=$('#pc-rekap-mount'); if(m) m.innerHTML=pcRekapDocHtml(); };
   $$('.pc-rkt',host).forEach(b=>b.addEventListener('click',()=>{ _pcRekapTipe=b.dataset.rt; pcRenderReport(host); }));
+  $$('.pc-rkj',host).forEach(b=>b.addEventListener('click',()=>{ _pcRekapJenis=b.dataset.jenis; pcRenderReport(host); }));
+  $('#pc-rekap-kode')?.addEventListener('input',e=>{ _pcRekapKode=e.target.value.trim(); remountRekap(); });
   $('#pc-rekap-lok')?.addEventListener('change',e=>{ _pcRekapLokasi=e.target.value; remountRekap(); });
   $('#pc-rekap-dari')?.addEventListener('change',e=>{ _pcRekapDari=e.target.value; remountRekap(); });
   $('#pc-rekap-sampai')?.addEventListener('change',e=>{ _pcRekapSampai=e.target.value; remountRekap(); });
@@ -11045,6 +11224,7 @@ async function viewAdminActivity(c){
             <th style="width:170px">Waktu</th>
             <th style="width:200px">Pengguna</th>
             <th style="width:220px">Aktivitas</th>
+            <th style="width:190px">IP / Device</th>
             <th>Detail</th>
           </tr></thead>
           <tbody>
@@ -11065,10 +11245,11 @@ async function viewAdminActivity(c){
                       <span class="mono text-sm">${escapeHtml(l.action)}</span>
                     </span>
                   </td>
+                  <td><div class="mono text-sm">${escapeHtml(l.ip_address||'—')}</div><div class="text-sm muted">${escapeHtml(l.user_agent||'—')}</div></td>
                   <td>${escapeHtml(l.detail || '—')}${l.target_type?`<div class="text-sm muted">${escapeHtml(l.target_type)}${l.target_id?' · '+escapeHtml(String(l.target_id).slice(0,8)):''}</div>`:''}</td>
                 </tr>
               `;
-            }).join('') : '<tr><td colspan="5" class="empty-row">Tidak ada log aktivitas</td></tr>'}
+            }).join('') : '<tr><td colspan="6" class="empty-row">Tidak ada log aktivitas</td></tr>'}
           </tbody>
         </table>
       </div>
@@ -11621,6 +11802,7 @@ function initCalculator(){
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+  pcFetchClientIp();   // v3.2: ambil IP publik lebih awal untuk Log Aktivitas (anti-fraud)
   if(!SUPA_CONFIGURED){
     setTimeout(()=> toast('Berjalan dalam mode DEMO (data hanya di memori). Edit SUPABASE_URL & SUPABASE_ANON_KEY di index.html untuk aktifkan Supabase.','warn',7000), 600);
   }
