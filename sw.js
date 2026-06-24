@@ -7,7 +7,7 @@
    • Supabase API & all non-GET requests     → network only (never cached)
    Bump CACHE_VERSION on every deploy to invalidate old caches.
    ===================================================================== */
-const CACHE_VERSION = 'ga-hotline-v3.2.0';
+const CACHE_VERSION = 'ga-hotline-v3.3.0';
 const APP_SHELL = [
   './',
   './index.html',
@@ -56,18 +56,14 @@ self.addEventListener('activate', (event) => {
 function isSupabase(url) {
   return url.hostname.includes('supabase.co') || url.hostname.includes('supabase.in');
 }
-// v3.2: jangan pernah cache/intersep Google reCAPTCHA (token harus selalu segar)
-function isRecaptcha(url) {
-  return url.hostname.includes('google.com') || url.hostname.includes('gstatic.com') || url.hostname.includes('recaptcha.net');
-}
 
 // ---------- FETCH ----------
 self.addEventListener('fetch', (event) => {
   const req = event.request;
   const url = new URL(req.url);
 
-  // Only handle GET; never touch Supabase API (auth + dynamic data) or Google reCAPTCHA.
-  if (req.method !== 'GET' || isSupabase(url) || isRecaptcha(url)) return;
+  // Only handle GET; never touch Supabase API (auth + dynamic data).
+  if (req.method !== 'GET' || isSupabase(url)) return;
 
   // SPA navigations: network-first, fall back to the right cached page offline.
   if (req.mode === 'navigate') {

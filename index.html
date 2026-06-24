@@ -1250,7 +1250,7 @@ table.t{
         <form id="login-form">
           <div class="field"><label>Username</label><input type="text" class="input" name="username" required autocomplete="username" /></div>
           <div class="field"><label>Password</label><div style="position:relative"><input type="password" class="input" name="password" required autocomplete="current-password" style="padding-right:42px" /><button type="button" class="pw-eye" onclick="togglePw(this)" tabindex="-1" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text-2);display:flex;padding:4px"><span class="material-symbols-rounded" style="font-size:20px">visibility</span></button></div></div>
-          <div id="login-recaptcha" style="margin:2px 0 14px;min-height:78px"></div>
+          <altcha-widget id="login-altcha" type="checkbox" style="display:block;margin:4px 0 14px;--altcha-max-width:100%"></altcha-widget>
           <button type="submit" class="btn btn-primary" style="width:100%" id="login-btn"><span class="material-symbols-rounded">login</span>Masuk</button>
           <p class="text-sm muted center mt-4" style="margin-bottom:0">
             <a href="#/">← Kembali ke halaman utama</a>
@@ -1444,28 +1444,52 @@ function pcDeviceName(){
   return `${br} · ${os} · ${mobile}`;
 }
 
-// v3.2 (rev 7): Google reCAPTCHA v2 (checkbox) di halaman login.
-// Catatan: hanya SITE KEY yang berada di sisi klien (memang publik). Secret key TIDAK disimpan di file ini —
-// secret hanya untuk verifikasi token di sisi server (mis. Supabase Edge Function), lihat catatan rilis.
-const RECAPTCHA_SITE_KEY = '6LeoGTAtAAAAANvTCa4rOrIOGaM-LTKo3AFzPsD_';
-let _loginCaptchaId = null;
-let _recaptchaLoading = false;
-function pcRenderRecaptcha(){
-  const el = document.getElementById('login-recaptcha');
-  if(!el || !RECAPTCHA_SITE_KEY) return;
-  _loginCaptchaId = null; el.innerHTML = '';
-  const doRender = ()=>{ try{ if(window.grecaptcha && grecaptcha.render){ _loginCaptchaId = grecaptcha.render('login-recaptcha', { sitekey: RECAPTCHA_SITE_KEY }); } }catch(err){ console.warn('[recaptcha]', err); } };
-  if(window.grecaptcha && window.grecaptcha.render){ doRender(); return; }
-  window.__onRecaptchaLoad = doRender;
-  if(!_recaptchaLoading && !document.getElementById('recaptcha-api')){
-    _recaptchaLoading = true;
-    const s = document.createElement('script');
-    s.id = 'recaptcha-api';
-    s.src = 'https://www.google.com/recaptcha/api.js?onload=__onRecaptchaLoad&render=explicit';
-    s.async = true; s.defer = true;
-    s.onerror = ()=>{ el.innerHTML = '<span class="text-sm muted">Gagal memuat reCAPTCHA (periksa koneksi internet).</span>'; };
-    document.head.appendChild(s);
-  }
+// v3.3 (rev 7): ALTCHA — CAPTCHA self-hosted berbasis Proof-of-Work (pengganti total reCAPTCHA).
+// Berjalan TANPA backend: challenge dibuat di browser via Web Crypto (SHA-256), widget menyelesaikan PoW.
+// Dokumentasi: https://github.com/altcha-org/altcha
+const ALTCHA_ENABLED   = true;
+const ALTCHA_SRC       = 'https://cdn.jsdelivr.net/npm/altcha@3.1.0/dist/main/altcha.js';
+const ALTCHA_MAXNUMBER = 200000;   // ruang pencarian PoW (lebih besar = lebih berat untuk bot)
+let _altchaLoaded = false;          // true bila script/widget berhasil dimuat
+let _altchaState  = 'unverified';
+
+// Buat challenge ALTCHA di sisi klien (tanpa server). Widget akan mencari `secret` 0..maxnumber
+// yang SHA-256(salt+secret) == challenge → terbukti melakukan kerja komputasi (anti-bot).
+async function altchaMakeChallenge(){
+  const saltBytes = crypto.getRandomValues(new Uint8Array(12));
+  const salt = [...saltBytes].map(b=>b.toString(16).padStart(2,'0')).join('');
+  const secret = Math.floor(Math.random()*ALTCHA_MAXNUMBER);
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(salt+secret));
+  const challenge = [...new Uint8Array(digest)].map(b=>b.toString(16).padStart(2,'0')).join('');
+  return { algorithm:'SHA-256', challenge, maxnumber: ALTCHA_MAXNUMBER, salt, signature:'' };
+}
+function altchaLoadScript(){
+  if(!ALTCHA_ENABLED || document.getElementById('altcha-lib')) return;
+  const s = document.createElement('script');
+  s.id = 'altcha-lib'; s.type = 'module'; s.async = true; s.src = ALTCHA_SRC;
+  s.onerror = ()=>{ const w=document.getElementById('login-altcha'); if(w) w.insertAdjacentHTML('afterend','<div class="text-sm muted" style="margin:-8px 0 12px">Verifikasi keamanan tidak dapat dimuat (offline). Login tetap dapat dilanjutkan.</div>'); };
+  document.head.appendChild(s);
+}
+async function altchaRefresh(w){
+  try{ w.configure({ challenge: await altchaMakeChallenge() }); }catch(e){ console.warn('[altcha]', e); }
+}
+async function setupAltcha(){
+  if(!ALTCHA_ENABLED) return;
+  const w = document.getElementById('login-altcha');
+  if(!w) return;
+  _altchaState='unverified';
+  let configured=false;
+  const apply = async ()=>{ if(configured) return; configured=true; _altchaLoaded=true; await altchaRefresh(w); };
+  w.addEventListener('load', apply, { once:true });
+  w.addEventListener('statechange', e=>{ _altchaState = (e.detail && e.detail.state) || _altchaState; });
+  w.addEventListener('verified', ()=>{ _altchaState='verified'; });
+  try{ if(window.customElements){ await customElements.whenDefined('altcha-widget'); } }catch(_){}
+  setTimeout(apply, 600);   // fallback bila event 'load' sudah lewat
+}
+function altchaVerified(){
+  const w = document.getElementById('login-altcha');
+  if(w && typeof w.getState === 'function') return w.getState()==='verified';
+  return _altchaState==='verified';
 }
 
 /* ---------- CONSTANTS ---------- */
@@ -3902,14 +3926,15 @@ function setupRequestForm(){
    ============================================================ */
 function renderLogin(){
   mount('tpl-login');
-  pcRenderRecaptcha();   // v3.2 (rev 7): tampilkan Google reCAPTCHA
+  altchaLoadScript();   // v3.3 (rev 7): muat library ALTCHA
+  setupAltcha();        // siapkan challenge PoW di widget
   $('#login-form').addEventListener('submit', async (e) => {
     e.preventDefault();
-    // v3.2 (rev 7): wajib lolos reCAPTCHA bila widget berhasil tampil.
-    // Jika reCAPTCHA gagal dimuat (offline/diblokir), login tidak dikunci agar tidak terjadi lockout.
-    let capToken = '';
-    try{ if(window.grecaptcha && _loginCaptchaId!==null) capToken = grecaptcha.getResponse(_loginCaptchaId); }catch(_){}
-    if(RECAPTCHA_SITE_KEY && _loginCaptchaId!==null && !capToken){ toast('Mohon selesaikan verifikasi "Saya bukan robot" terlebih dahulu','warn'); return; }
+    // v3.3 (rev 7): wajib lolos ALTCHA bila widget berhasil dimuat.
+    // Jika ALTCHA gagal dimuat (offline), login tidak dikunci agar tidak terjadi lockout.
+    if(ALTCHA_ENABLED && _altchaLoaded && !altchaVerified()){
+      toast('Mohon selesaikan verifikasi keamanan (centang ALTCHA) terlebih dahulu','warn'); return;
+    }
     const btn = $('#login-btn');
     btn.disabled = true; btn.innerHTML = '<span class="material-symbols-rounded">hourglass_top</span>Memproses...';
     try{
@@ -3923,7 +3948,8 @@ function renderLogin(){
     }catch(err){
       console.error(err);
       toast(err.message || 'Login gagal','error');
-      try{ if(window.grecaptcha && _loginCaptchaId!==null) grecaptcha.reset(_loginCaptchaId); }catch(_){}
+      // Reset ALTCHA dengan challenge baru tiap kegagalan → menambah biaya bagi serangan brute-force
+      try{ const w=$('#login-altcha'); if(w && w.reset){ w.reset(); altchaRefresh(w); _altchaState='unverified'; } }catch(_){}
     }finally{
       btn.disabled = false; btn.innerHTML = '<span class="material-symbols-rounded">login</span>Masuk';
     }
@@ -11803,6 +11829,7 @@ function initCalculator(){
 
 document.addEventListener('DOMContentLoaded', async () => {
   pcFetchClientIp();   // v3.2: ambil IP publik lebih awal untuk Log Aktivitas (anti-fraud)
+  altchaLoadScript();  // v3.3: preload library ALTCHA agar widget login cepat siap
   if(!SUPA_CONFIGURED){
     setTimeout(()=> toast('Berjalan dalam mode DEMO (data hanya di memori). Edit SUPABASE_URL & SUPABASE_ANON_KEY di index.html untuk aktifkan Supabase.','warn',7000), 600);
   }
